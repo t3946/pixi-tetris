@@ -124,6 +124,9 @@ uniform highp vec4 uOutputFrame;
 void main(void) {
     vec4 fragColor = vec4(0.0);
     vec2 fragCoord = vTextureCoord * uInputSize.xy;
+    // turn on 90deg
+    fragCoord = vec2(fragCoord.y, fragCoord.x);
+
     vec3 resolution = vec3(uOutputFrame.z, uOutputFrame.w, 1.0);
     finalColor = mainImage(fragColor, fragCoord, resolution);
 }
