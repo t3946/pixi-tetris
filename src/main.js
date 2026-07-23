@@ -13,7 +13,7 @@ async function init() {
 
     // 2. Создаем спрайт-квадрат (используем встроенную белую текстуру 16x16)
     const square = new Sprite(Texture.WHITE);
-    const filterBgBlueFilter = filterBgBlue(app)
+    const filterBgBlueFilter = filterBgBlue(150, 150)
 
     square.filters = [filterBgBlueFilter];
 
@@ -40,7 +40,7 @@ async function init() {
 
     app.ticker.add((ticker) => {
       filterShadingInOut.resources.timeUniforms.uniforms.uTime += 0.04 * ticker.deltaTime;
-      filterBgBlueFilter.resources.timeUniforms.uniforms.uTime += 0.04 * ticker.deltaTime;
+      filterBgBlueFilter.resources.timeUniforms.uniforms.uTime += 0.02 * ticker.deltaTime;
     });
 }
 

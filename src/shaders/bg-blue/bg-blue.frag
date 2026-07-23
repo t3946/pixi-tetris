@@ -9,102 +9,117 @@ const vec2 glowPos = vec2(-2., 0.);
 //rectangles
 const float total = 60.;//number of rectangles
 const float minSize = 0.03;//rectangle min size
-const float maxSize = 0.08-minSize;//rectangle max size
+const float maxSize = 0.08 - minSize;//rectangle max size
 const float yDistribution = 0.5;
+uniform float uTime;
 
 
 float random(vec2 co){
-    return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
+    return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
 }
 
-float noise( in vec2 p )
+float noise(vec2 p)
 {
-    p*=noiseIntensity;
-    vec2 i = floor( p );
-    vec2 f = fract( p );
-	vec2 u = f*f*(3.0-2.0*f);
-    return mix( mix( random( i + vec2(0.0,0.0) ),
-                     random( i + vec2(1.0,0.0) ), u.x),
-                mix( random( i + vec2(0.0,1.0) ),
-                     random( i + vec2(1.0,1.0) ), u.x), u.y);
+    p *= noiseIntensity;
+
+    vec2 i = floor(p);
+    vec2 f = fract(p);
+    vec2 u = f * f * (3.0 - 2.0 * f);
+
+    return mix(mix(random(i + vec2(0.0, 0.0)),
+            random(i + vec2(1.0, 0.0)), u.x),
+            mix(random(i + vec2(0.0, 1.0)),
+                    random(i + vec2(1.0, 1.0)), u.x), u.y);
 }
 
-float fbm( in vec2 uv )
+float fbm(vec2 uv)
 {
-	uv *= 5.0;
-    mat2 m = mat2( 1.6,  1.2, -1.2,  1.6 );
-    float f  = 0.5000*noise( uv ); uv = m*uv;
-    f += 0.2500*noise( uv ); uv = m*uv;
-    f += 0.1250*noise( uv ); uv = m*uv;
-    f += 0.0625*noise( uv ); uv = m*uv;
+    uv *= 5.0;
+    mat2 m = mat2(1.6, 1.2, -1.2, 1.6);
+    float f = 0.5000 * noise(uv); uv = m * uv;
+    f += 0.2500 * noise(uv); uv = m * uv;
+    f += 0.1250 * noise(uv); uv = m * uv;
+    f += 0.0625 * noise(uv); uv = m * uv;
 
-	f = 0.5 + 0.5*f;
+    f = 0.5 + 0.5 * f;
     return f;
 }
 
-vec3 bg(vec2 uv )
+vec3 bg(vec2 uv)
 {
-    float velocity = iTime/1.6;
-    float intensity = sin(uv.x*3.+velocity*2.)*1.1+1.5;
+    float velocity = uTime / 1.6;
+    float intensity = sin(uv.x * 3. + velocity * 2.) * 1.1 + 1.5;
     uv.y -= 2.;
-    vec2 bp = uv+glowPos;
+    vec2 bp = uv + glowPos;
     uv *= noiseDefinition;
 
     //ripple
-    float rb = fbm(vec2(uv.x*.5-velocity*.03, uv.y))*.1;
+    float rb = fbm(vec2(uv.x * .5 - velocity * .03, uv.y)) * .1;
     //rb = sqrt(rb);
     uv += rb;
 
     //coloring
-    float rz = fbm(uv*.9+vec2(velocity*.35, 0.0));
-    rz *= dot(bp*intensity,bp)+1.2;
+    float rz = fbm(uv * .9 + vec2(velocity * .35, 0.0));
+    rz *= dot(bp * intensity, bp) + 1.2;
 
     //bazooca line
-    //rz *= sin(uv.x*.5+velocity*.8);
+//    rz *= sin(uv.x*.5+velocity*.8);
 
-
-    vec3 col = bgColor/(.1-rz);
+    vec3 col = bgColor / (.1 - rz);
     return sqrt(abs(col));
 }
 
 
 float rectangle(vec2 uv, vec2 pos, float width, float height, float blur) {
 
-    pos = (vec2(width, height) + .01)/2. - abs(uv - pos);
-    pos = smoothstep(0., blur , pos);
+    pos = (vec2(width, height) + .01) / 2. - abs(uv - pos);
+    pos = smoothstep(0., blur, pos);
     return pos.x * pos.y;
 
 }
 
 mat2 rotate2d(float _angle){
-    return mat2(cos(_angle),-sin(_angle),
-                sin(_angle),cos(_angle));
+    return mat2(cos(_angle), -sin(_angle),
+            sin(_angle), cos(_angle));
 }
 
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
+vec4 mainImage(vec4 fragColor, vec2 fragCoord, vec3 iResolution)
 {
-	vec2 uv = fragCoord.xy / iResolution.xy * 2. - 1.;
-    uv.x *= iResolution.x/iResolution.y;
+    vec2 uv = fragCoord.xy / iResolution.xy * 2. - 1.;
+    uv.x *= iResolution.x / iResolution.y;
 
     //bg
-    vec3 color = bg(uv)*(2.-abs(uv.y*2.));
+    vec3 color = bg(uv) * (2. - abs(uv.y * 2.));
 
     //rectangles
-    float velX = -iTime/8.;
-    float velY = iTime/10.;
-    for(float i=0.; i<total; i++){
-        float index = i/total;
+    float velX = -uTime / 8.;
+    float velY = uTime / 10.;
+    for (float i = 0.; i < total; i++){
+        float index = i / total;
         float rnd = random(vec2(index));
         vec3 pos = vec3(0, 0., 0.);
-        pos.x = fract(velX*rnd+index)*4.-2.0;
-        pos.y = sin(index*rnd*1000.+velY) * yDistribution;
-        pos.z = maxSize*rnd+minSize;
-        vec2 uvRot = uv - pos.xy + pos.z/2.;
-    	uvRot = rotate2d( i+iTime/2. ) * uvRot;
-        uvRot += pos.xy+pos.z/2.;
-        float rect = rectangle(uvRot, pos.xy, pos.z, pos.z, (maxSize+minSize-pos.z)/2.);
-	    color += rectColor * rect * pos.z/maxSize;
+        pos.x = fract(velX * rnd + index) * 4. - 2.0;
+        pos.y = sin(index * rnd * 1000. + velY) * yDistribution;
+        pos.z = maxSize * rnd + minSize;
+        vec2 uvRot = uv - pos.xy + pos.z / 2.;
+        uvRot = rotate2d(i + uTime / 2.) * uvRot;
+        uvRot += pos.xy + pos.z / 2.;
+        float rect = rectangle(uvRot, pos.xy, pos.z, pos.z, (maxSize + minSize - pos.z) / 2.);
+        color += rectColor * rect * pos.z / maxSize;
     }
 
-	fragColor = vec4(color, 1.0);
+    return vec4(color, 1.0);
+}
+
+in vec2 vTextureCoord;
+uniform sampler2D uTexture;
+uniform vec2 uResolution;
+
+void main(void) {
+    vec4 fragColor = vec4(0,0,0,1);
+    vec3 iResolution = vec3(uResolution.x, uResolution.y, uResolution.x / uResolution.y); // больше чем надо, вижу лишь часть изображения генерируемого шейдером, хотя здесь размеры переданы точные - 150x150
+//    vec3 iResolution = vec3(100, 100, 0.5); // ровно, хотя размер меньше на 50px по ширине и высоте
+    vec2 fragCoord = vTextureCoord * uResolution;
+
+    gl_FragColor = mainImage(fragColor, fragCoord, iResolution);
 }
