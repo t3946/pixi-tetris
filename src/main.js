@@ -1,4 +1,5 @@
 import { Application, Sprite, Texture } from 'pixi.js';
+import {filterShadingInOut} from "./shaders/linear-black-in-out/filter-shading-in-out.js";
 
 async function init() {
     // 1. Создаем приложение PixiJS v8 на весь экран
@@ -11,6 +12,8 @@ async function init() {
 
     // 2. Создаем спрайт-квадрат (используем встроенную белую текстуру 16x16)
     const square = new Sprite(Texture.WHITE);
+
+    square.filters = [filterShadingInOut];
 
     // Задаем размеры квадрата (например, 150x150 пикселей)
     square.width = 150;
@@ -31,6 +34,10 @@ async function init() {
     app.renderer.on('resize', () => {
         square.x = app.screen.width / 2;
         square.y = app.screen.height / 2;
+    });
+
+    app.ticker.add((ticker) => {
+      filterShadingInOut.resources.timeUniforms.uniforms.uTime += 0.04 * ticker.deltaTime;
     });
 }
 
