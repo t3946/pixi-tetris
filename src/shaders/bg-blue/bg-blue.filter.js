@@ -8,7 +8,6 @@ export const filterBgBlue = (width, height) => {
         resources: {
             timeUniforms: {
                 uTime: {value: 0.0, type: 'f32'},
-                uResolution: {value: [width, height], type: 'vec2<f32>'}
             },
         },
     });

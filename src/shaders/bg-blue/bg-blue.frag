@@ -1,3 +1,5 @@
+#version 300 es
+
 vec3 bgColor = vec3(0.01, 0.16, 0.42);
 vec3 rectColor = vec3(0.01, 0.26, 0.57);
 
@@ -112,14 +114,16 @@ vec4 mainImage(vec4 fragColor, vec2 fragCoord, vec3 iResolution)
 }
 
 in vec2 vTextureCoord;
+out vec4 finalColor;
+
 uniform sampler2D uTexture;
 uniform vec2 uResolution;
+uniform highp vec4 uInputSize;
+uniform highp vec4 uOutputFrame;
 
 void main(void) {
-    vec4 fragColor = vec4(0,0,0,1);
-    vec3 iResolution = vec3(uResolution.x, uResolution.y, uResolution.x / uResolution.y); // больше чем надо, вижу лишь часть изображения генерируемого шейдером, хотя здесь размеры переданы точные - 150x150
-//    vec3 iResolution = vec3(100, 100, 0.5); // ровно, хотя размер меньше на 50px по ширине и высоте
-    vec2 fragCoord = vTextureCoord * uResolution;
-
-    gl_FragColor = mainImage(fragColor, fragCoord, iResolution);
+    vec4 fragColor = vec4(0.0);
+    vec2 fragCoord = vTextureCoord * uInputSize.xy;
+    vec3 resolution = vec3(uOutputFrame.z, uOutputFrame.w, 1.0);
+    finalColor = mainImage(fragColor, fragCoord, resolution);
 }
