@@ -14,7 +14,7 @@ const float minSize = 0.03;//rectangle min size
 const float maxSize = 0.08 - minSize;//rectangle max size
 const float yDistribution = 0.5;
 uniform float uTime;
-
+float t;
 
 float random(vec2 co){
     return fract(sin(dot(co.xy, vec2(12.9898, 78.233))) * 43758.5453);
@@ -49,7 +49,7 @@ float fbm(vec2 uv)
 
 vec3 bg(vec2 uv)
 {
-    float velocity = uTime / 1.6;
+    float velocity = t / 1.6;
     float intensity = sin(uv.x * 3. + velocity * 2.) * 1.1 + 1.5;
     uv.y -= 2.;
     vec2 bp = uv + glowPos;
@@ -94,8 +94,8 @@ vec4 mainImage(vec4 fragColor, vec2 fragCoord, vec3 iResolution)
     vec3 color = bg(uv) * (2. - abs(uv.y * 2.));
 
     //rectangles
-    float velX = -uTime / 8.;
-    float velY = uTime / 10.;
+    float velX = -t / 8.;
+    float velY = t / 10.;
     for (float i = 0.; i < total; i++){
         float index = i / total;
         float rnd = random(vec2(index));
@@ -104,7 +104,7 @@ vec4 mainImage(vec4 fragColor, vec2 fragCoord, vec3 iResolution)
         pos.y = sin(index * rnd * 1000. + velY) * yDistribution;
         pos.z = maxSize * rnd + minSize;
         vec2 uvRot = uv - pos.xy + pos.z / 2.;
-        uvRot = rotate2d(i + uTime / 2.) * uvRot;
+        uvRot = rotate2d(i + t / 2.) * uvRot;
         uvRot += pos.xy + pos.z / 2.;
         float rect = rectangle(uvRot, pos.xy, pos.z, pos.z, (maxSize + minSize - pos.z) / 2.);
         color += rectColor * rect * pos.z / maxSize;
@@ -122,6 +122,7 @@ uniform highp vec4 uInputSize;
 uniform highp vec4 uOutputFrame;
 
 void main(void) {
+    t = mod(uTime, 1000.0);
     vec4 fragColor = vec4(0.0);
     vec2 fragCoord = vTextureCoord * uInputSize.xy;
     // turn on 90deg
