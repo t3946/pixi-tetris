@@ -1,7 +1,7 @@
 import { Application, Sprite, Texture } from 'pixi.js';
 import {filterShadingInOut} from "./shaders/linear-black-in-out/filter-shading-in-out.js";
 import {filterBgBlue} from "./shaders/bg-blue/bg-blue.filter.js"
-import {GridComponent} from "./components/Grid.container.ts";
+import {GridComponent} from "./components/Grid/Grid.container.ts";
 
 async function init() {
     // 1. Создаем приложение PixiJS v8 на весь экран
