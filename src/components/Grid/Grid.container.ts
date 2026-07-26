@@ -1,6 +1,6 @@
 import { Application, Container, Graphics, Sprite, Texture } from 'pixi.js'
-import { filterShadingInOut } from '../../shaders/linear-black-in-out/filter-shading-in-out'
-import { filterBgBlue } from '../../shaders/bg-blue/bg-blue.filter.js'
+import { filterShadingInOut } from '@shaders/linear-black-in-out/filter-shading-in-out'
+import { filterBgBlue } from '@shaders/bg-blue/bg-blue.filter.js'
 
 export class GridComponent extends Container {
     // Размеры стакана

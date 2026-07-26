@@ -1,5 +1,5 @@
 import { Application } from 'pixi.js';
-import { GridComponent } from './components/Grid/Grid.container.ts';
+import { GridComponent } from '@components/Grid/Grid.container.ts';
 
 async function init() {
     const app = new Application();

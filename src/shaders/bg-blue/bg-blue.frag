@@ -125,9 +125,9 @@ void main(void) {
     t = mod(uTime, 1000.0);
     vec4 fragColor = vec4(0.0);
     vec2 fragCoord = vTextureCoord * uInputSize.xy;
-    // turn on 90deg
+    // 90deg: swap axes so landscape shader fills a portrait sprite
     fragCoord = vec2(fragCoord.y, fragCoord.x);
-
-    vec3 resolution = vec3(uOutputFrame.z, uOutputFrame.w, 1.0);
+    // resolution must match swapped fragCoord, otherwise UV clips on non-square
+    vec3 resolution = vec3(uOutputFrame.w, uOutputFrame.z, 1.0);
     finalColor = mainImage(fragColor, fragCoord, resolution);
 }
