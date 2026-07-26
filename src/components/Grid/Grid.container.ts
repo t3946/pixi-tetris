@@ -1,6 +1,6 @@
-import { Application } from 'pixi.js'
-import { Container, Graphics } from 'pixi.js'
-import {filterShadingInOut} from "../../shaders/linear-black-in-out/filter-shading-in-out";
+import { Application, Container, Graphics, Sprite, Texture } from 'pixi.js'
+import { filterShadingInOut } from '../../shaders/linear-black-in-out/filter-shading-in-out'
+import { filterBgBlue } from '../../shaders/bg-blue/bg-blue.filter.js'
 
 export class GridComponent extends Container {
     // Размеры стакана
@@ -20,10 +20,23 @@ export class GridComponent extends Container {
 
     // draw dynamic background
     renderDynamicBackground() {
+        const cellSize = this.size / 10
+        const width = this.horizontalCells * cellSize
+        const height = this.verticalCells * cellSize
+
+        const square = new Sprite(Texture.WHITE)
+        const filterBgBlueFilter = filterBgBlue(width, height)
+
+        square.filters = [filterBgBlueFilter]
+        square.width = width
+        square.height = height
+
+        this.addChild(square)
+
         this.app.ticker.add((ticker) => {
-            filterShadingInOut.resources.timeUniforms.uniforms.uTime += 0.04 * ticker.deltaTime;
-            filterBgBlueFilter.resources.timeUniforms.uniforms.uTime += 0.02 * ticker.deltaTime;
-        });
+            filterShadingInOut.resources.timeUniforms.uniforms.uTime += 0.04 * ticker.deltaTime
+            filterBgBlueFilter.resources.timeUniforms.uniforms.uTime += 0.02 * ticker.deltaTime
+        })
     }
 
     // draw grid
