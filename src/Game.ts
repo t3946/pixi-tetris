@@ -1,46 +1,95 @@
-import {Application, Container, isMobile} from "pixi.js";
-import {FlatBackground} from '@components/Layout/FlatBackground.ts';
-import {GridComponent} from '@components/Grid/Grid.container.ts';
-import {AppMask} from "@components/Layout/AppMask.ts";
+import '@pixi/layout'
+import { Application, isMobile } from 'pixi.js'
+import { LayoutContainer } from '@pixi/layout/components'
+import { GridComponent } from '@components/Grid/Grid.container.ts'
 
 export class Game {
-    app: Application;
-    staticResolution = {w: 9, h: 19.5}
-    mainContainer: Container<any>
-    background: FlatBackground
+    app: Application
+    staticResolution = { w: 9, h: 19.5 }
+    mainContainer: LayoutContainer
+    header: LayoutContainer
+    body: LayoutContainer
+    footer: LayoutContainer
 
     constructor(app: Application) {
         this.app = app
 
-        // make main container
-        this.mainContainer = new Container()
-        this.background = new FlatBackground()
-        this.mainContainer.addChild(this.background)
-        app.stage.addChild(this.mainContainer)
+        const { width, height } = this.computeMainSize()
+
+        this.mainContainer = new LayoutContainer({
+            layout: {
+                width,
+                height,
+                flexDirection: 'column',
+                backgroundColor: 'white',
+            },
+        })
+
+        this.header = new LayoutContainer({
+            layout: {
+                width: '100%',
+                height: '10%',
+                flexShrink: 0,
+            },
+        })
+
+        this.body = new LayoutContainer({
+            layout: {
+                width: '100%',
+                flex: 1,
+                overflow: 'hidden',
+            },
+        })
+
+        this.footer = new LayoutContainer({
+            layout: {
+                width: '100%',
+                height: '10%',
+                flexShrink: 0,
+            },
+        })
+
+        const gridComponent = new GridComponent(app, height / 2)
+        gridComponent.layout = true
+
+        this.body.addChild(gridComponent)
+        this.mainContainer.addChild(this.header, this.body, this.footer)
+        this.app.stage.addChild(this.mainContainer)
+
         this.adoptMainContainerSize()
-
-        const gridComponent = new GridComponent(app, this.app.canvas.height / 2)
-
-        this.mainContainer.addChild(gridComponent)
-        this.mainContainer.addChild(this.background)
-
-        this.mainContainer.mask = new AppMask()
+        this.app.renderer.on('resize', this.adoptMainContainerSize)
     }
 
-    adoptMainContainerSize() {
+    computeMainSize() {
         const height = this.app.canvas.height
-        let width
+        let width: number
 
         if (isMobile.phone) {
             width = this.app.canvas.width
         } else {
-            const {w, h} = this.staticResolution
-            const resolution = w / h
-            width = height * resolution
+            const { w, h } = this.staticResolution
+            width = height * (w / h)
         }
 
-        this.background.resize(width, height)
-        this.mainContainer.width = width
-        this.mainContainer.height = height
+        return { width, height }
+    }
+
+    adoptMainContainerSize = () => {
+        console.log('adoptMainContainerSize')
+        const { width, height } = this.computeMainSize()
+
+        this.app.stage.layout = {
+            width: this.app.screen.width,
+            height: this.app.screen.height,
+            justifyContent: 'center',
+            alignItems: 'center',
+        }
+
+        this.mainContainer.layout = {
+            width,
+            height,
+            flexDirection: 'column',
+            backgroundColor: 'white',
+        }
     }
 }

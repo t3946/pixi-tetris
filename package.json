@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@pixi/layout": "^3.2.1",
     "pixi.js": "^8.3.4"
   },
   "devDependencies": {
