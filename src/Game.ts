@@ -1,6 +1,7 @@
 import {Application, Container, isMobile} from "pixi.js";
 import {FlatBackground} from '@components/Layout/FlatBackground.ts';
 import {GridComponent} from '@components/Grid/Grid.container.ts';
+import {AppMask} from "@components/Layout/AppMask.ts";
 
 export class Game {
     app: Application;
@@ -22,6 +23,8 @@ export class Game {
 
         this.mainContainer.addChild(gridComponent)
         this.mainContainer.addChild(this.background)
+
+        this.mainContainer.mask = new AppMask()
     }
 
     adoptMainContainerSize() {
