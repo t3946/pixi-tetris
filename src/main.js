@@ -1,5 +1,5 @@
 import { Application } from 'pixi.js';
-import { GridComponent } from '@components/Grid/Grid.container.ts';
+import {Game} from "./Game.ts";
 
 async function init() {
     const app = new Application();
@@ -9,8 +9,7 @@ async function init() {
     });
     document.body.appendChild(app.canvas);
 
-    const gridComponent = new GridComponent(app);
-    app.stage.addChild(gridComponent);
+    new Game(app)
 }
 
 init().catch(console.error);

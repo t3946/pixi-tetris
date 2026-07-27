@@ -5,14 +5,15 @@ import { filterBgBlue } from '@shaders/bg-blue/bg-blue.filter.js'
 export class GridComponent extends Container {
     // Размеры стакана
     app: Application
+    size: number
     verticalCells = 20
     horizontalCells = 10
-    size = 300
     gridAlpha = 0.5
 
-    constructor(app: Application) {
+    constructor(app: Application, size: number) {
         super() // Превращаем класс в контейнер PixiJS
 
+        this.size = size
         this.app = app
         this.renderDynamicBackground()
         this.renderGrid()
