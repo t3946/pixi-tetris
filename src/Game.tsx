@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Application, isMobile } from 'pixi.js'
 import { useApplication } from '@pixi/react'
-import { Grid } from '@components/Grid/Grid'
+import { Stack } from "@components/Stack/Stack.tsx";
 
 const STATIC_RESOLUTION = { w: 9, h: 19.5 }
 
@@ -71,6 +71,7 @@ export function Game() {
                         flexShrink: 0,
                     }}
                 />
+
                 <layoutContainer
                     layout={{
                         width: '100%',
@@ -80,10 +81,9 @@ export function Game() {
                         paddingEnd: '5%',
                     }}
                 >
-                    <Grid
-                        size={mainSize.height / 2}
-                    />
+                    <Stack/>
                 </layoutContainer>
+
                 <layoutContainer
                     layout={{
                         width: '100%',
