@@ -61,7 +61,7 @@ export function Game() {
                     width: mainSize.width,
                     height: mainSize.height,
                     flexDirection: 'column',
-                    backgroundColor: 'white',
+                    backgroundColor: 'black',
                 }}
             >
                 <layoutContainer

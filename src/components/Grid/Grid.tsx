@@ -4,18 +4,13 @@ import { useTick } from '@pixi/react'
 import { filterShadingInOut } from '@shaders/linear-black-in-out/filter-shading-in-out'
 import { filterBgBlue } from '@shaders/bg-blue/bg-blue.filter.js'
 
-type GridProps = {
-    size: number
-}
-
-const VERTICAL_CELLS = 20
+const VERTICAL_CELLS = 3
 const HORIZONTAL_CELLS = 10
 const GRID_ALPHA = 0.5
 
-export function Grid({ size }: GridProps) {
-    const cellSize = size / 10
-    const width = HORIZONTAL_CELLS * cellSize
-    const height = VERTICAL_CELLS * cellSize
+export function Grid({ width, height: parentHeight }: {width: number, height: number}) {
+    const cellSize = width / HORIZONTAL_CELLS
+    const height = cellSize * VERTICAL_CELLS
 
     const bgFilter = useMemo(() => filterBgBlue(width, height) as Filter, [width, height])
 
@@ -33,15 +28,26 @@ export function Grid({ size }: GridProps) {
         (graphics: Graphics) => {
             graphics.clear()
 
+            // 1. Рисуем фон
             graphics.rect(0, 0, width, height).fill({ color: 0x222222, alpha: GRID_ALPHA })
 
+            const halfLineWidth = 0.5
+
             for (let i = 0; i <= HORIZONTAL_CELLS; i++) {
-                const x = i * cellSize
+                let x = i * cellSize
+
+                if (i === 0) x += halfLineWidth
+                if (i === HORIZONTAL_CELLS) x -= halfLineWidth
+
                 graphics.moveTo(x, 0).lineTo(x, height)
             }
 
             for (let j = 0; j <= VERTICAL_CELLS; j++) {
-                const y = j * cellSize
+                let y = j * cellSize
+
+                if (j === 0) y += halfLineWidth
+                if (j === VERTICAL_CELLS) y -= halfLineWidth
+
                 graphics.moveTo(0, y).lineTo(width, y)
             }
 
@@ -51,7 +57,10 @@ export function Grid({ size }: GridProps) {
     )
 
     return (
-        <pixiContainer layout={true}>
+        <pixiContainer
+            x={0}
+            y={parentHeight - height}
+        >
             <pixiSprite
                 texture={Texture.WHITE}
                 width={width}
