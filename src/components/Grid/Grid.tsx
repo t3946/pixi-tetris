@@ -3,6 +3,7 @@ import { Filter, Graphics, Texture, Ticker } from 'pixi.js'
 import { useTick } from '@pixi/react'
 import { filterShadingInOut } from '@shaders/linear-black-in-out/filter-shading-in-out'
 import { filterBgBlue } from '@shaders/bg-blue/bg-blue.filter.js'
+import { GameField } from "@components/GameField.tsx";
 
 const VERTICAL_CELLS = 20
 const HORIZONTAL_CELLS = 10
@@ -67,7 +68,14 @@ export function Grid({ width, height: parentHeight }: {width: number, height: nu
                 height={height}
                 filters={[bgFilter]}
             />
+
             <pixiGraphics draw={drawGrid} />
+
+            <GameField
+                vertica={VERTICAL_CELLS}
+                horizontal={HORIZONTAL_CELLS}
+                cellSize={cellSize}
+            />
         </pixiContainer>
     )
 }
