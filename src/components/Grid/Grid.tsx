@@ -5,7 +5,7 @@ import { filterShadingInOut } from '@shaders/linear-black-in-out/filter-shading-
 import { filterBgBlue } from '@shaders/bg-blue/bg-blue.filter.js'
 import { GameField } from "@components/GameField.tsx";
 
-const VERTICAL_CELLS = 20
+const VERTICAL_CELLS = 19
 const HORIZONTAL_CELLS = 10
 const GRID_ALPHA = 0.5
 
