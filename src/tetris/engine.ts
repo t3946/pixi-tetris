@@ -12,6 +12,7 @@ export type GameState = {
     board: Board
     piece: ActivePiece | null
     gameOver: boolean
+    paused: boolean
     linesCleared: number
 }
 
@@ -36,6 +37,7 @@ export function createInitialState(rows: number, cols: number): GameState {
         board,
         piece,
         gameOver: piece === null,
+        paused: false,
         linesCleared: 0,
     }
 }
@@ -131,12 +133,13 @@ function settlePiece(state: GameState, cols: number): GameState {
         board,
         piece: nextPiece,
         gameOver: nextPiece === null,
+        paused: state.paused,
         linesCleared: state.linesCleared + cleared,
     }
 }
 
 export function tick(state: GameState, cols: number): GameState {
-    if (state.gameOver || !state.piece) {
+    if (state.gameOver || state.paused || !state.piece) {
         return state
     }
 
@@ -150,7 +153,7 @@ export function tick(state: GameState, cols: number): GameState {
 }
 
 export function moveHorizontal(state: GameState, direction: -1 | 1): GameState {
-    if (state.gameOver || !state.piece) {
+    if (state.gameOver || state.paused || !state.piece) {
         return state
     }
 
@@ -160,7 +163,7 @@ export function moveHorizontal(state: GameState, direction: -1 | 1): GameState {
 }
 
 export function moveDown(state: GameState, cols: number): GameState {
-    if (state.gameOver || !state.piece) {
+    if (state.gameOver || state.paused || !state.piece) {
         return state
     }
 
@@ -174,7 +177,7 @@ export function moveDown(state: GameState, cols: number): GameState {
 }
 
 export function rotate(state: GameState): GameState {
-    if (state.gameOver || !state.piece) {
+    if (state.gameOver || state.paused || !state.piece) {
         return state
     }
 
@@ -186,7 +189,7 @@ export function rotate(state: GameState): GameState {
 
 /** Мгновенно опускает фигуру до упора и фиксирует её на поле */
 export function hardDrop(state: GameState, cols: number): GameState {
-    if (state.gameOver || !state.piece) {
+    if (state.gameOver || state.paused || !state.piece) {
         return state
     }
 
@@ -199,6 +202,15 @@ export function hardDrop(state: GameState, cols: number): GameState {
     }
 
     return settlePiece({ ...state, piece }, cols)
+}
+
+/** Переключает паузу (повторное нажатие снимает паузу) */
+export function togglePause(state: GameState): GameState {
+    if (state.gameOver) {
+        return state
+    }
+
+    return { ...state, paused: !state.paused }
 }
 
 export function restart(rows: number, cols: number): GameState {

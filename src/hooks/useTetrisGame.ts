@@ -19,6 +19,7 @@ import {
     restart,
     rotate,
     tick,
+    togglePause,
     type GameState,
 } from '../tetris/engine'
 
@@ -36,6 +37,7 @@ const SOFT_DROP_INTERVAL_MS = 50
  * - SoftDrop — ускоренное падение на одну клетку (зажата ↓)
  * - HardDrop — мгновенное опускание до упора и фиксация (Пробел)
  * - Rotate — поворот фигуры (↑)
+ * - Pause — пауза / снятие паузы (P)
  * - Restart — перезапуск игры (R)
  */
 enum EAction {
@@ -44,6 +46,7 @@ enum EAction {
     SoftDrop = 'SOFT_DROP',
     HardDrop = 'HARD_DROP',
     Rotate = 'ROTATE',
+    Pause = 'PAUSE',
     Restart = 'RESTART',
 }
 
@@ -62,6 +65,7 @@ type Action =
     | { type: EAction.SoftDrop }
     | { type: EAction.HardDrop }
     | { type: EAction.Rotate }
+    | { type: EAction.Pause }
     | { type: EAction.Restart; rows: number; cols: number }
 
 /**
@@ -88,6 +92,8 @@ function gameReducer(state: GameState, action: Action, cols: number): GameState 
             return hardDrop(state, cols)
         case EAction.Rotate:
             return rotate(state)
+        case EAction.Pause:
+            return togglePause(state)
         case EAction.Restart:
             return restart(action.rows, action.cols)
         default:
@@ -153,7 +159,7 @@ export function useTetrisGame(rows: number, cols: number) {
      * Мы копим их в dropAccumulatorRef и, когда набирается interval, делаем TICK.
      */
     useTick((ticker) => {
-        if (state.gameOver) {
+        if (state.gameOver || state.paused) {
             return
         }
 
@@ -207,6 +213,12 @@ export function useTetrisGame(rows: number, cols: number) {
                     event.preventDefault()
                     dispatch({ type: EAction.HardDrop })
                     dropAccumulatorRef.current = 0
+                    break
+                case 'KeyP':
+                    event.preventDefault()
+                    dispatch({ type: EAction.Pause })
+                    dropAccumulatorRef.current = 0
+                    softDropRef.current = false
                     break
                 case 'KeyR':
                     dispatch({ type: EAction.Restart, rows, cols })

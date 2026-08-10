@@ -23,7 +23,7 @@ function drawCell(graphics: Graphics, col: number, row: number, color: number, c
 }
 
 export function GameField({ vertica, horizontal, cellSize }: TProps) {
-    const { board, piece, gameOver } = useTetrisGame(vertica, horizontal)
+    const { board, piece, gameOver, paused } = useTetrisGame(vertica, horizontal)
 
     const drawField = useCallback(
         (graphics: Graphics) => {
@@ -46,13 +46,13 @@ export function GameField({ vertica, horizontal, cellSize }: TProps) {
                 }
             }
 
-            if (gameOver) {
+            if (gameOver || paused) {
                 graphics
                     .rect(0, 0, horizontal * cellSize, vertica * cellSize)
                     .fill({ color: 0x000000, alpha: 0.45 })
             }
         },
-        [board, cellSize, gameOver, horizontal, piece, vertica],
+        [board, cellSize, gameOver, horizontal, paused, piece, vertica],
     )
 
     return <pixiGraphics draw={drawField} />
