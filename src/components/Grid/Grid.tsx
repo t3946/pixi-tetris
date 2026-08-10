@@ -4,7 +4,7 @@ import { useTick } from '@pixi/react'
 import { filterShadingInOut } from '@shaders/linear-black-in-out/filter-shading-in-out'
 import { filterBgBlue } from '@shaders/bg-blue/bg-blue.filter.js'
 
-const VERTICAL_CELLS = 3
+const VERTICAL_CELLS = 20
 const HORIZONTAL_CELLS = 10
 const GRID_ALPHA = 0.5
 

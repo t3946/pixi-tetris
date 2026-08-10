@@ -67,7 +67,7 @@ export function Game() {
                 <layoutContainer
                     layout={{
                         width: '100%',
-                        height: '10%',
+                        height: '3%',
                         flexShrink: 0,
                     }}
                 />
@@ -77,8 +77,8 @@ export function Game() {
                         width: '100%',
                         flex: 1,
                         overflow: 'hidden',
-                        paddingStart: '5%',
-                        paddingEnd: '5%',
+                        paddingStart: '7%',
+                        paddingEnd: '7%',
                     }}
                 >
                     <Stack/>
