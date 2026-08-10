@@ -9,7 +9,7 @@ const VERTICAL_CELLS = 19
 const HORIZONTAL_CELLS = 10
 const GRID_ALPHA = 0.5
 
-export function Grid({ width, height: parentHeight }: {width: number, height: number}) {
+export function Grid({ width }: {width: number, height: number}) {
     const cellSize = width / HORIZONTAL_CELLS
     const height = cellSize * VERTICAL_CELLS
 
@@ -60,7 +60,7 @@ export function Grid({ width, height: parentHeight }: {width: number, height: nu
     return (
         <pixiContainer
             x={0}
-            y={parentHeight - height}
+            y={0}
         >
             <pixiSprite
                 texture={Texture.WHITE}

@@ -83,14 +83,6 @@ export function Game() {
                 >
                     <Stack/>
                 </layoutContainer>
-
-                <layoutContainer
-                    layout={{
-                        width: '100%',
-                        height: '10%',
-                        flexShrink: 0,
-                    }}
-                />
             </layoutContainer>
         </layoutContainer>
     )
