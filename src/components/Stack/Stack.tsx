@@ -1,22 +1,23 @@
-import { useCallback, useRef, useState, useEffect } from 'react';
-import { Background } from "@components/Stack/Background.tsx";
-import { Grid } from "@components/Grid/Grid.tsx";
-import debounce from 'lodash/debounce';
+import { useRef, useState, useEffect } from 'react'
+import { Background } from '@components/Stack/Background.tsx'
+import { Grid } from '@components/Grid/Grid.tsx'
+import { ButtonCircle } from '@components/ui/ButtonCircle.tsx'
+import debounce from 'lodash/debounce'
 
 export const Stack = () => {
-    const parentRef = useRef<any>(null);
-    const [parentSize, setParentSize] = useState({ width: 0, height: 0 });
+    const parentRef = useRef<any>(null)
+    const [parentSize, setParentSize] = useState({ width: 0, height: 0 })
 
     useEffect(() => {
         if (parentRef.current) {
-            const bounds = parentRef.current.getLocalBounds();
+            const bounds = parentRef.current.getLocalBounds()
 
             setParentSize({
                 width: bounds.width || 100,
-                height: bounds.height || 100
-            });
+                height: bounds.height || 100,
+            })
         }
-    }, []);
+    }, [])
 
     useEffect(() => {
         const handleResize = () => {
@@ -26,7 +27,7 @@ export const Stack = () => {
                     height: parentRef.current.height,
                 })
             }
-        };
+        }
         const debouncedHandleResize = debounce(handleResize, 50)
 
         debouncedHandleResize()
@@ -36,7 +37,7 @@ export const Stack = () => {
             debouncedHandleResize.cancel()
             window.removeEventListener('resize', debouncedHandleResize)
         }
-    }, [parentRef]);
+    }, [])
 
     return (
         <layoutContainer
@@ -46,11 +47,20 @@ export const Stack = () => {
             }}
             ref={parentRef}
         >
-            <pixiContainer ref={parentRef}>
-                <Background width={parentSize.width} height={parentSize.height}/>
+            <pixiContainer>
+                <Background width={parentSize.width} height={parentSize.height} />
 
-                <Grid width={parentSize.width} height={parentSize.height}/>
+                <Grid width={parentSize.width} height={parentSize.height} />
+
+                <ButtonCircle
+                    icon="pause"
+                    size={40}
+                    x={16}
+                    y={16}
+                    alpha={0.5}
+                    hoverAlpha={1}
+                />
             </pixiContainer>
         </layoutContainer>
-    );
-};
+    )
+}

@@ -14,7 +14,13 @@ extend({
 
 export function App() {
     return (
-        <Application resizeTo={window} backgroundColor={0x1099bb}>
+        <Application
+            resizeTo={window}
+            backgroundColor={0x1099bb}
+            antialias={true}
+            resolution={window.devicePixelRatio}
+            autoDensity={true}
+        >
             <Game />
         </Application>
     )
