@@ -43,17 +43,17 @@ export const Stack = () => {
     }, [])
 
     return (
+
         <layoutContainer
             layout={{
-                overflow: 'hidden',
                 width: '100%',
+                overflow: 'hidden',
             }}
             ref={parentRef}
         >
             <pixiContainer>
-                <Background width={parentSize.width} height={parentSize.height} />
-
-                <Grid width={parentSize.width} height={parentSize.height} />
+                <Background width={parentSize.width} height={parentSize.height}/>
+                <Grid width={parentSize.width} height={parentSize.height}/>
 
                 <ButtonCircle
                     icon="pause"

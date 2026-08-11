@@ -3,16 +3,26 @@ import { Filter, Graphics, Texture, Ticker } from 'pixi.js'
 import { useTick } from '@pixi/react'
 import { filterShadingInOut } from '@shaders/linear-black-in-out/filter-shading-in-out'
 import { filterBgBlue } from '@shaders/bg-blue/bg-blue.filter.js'
-import { GameField } from "@components/GameField.tsx";
+import { GameField } from '@components/GameField.tsx'
 import { BOARD_COLS, BOARD_ROWS } from '@src/tetris/constants'
+import { useTheme } from '@src/ui/ThemeContext.tsx'
 
 const GRID_ALPHA = 0.5
+const FIELD_BORDER = 3
+const FIELD_RADIUS = 4
 
-export function Grid({ width }: {width: number, height: number}) {
-    const cellSize = width / BOARD_COLS
-    const height = cellSize * BOARD_ROWS
+export function Grid({ width }: { width: number; height: number }) {
+    const theme = useTheme()
 
-    const bgFilter = useMemo(() => filterBgBlue(width, height) as Filter, [width, height])
+    const innerWidth = Math.max(0, width - FIELD_BORDER * 2)
+    const cellSize = innerWidth / BOARD_COLS
+    const innerHeight = cellSize * BOARD_ROWS
+    const outerHeight = innerHeight + FIELD_BORDER * 2
+
+    const bgFilter = useMemo(
+        () => filterBgBlue(innerWidth, innerHeight) as Filter,
+        [innerHeight, innerWidth],
+    )
 
     const onTick = useCallback(
         (ticker: Ticker) => {
@@ -28,53 +38,59 @@ export function Grid({ width }: {width: number, height: number}) {
         (graphics: Graphics) => {
             graphics.clear()
 
-            // 1. Рисуем фон
-            graphics.rect(0, 0, width, height).fill({ color: 0x222222, alpha: GRID_ALPHA })
+            graphics.rect(0, 0, innerWidth, innerHeight).fill({ color: 0x222222, alpha: GRID_ALPHA })
 
-            const halfLineWidth = 0.5
-
-            for (let i = 0; i <= BOARD_COLS; i++) {
-                let x = i * cellSize
-
-                if (i === 0) x += halfLineWidth
-                if (i === BOARD_COLS) x -= halfLineWidth
-
-                graphics.moveTo(x, 0).lineTo(x, height)
+            // Крайние линии (i/j = 0 и последняя) не рисуем — их заменяет рамка поля
+            for (let i = 1; i < BOARD_COLS; i++) {
+                const x = i * cellSize
+                graphics.moveTo(x, 0).lineTo(x, innerHeight)
             }
 
-            for (let j = 0; j <= BOARD_ROWS; j++) {
-                let y = j * cellSize
-
-                if (j === 0) y += halfLineWidth
-                if (j === BOARD_ROWS) y -= halfLineWidth
-
-                graphics.moveTo(0, y).lineTo(width, y)
+            for (let j = 1; j < BOARD_ROWS; j++) {
+                const y = j * cellSize
+                graphics.moveTo(0, y).lineTo(innerWidth, y)
             }
 
             graphics.stroke({ color: 0x666666, width: 1, alpha: GRID_ALPHA })
         },
-        [cellSize, height, width],
+        [cellSize, innerHeight, innerWidth],
     )
 
     return (
-        <pixiContainer
-            x={0}
-            y={0}
+        <layoutContainer
+            layout={{
+                width,
+                height: outerHeight,
+                padding: FIELD_BORDER,
+                backgroundColor: theme.UI.BUTTON_FILL_TOP,
+                borderRadius: FIELD_RADIUS,
+                overflow: 'hidden',
+            }}
         >
-            <pixiSprite
-                texture={Texture.WHITE}
-                width={width}
-                height={height}
-                filters={[bgFilter]}
-            />
+            <layoutContainer
+                layout={{
+                    width: '100%',
+                    height: '100%',
+                    overflow: 'hidden',
+                }}
+            >
+                <pixiContainer>
+                    <pixiSprite
+                        texture={Texture.WHITE}
+                        width={innerWidth}
+                        height={innerHeight}
+                        filters={[bgFilter]}
+                    />
 
-            <pixiGraphics draw={drawGrid} />
+                    <pixiGraphics draw={drawGrid} />
 
-            <GameField
-                vertica={BOARD_ROWS}
-                horizontal={BOARD_COLS}
-                cellSize={cellSize}
-            />
-        </pixiContainer>
+                    <GameField
+                        vertica={BOARD_ROWS}
+                        horizontal={BOARD_COLS}
+                        cellSize={cellSize}
+                    />
+                </pixiContainer>
+            </layoutContainer>
+        </layoutContainer>
     )
 }
