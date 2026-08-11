@@ -1,4 +1,5 @@
 import { NextTetrominoes } from '@components/GameDashboard/NextTetrominoes.tsx'
+import { Score } from '@components/GameDashboard/Score.tsx'
 import { Panel } from '@components/ui/Panel.tsx'
 
 export const GameDashboard = function () {
@@ -14,7 +15,9 @@ export const GameDashboard = function () {
         >
             <Panel title="Рядов" layout={{ width: '25%', height: '100%' }} />
 
-            <Panel title="Счёт" layout={{ width: '50%', height: '100%' }} />
+            <Panel title="Счёт" layout={{ width: '50%', height: '100%' }}>
+                <Score />
+            </Panel>
 
             <Panel title="Далее" layout={{ width: '25%', height: '100%' }}>
                 <NextTetrominoes />

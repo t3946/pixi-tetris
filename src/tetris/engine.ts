@@ -17,6 +17,18 @@ export type GameState = {
     gameOver: boolean
     paused: boolean
     linesCleared: number
+    score: number
+}
+
+/** Очки за очистку: Single / Double / Triple / Tetris */
+const LINE_CLEAR_SCORES = [0, 100, 300, 500, 1200] as const
+
+export function scoreForClearedLines(cleared: number): number {
+    if (cleared <= 0) {
+        return 0
+    }
+
+    return LINE_CLEAR_SCORES[cleared] ?? LINE_CLEAR_SCORES[LINE_CLEAR_SCORES.length - 1]
 }
 
 const WALL_KICK_OFFSETS = [
@@ -43,6 +55,7 @@ export function createInitialState(rows: number, cols: number): GameState {
         gameOver: piece === null,
         paused: false,
         linesCleared: 0,
+        score: 0,
     }
 }
 
@@ -149,6 +162,7 @@ function settlePiece(state: GameState, cols: number): GameState {
         gameOver: piece === null,
         paused: state.paused,
         linesCleared: state.linesCleared + cleared,
+        score: state.score + scoreForClearedLines(cleared),
     }
 }
 

@@ -28,10 +28,12 @@ export function GameField({ vertica, horizontal, cellSize }: TProps) {
     const drawField = useCallback(
         (graphics: Graphics) => {
             graphics.clear()
+            graphics.roundPixels = true
 
             for (let row = 0; row < board.length; row++) {
                 for (let col = 0; col < board[row].length; col++) {
                     const color = board[row][col]
+
                     if (color !== 0) {
                         drawCell(graphics, col, row, color, cellSize)
                     }
@@ -46,6 +48,7 @@ export function GameField({ vertica, horizontal, cellSize }: TProps) {
                 }
             }
 
+            // draw shadow over stack
             if (gameOver || paused) {
                 graphics
                     .rect(0, 0, horizontal * cellSize, vertica * cellSize)
