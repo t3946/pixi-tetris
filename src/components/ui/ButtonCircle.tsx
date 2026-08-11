@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Assets, FillGradient, Graphics, Texture } from 'pixi.js'
 import { icons, type IconName } from '@src/assets/icons'
+import { useTheme } from '@src/ui/ThemeContext'
 
 type TProps = {
     icon: IconName
@@ -14,8 +15,6 @@ type TProps = {
     onPress?: () => void
 }
 
-const BORDER_COLOR = 0xffffff
-
 export function ButtonCircle({
     icon,
     size,
@@ -25,6 +24,7 @@ export function ButtonCircle({
     hoverAlpha,
     onPress,
 }: TProps) {
+    const theme = useTheme()
     const iconSize = size * 0.6
     const radius = size / 2
     const [iconTexture, setIconTexture] = useState<Texture | null>(null)
@@ -39,12 +39,12 @@ export function ButtonCircle({
                 start: { x: 0, y: 0 },
                 end: { x: 0, y: 1 },
                 colorStops: [
-                    { offset: 0, color: 0x6b7c8d },
-                    { offset: 1, color: 0x2c3642 },
+                    { offset: 0, color: theme.UI.BUTTON_FILL_TOP },
+                    { offset: 1, color: theme.UI.BUTTON_FILL_BOTTOM },
                 ],
                 textureSpace: 'local',
             }),
-        [],
+        [theme.UI.BUTTON_FILL_BOTTOM, theme.UI.BUTTON_FILL_TOP],
     )
 
     useEffect(() => () => gradient.destroy(), [gradient])
@@ -69,9 +69,9 @@ export function ButtonCircle({
             graphics
                 .circle(radius, radius, radius - 1)
                 .fill(gradient)
-                .stroke({ width: 2, color: BORDER_COLOR, alpha: 0.9  })
+                .stroke({ width: 2, color: theme.UI.ACCENT, alpha: 0.9 })
         },
-        [gradient, radius],
+        [gradient, radius, theme.UI.ACCENT],
     )
 
     const iconLayout = useMemo(() => {
@@ -102,6 +102,7 @@ export function ButtonCircle({
             onPointerTap={onPress}
             onPointerOver={() => setHovered(true)}
             onPointerOut={() => setHovered(false)}
+            roundPixels={true}
         >
             <pixiGraphics draw={drawButton} />
             {iconTexture && iconLayout && (
@@ -111,6 +112,7 @@ export function ButtonCircle({
                     height={iconLayout.height}
                     x={iconLayout.x}
                     y={iconLayout.y}
+                    tint={theme.UI.ICON}
                     eventMode="none"
                 />
             )}

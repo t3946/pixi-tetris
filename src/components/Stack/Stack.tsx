@@ -57,7 +57,7 @@ export const Stack = () => {
                     size={40}
                     x={16}
                     y={16}
-                    alpha={0.5}
+                    alpha={0.25}
                     hoverAlpha={1}
                 />
             </pixiContainer>

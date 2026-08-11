@@ -4,6 +4,7 @@ import { Application, extend } from '@pixi/react'
 import { Container, Graphics, Sprite } from 'pixi.js'
 import { LayoutContainer } from '@pixi/layout/components'
 import { Game } from './Game'
+import { ThemeProvider } from '@src/ui/ThemeContext'
 
 extend({
     Container,
@@ -14,14 +15,16 @@ extend({
 
 export function App() {
     return (
-        <Application
-            resizeTo={window}
-            backgroundColor={0x1099bb}
-            antialias={true}
-            resolution={window.devicePixelRatio}
-            autoDensity={true}
-        >
-            <Game />
-        </Application>
+        <ThemeProvider>
+            <Application
+                resizeTo={window}
+                backgroundColor={0x1099bb}
+                antialias={true}
+                resolution={window.devicePixelRatio}
+                autoDensity={true}
+            >
+                <Game />
+            </Application>
+        </ThemeProvider>
     )
 }
