@@ -6,7 +6,7 @@
  *  2. Автоматическое падение фигур — через useTick (игровой цикл Pixi)
  *  3. Управление с клавиатуры — через useEffect + addEventListener
  *
- * Сама логика тетриса (коллизии, поворот, очистка линий) живёт в ../tetris/engine.ts.
+ * Сама логика тетриса (коллизии, поворот, очистка линий) живёт в @src/tetris/engine.ts.
  * Здесь мы только решаем КОГДА вызвать ту или иную функцию из engine.
  */
 import { useCallback, useEffect, useReducer, useRef } from 'react'
@@ -21,7 +21,7 @@ import {
     tick,
     togglePause,
     type GameState,
-} from '../tetris/engine'
+} from '@src/tetris/engine'
 
 /** Обычная скорость падения: фигура смещается вниз раз в 600 мс */
 const DROP_INTERVAL_MS = 600

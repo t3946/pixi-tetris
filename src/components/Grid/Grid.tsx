@@ -4,14 +4,13 @@ import { useTick } from '@pixi/react'
 import { filterShadingInOut } from '@shaders/linear-black-in-out/filter-shading-in-out'
 import { filterBgBlue } from '@shaders/bg-blue/bg-blue.filter.js'
 import { GameField } from "@components/GameField.tsx";
+import { BOARD_COLS, BOARD_ROWS } from '@src/tetris/constants'
 
-const VERTICAL_CELLS = 19
-const HORIZONTAL_CELLS = 10
 const GRID_ALPHA = 0.5
 
 export function Grid({ width }: {width: number, height: number}) {
-    const cellSize = width / HORIZONTAL_CELLS
-    const height = cellSize * VERTICAL_CELLS
+    const cellSize = width / BOARD_COLS
+    const height = cellSize * BOARD_ROWS
 
     const bgFilter = useMemo(() => filterBgBlue(width, height) as Filter, [width, height])
 
@@ -34,20 +33,20 @@ export function Grid({ width }: {width: number, height: number}) {
 
             const halfLineWidth = 0.5
 
-            for (let i = 0; i <= HORIZONTAL_CELLS; i++) {
+            for (let i = 0; i <= BOARD_COLS; i++) {
                 let x = i * cellSize
 
                 if (i === 0) x += halfLineWidth
-                if (i === HORIZONTAL_CELLS) x -= halfLineWidth
+                if (i === BOARD_COLS) x -= halfLineWidth
 
                 graphics.moveTo(x, 0).lineTo(x, height)
             }
 
-            for (let j = 0; j <= VERTICAL_CELLS; j++) {
+            for (let j = 0; j <= BOARD_ROWS; j++) {
                 let y = j * cellSize
 
                 if (j === 0) y += halfLineWidth
-                if (j === VERTICAL_CELLS) y -= halfLineWidth
+                if (j === BOARD_ROWS) y -= halfLineWidth
 
                 graphics.moveTo(0, y).lineTo(width, y)
             }
@@ -72,8 +71,8 @@ export function Grid({ width }: {width: number, height: number}) {
             <pixiGraphics draw={drawGrid} />
 
             <GameField
-                vertica={VERTICAL_CELLS}
-                horizontal={HORIZONTAL_CELLS}
+                vertica={BOARD_ROWS}
+                horizontal={BOARD_COLS}
                 cellSize={cellSize}
             />
         </pixiContainer>

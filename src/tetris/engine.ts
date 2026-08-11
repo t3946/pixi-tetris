@@ -4,6 +4,7 @@ import {
     getPieceCells,
     randomPieceType,
     TETROMINOES,
+    type PieceType,
 } from './tetrominoes'
 
 export type Board = number[][]
@@ -11,6 +12,8 @@ export type Board = number[][]
 export type GameState = {
     board: Board
     piece: ActivePiece | null
+    /** Тип следующей фигуры (показывается в превью) */
+    nextType: PieceType
     gameOver: boolean
     paused: boolean
     linesCleared: number
@@ -31,25 +34,35 @@ export function createEmptyBoard(rows: number, cols: number): Board {
 
 export function createInitialState(rows: number, cols: number): GameState {
     const board = createEmptyBoard(rows, cols)
-    const piece = spawnPiece(board, cols)
+    const { piece, nextType } = spawnFromQueue(board, cols, randomPieceType())
 
     return {
         board,
         piece,
+        nextType,
         gameOver: piece === null,
         paused: false,
         linesCleared: 0,
     }
 }
 
-function spawnPiece(board: Board, cols: number): ActivePiece | null {
-    const piece = createPiece(randomPieceType(), cols)
+/**
+ * Берёт фигуру типа `type` как текущую и сразу готовит случайную следующую.
+ * Если текущая не влезает на поле — piece = null (game over).
+ */
+function spawnFromQueue(
+    board: Board,
+    cols: number,
+    type: PieceType,
+): { piece: ActivePiece | null; nextType: PieceType } {
+    const piece = createPiece(type, cols)
+    const nextType = randomPieceType()
 
     if (!isValidPosition(piece, board)) {
-        return null
+        return { piece: null, nextType }
     }
 
-    return piece
+    return { piece, nextType }
 }
 
 export function isValidPosition(piece: ActivePiece, board: Board): boolean {
@@ -127,12 +140,13 @@ function settlePiece(state: GameState, cols: number): GameState {
 
     const lockedBoard = lockPiece(state.piece, state.board)
     const { board, cleared } = clearFullLines(lockedBoard)
-    const nextPiece = spawnPiece(board, cols)
+    const { piece, nextType } = spawnFromQueue(board, cols, state.nextType)
 
     return {
         board,
-        piece: nextPiece,
-        gameOver: nextPiece === null,
+        piece,
+        nextType,
+        gameOver: piece === null,
         paused: state.paused,
         linesCleared: state.linesCleared + cleared,
     }

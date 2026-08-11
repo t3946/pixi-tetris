@@ -234,3 +234,23 @@ export function getPieceCells(piece: ActivePiece): { x: number; y: number; color
 
     return cells
 }
+
+/** Клетки фигуры в локальных координатах (для превью следующей детали) */
+export function getShapeLocalCells(
+    type: PieceType,
+    rotation = 0,
+): { x: number; y: number; color: number }[] {
+    const { color, shapes } = TETROMINOES[type]
+    const shape = shapes[rotation % shapes.length]
+    const cells: { x: number; y: number; color: number }[] = []
+
+    for (let row = 0; row < shape.length; row++) {
+        for (let col = 0; col < shape[row].length; col++) {
+            if (shape[row][col]) {
+                cells.push({ x: col, y: row, color })
+            }
+        }
+    }
+
+    return cells
+}

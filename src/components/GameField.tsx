@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { Graphics } from 'pixi.js'
-import { useTetrisGame } from '../hooks/useTetrisGame'
-import { getPieceCells } from '../tetris/tetrominoes'
+import { useTetrisGameState } from '@src/tetris/TetrisGameContext'
+import { getPieceCells } from '@src/tetris/tetrominoes'
 
 type TProps = {
     vertica: number
@@ -23,7 +23,7 @@ function drawCell(graphics: Graphics, col: number, row: number, color: number, c
 }
 
 export function GameField({ vertica, horizontal, cellSize }: TProps) {
-    const { board, piece, gameOver, paused } = useTetrisGame(vertica, horizontal)
+    const { board, piece, gameOver, paused } = useTetrisGameState()
 
     const drawField = useCallback(
         (graphics: Graphics) => {

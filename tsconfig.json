@@ -24,7 +24,8 @@
     "noUncheckedSideEffectImports": true,
     "paths": {
       "@shaders/*": ["./src/shaders/*"],
-      "@components/*": ["./src/components/*"]
+      "@components/*": ["./src/components/*"],
+      "@src/*": ["./src/*"]
     }
   },
   "include": ["src"]

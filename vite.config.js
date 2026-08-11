@@ -11,6 +11,7 @@ export default defineConfig({
         alias: {
             '@shaders': path.resolve(__dirname, 'src/shaders'),
             '@components': path.resolve(__dirname, 'src/components'),
+            '@src': path.resolve(__dirname, 'src'),
         },
     },
     server: {

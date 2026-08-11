@@ -1,3 +1,5 @@
+import { NextTetrominoes } from "@components/GameDashboard/NextTetrominoes.tsx";
+
 export const GameDashboard = function () {
     return (
         <layoutContainer
@@ -28,7 +30,9 @@ export const GameDashboard = function () {
                     width: '25%',
                     backgroundColor: 'white',
                 }}
-            />
+            >
+                <NextTetrominoes />
+            </layoutContainer>
         </layoutContainer>
     )
 }

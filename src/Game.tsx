@@ -3,6 +3,7 @@ import { Application, isMobile } from 'pixi.js'
 import { useApplication } from '@pixi/react'
 import { Stack } from "@components/Stack/Stack.tsx";
 import { GameDashboard } from "@components/GameDashboard/GameDashboard.tsx";
+import { TetrisGameProvider } from './tetris/TetrisGameContext'
 
 const STATIC_RESOLUTION = { w: 9, h: 19.5 }
 
@@ -49,53 +50,55 @@ export function Game() {
     }
 
     return (
-        <layoutContainer
-            layout={{
-                width: screenSize.width,
-                height: screenSize.height,
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}
-        >
+        <TetrisGameProvider>
             <layoutContainer
                 layout={{
-                    width: mainSize.width,
-                    height: mainSize.height,
-                    flexDirection: 'column',
-                    backgroundColor: 'black',
+                    width: screenSize.width,
+                    height: screenSize.height,
+                    justifyContent: 'center',
+                    alignItems: 'center',
                 }}
             >
-                {/*offset*/}
                 <layoutContainer
                     layout={{
-                        width: '100%',
-                        height: '5%',
-                        flexShrink: 0,
-                    }}
-                />
-
-                <layoutContainer
-                    layout={{
-                        width: '100%',
-                        flexShrink: 0,
-                        marginBottom: '15'
+                        width: mainSize.width,
+                        height: mainSize.height,
+                        flexDirection: 'column',
+                        backgroundColor: 'black',
                     }}
                 >
-                    <GameDashboard />
-                </layoutContainer>
+                    {/*offset*/}
+                    <layoutContainer
+                        layout={{
+                            width: '100%',
+                            height: '5%',
+                            flexShrink: 0,
+                        }}
+                    />
 
-                <layoutContainer
-                    layout={{
-                        width: '100%',
-                        flex: 1,
-                        overflow: 'hidden',
-                        paddingStart: '7%',
-                        paddingEnd: '7%',
-                    }}
-                >
-                    <Stack/>
+                    <layoutContainer
+                        layout={{
+                            width: '100%',
+                            flexShrink: 0,
+                            marginBottom: '15'
+                        }}
+                    >
+                        <GameDashboard/>
+                    </layoutContainer>
+
+                    <layoutContainer
+                        layout={{
+                            width: '100%',
+                            flex: 1,
+                            overflow: 'hidden',
+                            paddingStart: '7%',
+                            paddingEnd: '7%',
+                        }}
+                    >
+                        <Stack/>
+                    </layoutContainer>
                 </layoutContainer>
             </layoutContainer>
-        </layoutContainer>
+        </TetrisGameProvider>
     )
 }
