@@ -28,6 +28,7 @@ export function GameField({ vertica, horizontal, cellSize }: TProps) {
     const drawField = useCallback(
         (graphics: Graphics) => {
             graphics.clear()
+            // don't forget disable it during animation
             graphics.roundPixels = true
 
             for (let row = 0; row < board.length; row++) {
