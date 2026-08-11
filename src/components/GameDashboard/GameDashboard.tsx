@@ -1,4 +1,5 @@
-import { NextTetrominoes } from "@components/GameDashboard/NextTetrominoes.tsx";
+import { NextTetrominoes } from '@components/GameDashboard/NextTetrominoes.tsx'
+import { Panel } from '@components/ui/Panel.tsx'
 
 export const GameDashboard = function () {
     return (
@@ -11,28 +12,13 @@ export const GameDashboard = function () {
                 height: '80',
             }}
         >
-            <layoutContainer
-                layout={{
-                    width: '25%',
-                    backgroundColor: 'white',
-                }}
-            />
+            <Panel title="Рядов" layout={{ width: '25%', height: '100%' }} />
 
-            <layoutContainer
-                layout={{
-                    width: '50%',
-                    backgroundColor: 'white',
-                }}
-            />
+            <Panel title="Счёт" layout={{ width: '50%', height: '100%' }} />
 
-            <layoutContainer
-                layout={{
-                    width: '25%',
-                    backgroundColor: 'white',
-                }}
-            >
+            <Panel title="Далее" layout={{ width: '25%', height: '100%' }}>
                 <NextTetrominoes />
-            </layoutContainer>
+            </Panel>
         </layoutContainer>
     )
 }

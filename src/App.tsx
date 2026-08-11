@@ -1,8 +1,8 @@
 import '@pixi/layout'
 import '@pixi/layout/react'
 import { Application, extend } from '@pixi/react'
-import { Container, Graphics, Sprite } from 'pixi.js'
-import { LayoutContainer } from '@pixi/layout/components'
+import { Container, Graphics, Sprite, Text } from 'pixi.js'
+import { LayoutContainer, LayoutText } from '@pixi/layout/components'
 import { Game } from './Game'
 import { ThemeProvider } from '@src/ui/ThemeContext'
 
@@ -10,7 +10,9 @@ extend({
     Container,
     Graphics,
     Sprite,
+    Text,
     LayoutContainer,
+    LayoutText,
 })
 
 export function App() {

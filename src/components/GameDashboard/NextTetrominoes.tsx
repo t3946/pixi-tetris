@@ -4,8 +4,8 @@ import { useTetrisGameState } from '@src/tetris/TetrisGameContext'
 import { getShapeLocalCells } from '@src/tetris/tetrominoes'
 
 const CELL_PADDING = 1
-/** Высота панели дашборда (см. GameDashboard) — превью центрируем в этом квадрате */
-const PREVIEW_BOX = 80
+/** Область контента панели (высота дашборда минус полоска заголовка) */
+const PREVIEW_BOX = 56
 
 export const NextTetrominoes = () => {
     const { nextType } = useTetrisGameState()

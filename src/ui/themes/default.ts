@@ -26,9 +26,10 @@ export const theme = {
     UI: {
         BUTTON_FILL_TOP: palette.purple_700,
         BUTTON_FILL_BOTTOM: palette.purple_950,
-        BUTTON_BORDER: palette.white,
         ACCENT: palette.purple_300,
         ICON: palette.purple_100,
+        PANEL_FILL: palette.purple_950,
+        PANEL_LABEL: palette.white,
     }
 } as const
 
