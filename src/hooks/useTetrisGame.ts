@@ -247,5 +247,11 @@ export function useTetrisGame(rows: number, cols: number) {
     }, [cols, dispatch, rows])
 
     // Компонент GameField получает state и перерисовывает поле при каждом изменении
-    return state
+    const togglePauseGame = useCallback(() => {
+        dispatch({ type: EAction.Pause })
+        dropAccumulatorRef.current = 0
+        softDropRef.current = false
+    }, [dispatch])
+
+    return { state, togglePause: togglePauseGame }
 }

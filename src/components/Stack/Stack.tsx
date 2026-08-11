@@ -2,11 +2,14 @@ import { useRef, useState, useEffect } from 'react'
 import { Background } from '@components/Stack/Background.tsx'
 import { Grid } from '@components/Grid/Grid.tsx'
 import { ButtonCircle } from '@components/ui/ButtonCircle.tsx'
+import { useTogglePause, useTetrisGameState } from '@src/tetris/TetrisGameContext'
 import debounce from 'lodash/debounce'
 
 export const Stack = () => {
     const parentRef = useRef<any>(null)
     const [parentSize, setParentSize] = useState({ width: 0, height: 0 })
+    const togglePause = useTogglePause()
+    const { paused } = useTetrisGameState()
 
     useEffect(() => {
         if (parentRef.current) {
@@ -57,8 +60,9 @@ export const Stack = () => {
                     size={40}
                     x={16}
                     y={16}
-                    alpha={0.25}
+                    alpha={paused ? 1 : 0.25}
                     hoverAlpha={1}
+                    onPress={togglePause}
                 />
             </pixiContainer>
         </layoutContainer>

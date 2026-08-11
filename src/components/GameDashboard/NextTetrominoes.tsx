@@ -47,5 +47,14 @@ export const NextTetrominoes = () => {
         [nextType],
     )
 
-    return <pixiGraphics draw={drawPreview} />
+    return (
+        <layoutContainer
+            layout={{
+                width: PREVIEW_BOX,
+                height: PREVIEW_BOX,
+            }}
+        >
+            <pixiGraphics draw={drawPreview} />
+        </layoutContainer>
+    )
 }
