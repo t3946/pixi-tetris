@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Application, isMobile } from 'pixi.js'
 import { useApplication } from '@pixi/react'
 import { Stack } from "@components/Stack/Stack.tsx";
+import { GameDashboard } from "@components/GameDashboard/GameDashboard.tsx";
 
 const STATIC_RESOLUTION = { w: 9, h: 19.5 }
 
@@ -64,13 +65,24 @@ export function Game() {
                     backgroundColor: 'black',
                 }}
             >
+                {/*offset*/}
                 <layoutContainer
                     layout={{
                         width: '100%',
-                        height: '3%',
+                        height: '5%',
                         flexShrink: 0,
                     }}
                 />
+
+                <layoutContainer
+                    layout={{
+                        width: '100%',
+                        flexShrink: 0,
+                        marginBottom: '15'
+                    }}
+                >
+                    <GameDashboard />
+                </layoutContainer>
 
                 <layoutContainer
                     layout={{
