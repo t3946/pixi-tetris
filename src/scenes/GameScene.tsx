@@ -1,52 +1,13 @@
-import { useEffect, useState } from 'react'
-import { Application, isMobile } from 'pixi.js'
-import { useApplication } from '@pixi/react'
-import { Stack } from "@components/Stack/Stack.tsx";
-import { GameDashboard } from "@components/GameDashboard/GameDashboard.tsx";
-import { TetrisGameProvider } from './tetris/TetrisGameContext'
-import { Background } from "@components/Stack/Background.tsx";
+import { Stack } from '@components/Stack/Stack.tsx'
+import { GameDashboard } from '@components/GameDashboard/GameDashboard.tsx'
+import { TetrisGameProvider } from '@src/tetris/TetrisGameContext'
+import { Background } from '@components/Stack/Background.tsx'
+import { useAppLayout } from '@src/scenes/useAppLayout'
 
-const STATIC_RESOLUTION = { w: 9, h: 19.5 }
+export function GameScene() {
+    const { screenSize, mainSize, ready } = useAppLayout()
 
-function computeMainSize(app: Application) {
-    const height = app.canvas.height
-    let width: number
-
-    if (isMobile.phone) {
-        width = app.canvas.width
-    } else {
-        const { w, h } = STATIC_RESOLUTION
-        width = height * (w / h)
-    }
-
-    return { width, height }
-}
-
-export function Game() {
-    const { app, isInitialised } = useApplication()
-    const [screenSize, setScreenSize] = useState({ width: 0, height: 0 })
-    const [mainSize, setMainSize] = useState({ width: 0, height: 0 })
-
-    useEffect(() => {
-        if (!isInitialised) return
-
-        const adoptMainContainerSize = () => {
-            setScreenSize({
-                width: app.screen.width,
-                height: app.screen.height,
-            })
-            setMainSize(computeMainSize(app))
-        }
-
-        adoptMainContainerSize()
-        app.renderer.on('resize', adoptMainContainerSize)
-
-        return () => {
-            app.renderer.off('resize', adoptMainContainerSize)
-        }
-    }, [app, isInitialised])
-
-    if (!isInitialised || mainSize.width === 0 || mainSize.height === 0) {
+    if (!ready) {
         return null
     }
 
@@ -69,7 +30,7 @@ export function Game() {
                     }}
                 >
                     {/*game background*/}
-                    <Background width={mainSize.width} height={mainSize.height}/>
+                    <Background width={mainSize.width} height={mainSize.height} />
 
                     {/*offset*/}
                     <layoutContainer
@@ -89,7 +50,7 @@ export function Game() {
                             backgroundColor: 'black',
                         }}
                     >
-                        <GameDashboard/>
+                        <GameDashboard />
                     </layoutContainer>
 
                     <layoutContainer
@@ -101,7 +62,7 @@ export function Game() {
                             paddingEnd: '7%',
                         }}
                     >
-                        <Stack/>
+                        <Stack />
                     </layoutContainer>
                 </layoutContainer>
             </layoutContainer>
