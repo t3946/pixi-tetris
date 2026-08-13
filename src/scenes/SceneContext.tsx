@@ -3,6 +3,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 export enum SceneId {
     MainMenu = 'mainMenu',
     Game = 'game',
+    Dev = 'dev',
 }
 
 type SceneContextValue = {

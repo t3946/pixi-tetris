@@ -7,6 +7,7 @@ import { ThemeProvider } from '@src/ui/ThemeContext'
 import { SceneId, SceneProvider, useScene } from '@src/scenes/SceneContext'
 import { MainMenuScene } from '@src/scenes/MainMenuScene'
 import { GameScene } from '@src/scenes/GameScene'
+import { DevScene } from '@src/scenes/DevScene'
 
 extend({
     Container,
@@ -25,6 +26,8 @@ function Scenes() {
             return <MainMenuScene />
         case SceneId.Game:
             return <GameScene />
+        case SceneId.Dev:
+            return <DevScene />
     }
 }
 

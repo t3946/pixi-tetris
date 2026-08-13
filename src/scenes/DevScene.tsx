@@ -3,7 +3,7 @@ import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useAppLayout } from '@src/scenes/useAppLayout'
 import { MenuButton } from '@components/ui/MenuButton'
 
-export function MainMenuScene() {
+export function DevScene() {
     const { screenSize, mainSize, ready } = useAppLayout()
     const { setScene } = useScene()
     const theme = useTheme()
@@ -33,9 +33,9 @@ export function MainMenuScene() {
                 }}
             >
                 <layoutText
-                    text="Тетрис"
+                    text="Разработка"
                     style={{
-                        fontSize: 48,
+                        fontSize: 36,
                         fill: theme.TEXT_COLOR,
                         fontWeight: 'bold',
                         align: 'center',
@@ -47,8 +47,8 @@ export function MainMenuScene() {
                     }}
                 />
 
-                <MenuButton label="Играть" onPress={() => setScene(SceneId.Game)} />
-                <MenuButton label="Разработка" onPress={() => setScene(SceneId.Dev)} />
+                <MenuButton label="Эффект: Ряд" onPress={() => {}} />
+                <MenuButton label="Назад" onPress={() => setScene(SceneId.MainMenu)} />
             </layoutContainer>
         </layoutContainer>
     )
