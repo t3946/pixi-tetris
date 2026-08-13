@@ -13,8 +13,9 @@ export const theme = {
 
     // Borders / strokes
     BORDER_COLOR: palette.white,
-    GRID_LINE_COLOR: palette.gray_500,
-    GRID_FILL_COLOR: palette.gray_800,
+    // Индиго/сланец — ближе к фиолетовым панелям и синему фону, чем нейтральный серый
+    GRID_LINE_COLOR: palette.slate_400,
+    GRID_FILL_COLOR: palette.purple_950,
 
     // Text / icons
     TEXT_COLOR: palette.white,
