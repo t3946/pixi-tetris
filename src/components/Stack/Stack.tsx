@@ -52,7 +52,6 @@ export const Stack = () => {
             ref={parentRef}
         >
             <pixiContainer>
-                <Background width={parentSize.width} height={parentSize.height}/>
                 <Grid width={parentSize.width} height={parentSize.height}/>
 
                 <ButtonCircle

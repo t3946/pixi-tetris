@@ -4,6 +4,8 @@ import { useApplication } from '@pixi/react'
 import { Stack } from "@components/Stack/Stack.tsx";
 import { GameDashboard } from "@components/GameDashboard/GameDashboard.tsx";
 import { TetrisGameProvider } from './tetris/TetrisGameContext'
+import { Grid } from "@components/Grid/Grid.tsx";
+import { Background } from "@components/Stack/Background.tsx";
 
 const STATIC_RESOLUTION = { w: 9, h: 19.5 }
 
@@ -67,12 +69,16 @@ export function Game() {
                         backgroundColor: 'black',
                     }}
                 >
+                    {/*game background*/}
+                    <Background width={mainSize.width} height={mainSize.height}/>
+
                     {/*offset*/}
                     <layoutContainer
                         layout={{
                             width: '100%',
                             height: '5%',
                             flexShrink: 0,
+                            backgroundColor: 'black',
                         }}
                     />
 
@@ -80,7 +86,8 @@ export function Game() {
                         layout={{
                             width: '100%',
                             flexShrink: 0,
-                            marginBottom: '15'
+                            paddingBottom: '15',
+                            backgroundColor: 'black',
                         }}
                     >
                         <GameDashboard/>
