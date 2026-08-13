@@ -90,13 +90,16 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord)
     vec3 color = bg(uv) * (2. - abs(uv.y * 2.));
 
     //rectangles
+    // Spawn/despawn outside ±aspect so squares don't pop in mid-frame.
+    float aspect = iResolution.x / iResolution.y;
+    float xRange = aspect + maxSize + minSize;
     float velX = -iTime / 8.;
     float velY = iTime / 10.;
     for (float i = 0.; i < total; i++){
         float index = i / total;
         float rnd = random(vec2(index));
         vec3 pos = vec3(0, 0., 0.);
-        pos.x = fract(velX * rnd + index) * 4. - 2.0;
+        pos.x = fract(velX * rnd + index) * (xRange * 2.0) - xRange;
         pos.y = sin(index * rnd * 1000. + velY) * yDistribution;
         pos.z = maxSize * rnd + minSize;
         vec2 uvRot = uv - pos.xy + pos.z / 2.;

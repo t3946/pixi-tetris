@@ -94,13 +94,17 @@ vec4 mainImage(vec4 fragColor, vec2 fragCoord, vec3 iResolution)
     vec3 color = bg(uv) * (2. - abs(uv.y * 2.));
 
     //rectangles
+    // After 90° swap, screen vertical maps to uv.x with range ±aspect.
+    // Spawn/despawn must sit outside that range or squares pop in mid-frame.
+    float aspect = iResolution.x / iResolution.y;
+    float xRange = aspect + maxSize + minSize;
     float velX = -t / 8.;
     float velY = t / 10.;
     for (float i = 0.; i < total; i++){
         float index = i / total;
         float rnd = random(vec2(index));
         vec3 pos = vec3(0, 0., 0.);
-        pos.x = fract(velX * rnd + index) * 4. - 2.0;
+        pos.x = fract(velX * rnd + index) * (xRange * 2.0) - xRange;
         pos.y = sin(index * rnd * 1000. + velY) * yDistribution;
         pos.z = maxSize * rnd + minSize;
         vec2 uvRot = uv - pos.xy + pos.z / 2.;
