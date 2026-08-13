@@ -4,6 +4,7 @@ export enum SceneId {
     MainMenu = 'mainMenu',
     Game = 'game',
     Dev = 'dev',
+    RowEffect = 'rowEffect',
 }
 
 type SceneContextValue = {

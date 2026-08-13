@@ -47,7 +47,7 @@ export function DevScene() {
                     }}
                 />
 
-                <MenuButton label="Эффект: Ряд" onPress={() => {}} />
+                <MenuButton label="Эффект: Ряд" onPress={() => setScene(SceneId.RowEffect)} />
                 <MenuButton label="Назад" onPress={() => setScene(SceneId.MainMenu)} />
             </layoutContainer>
         </layoutContainer>

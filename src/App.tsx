@@ -8,6 +8,7 @@ import { SceneId, SceneProvider, useScene } from '@src/scenes/SceneContext'
 import { MainMenuScene } from '@src/scenes/MainMenuScene'
 import { GameScene } from '@src/scenes/GameScene'
 import { DevScene } from '@src/scenes/DevScene'
+import { RowEffectScene } from '@src/scenes/RowEffectScene'
 
 extend({
     Container,
@@ -28,6 +29,8 @@ function Scenes() {
             return <GameScene />
         case SceneId.Dev:
             return <DevScene />
+        case SceneId.RowEffect:
+            return <RowEffectScene />
     }
 }
 

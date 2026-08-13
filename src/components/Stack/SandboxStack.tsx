@@ -1,16 +1,22 @@
 import { useRef, useState, useEffect } from 'react'
 import { Grid } from '@components/Grid/Grid.tsx'
-import { GameField } from '@components/GameField.tsx'
-import { ButtonCircle } from '@components/ui/ButtonCircle.tsx'
-import { useTogglePause, useTetrisGameState } from '@src/tetris/TetrisGameContext'
-import { BOARD_COLS, BOARD_ROWS } from '@src/tetris/constants'
+import { SandboxField } from '@components/Stack/SandboxField'
 import debounce from 'lodash/debounce'
 
-export const Stack = () => {
+const FIELD_BORDER = 3
+
+type Board = number[][]
+
+type TProps = {
+    cols: number
+    rows: number
+    board: Board
+}
+
+/** Стакан-песочница без игровой логики — сетка + статичное поле. */
+export function SandboxStack({ cols, rows, board }: TProps) {
     const parentRef = useRef<any>(null)
     const [parentSize, setParentSize] = useState({ width: 0, height: 0 })
-    const togglePause = useTogglePause()
-    const { paused } = useTetrisGameState()
 
     useEffect(() => {
         if (parentRef.current) {
@@ -43,35 +49,27 @@ export const Stack = () => {
         }
     }, [])
 
-    const cellSize = Math.max(0, parentSize.width - 6) / BOARD_COLS
+    const cellSize = Math.max(0, parentSize.width - FIELD_BORDER * 2) / cols
 
     return (
         <layoutContainer
             layout={{
                 width: '100%',
+                height: '100%',
+                justifyContent: 'center',
+                alignItems: 'center',
                 overflow: 'hidden',
             }}
             ref={parentRef}
         >
-            <pixiContainer>
-                <Grid width={parentSize.width} height={parentSize.height}>
-                    <GameField
-                        vertica={BOARD_ROWS}
-                        horizontal={BOARD_COLS}
-                        cellSize={cellSize}
-                    />
-                </Grid>
-
-                <ButtonCircle
-                    icon="pause"
-                    size={40}
-                    x={16}
-                    y={16}
-                    alpha={paused ? 1 : 0.25}
-                    hoverAlpha={1}
-                    onPress={togglePause}
-                />
-            </pixiContainer>
+            <Grid
+                width={parentSize.width}
+                height={parentSize.height}
+                cols={cols}
+                rows={rows}
+            >
+                <SandboxField board={board} cellSize={cellSize} />
+            </Grid>
         </layoutContainer>
     )
 }
