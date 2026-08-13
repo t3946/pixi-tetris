@@ -10,7 +10,7 @@ export function Background({width, height}: {width: number, height: number}) {
     const onTick = useCallback(
         (ticker: Ticker) => {
             filterShadingInOut.resources.timeUniforms.uniforms.uTime += 0.04 * ticker.deltaTime
-            bgFilter.resources.timeUniforms.uniforms.uTime += 0.02 * ticker.deltaTime
+            bgFilter.resources.timeUniforms.uniforms.uTime += 0.015 * ticker.deltaTime
         },
         [bgFilter],
     )

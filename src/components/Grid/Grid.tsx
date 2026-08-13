@@ -1,8 +1,5 @@
-import { useCallback, useMemo } from 'react'
-import { Filter, Graphics, Texture, Ticker } from 'pixi.js'
-import { useTick } from '@pixi/react'
-import { filterShadingInOut } from '@shaders/linear-black-in-out/filter-shading-in-out'
-import { filterBgBlue } from '@shaders/bg-blue/bg-blue.filter.js'
+import { useCallback } from 'react'
+import { Graphics } from 'pixi.js'
 import { GameField } from '@components/GameField.tsx'
 import { BOARD_COLS, BOARD_ROWS } from '@src/tetris/constants'
 import { useTheme } from '@src/ui/ThemeContext.tsx'
@@ -18,21 +15,6 @@ export function Grid({ width }: { width: number; height: number }) {
     const cellSize = innerWidth / BOARD_COLS
     const innerHeight = cellSize * BOARD_ROWS
     const outerHeight = innerHeight + FIELD_BORDER * 2
-
-    const bgFilter = useMemo(
-        () => filterBgBlue(innerWidth, innerHeight) as Filter,
-        [innerHeight, innerWidth],
-    )
-
-    const onTick = useCallback(
-        (ticker: Ticker) => {
-            filterShadingInOut.resources.timeUniforms.uniforms.uTime += 0.04 * ticker.deltaTime
-            bgFilter.resources.timeUniforms.uniforms.uTime += 0.02 * ticker.deltaTime
-        },
-        [bgFilter],
-    )
-
-    useTick(onTick)
 
     const drawGrid = useCallback(
         (graphics: Graphics) => {
@@ -61,8 +43,8 @@ export function Grid({ width }: { width: number; height: number }) {
             layout={{
                 width,
                 height: outerHeight,
-                padding: FIELD_BORDER,
-                backgroundColor: theme.UI.BUTTON_FILL_TOP,
+                borderWidth: FIELD_BORDER,
+                borderColor: theme.UI.BUTTON_FILL_TOP,
                 borderRadius: FIELD_RADIUS,
                 overflow: 'hidden',
             }}
@@ -75,13 +57,6 @@ export function Grid({ width }: { width: number; height: number }) {
                 }}
             >
                 <pixiContainer>
-                    <pixiSprite
-                        texture={Texture.WHITE}
-                        width={innerWidth}
-                        height={innerHeight}
-                        filters={[bgFilter]}
-                    />
-
                     <pixiGraphics draw={drawGrid} />
 
                     <GameField

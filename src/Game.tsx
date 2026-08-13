@@ -4,7 +4,6 @@ import { useApplication } from '@pixi/react'
 import { Stack } from "@components/Stack/Stack.tsx";
 import { GameDashboard } from "@components/GameDashboard/GameDashboard.tsx";
 import { TetrisGameProvider } from './tetris/TetrisGameContext'
-import { Grid } from "@components/Grid/Grid.tsx";
 import { Background } from "@components/Stack/Background.tsx";
 
 const STATIC_RESOLUTION = { w: 9, h: 19.5 }
