@@ -20,8 +20,16 @@ import {
     rotate,
     tick,
     togglePause,
+    type Board,
     type GameState,
 } from '@src/tetris/engine'
+import {
+    BaseClearIterator,
+    ClearIterator,
+    ClearEffect,
+    BaseClearEffect,
+    type ClearApi,
+} from '@src/tetris/clear'
 
 /** Обычная скорость падения: фигура смещается вниз раз в 600 мс */
 const DROP_INTERVAL_MS = 600
@@ -39,6 +47,7 @@ const SOFT_DROP_INTERVAL_MS = 50
  * - Rotate — поворот фигуры (↑)
  * - Pause — пауза / снятие паузы (P)
  * - Restart — перезапуск игры (R)
+ * - SetBoard — прямая подмена поля (очистка линии через ClearIterator/ClearEffect)
  */
 enum EAction {
     Tick = 'TICK',
@@ -48,6 +57,7 @@ enum EAction {
     Rotate = 'ROTATE',
     Pause = 'PAUSE',
     Restart = 'RESTART',
+    SetBoard = 'SET_BOARD',
 }
 
 /**
@@ -67,6 +77,7 @@ type Action =
     | { type: EAction.Rotate }
     | { type: EAction.Pause }
     | { type: EAction.Restart; rows: number; cols: number }
+    | { type: EAction.SetBoard; board: Board }
 
 /**
  * Reducer — чистая функция (state + action) → newState.
@@ -96,9 +107,19 @@ function gameReducer(state: GameState, action: Action, cols: number): GameState 
             return togglePause(state)
         case EAction.Restart:
             return restart(action.rows, action.cols)
+        case EAction.SetBoard:
+            return { ...state, board: action.board }
         default:
             return state
     }
+}
+
+/** Удаляет пустой ряд `line` и добавляет пустой сверху (блоки «падают»). */
+function removeLine(board: Board, line: number): Board {
+    const cols = board[0]?.length ?? 0
+    const next = board.filter((_, index) => index !== line)
+    next.unshift(Array(cols).fill(0))
+    return next
 }
 
 /**
@@ -150,6 +171,53 @@ export function useTetrisGame(rows: number, cols: number) {
      */
     const dropAccumulatorRef = useRef(0) // сколько миллисекунд прошло с последнего падения
     const softDropRef = useRef(false) // true, пока зажата стрелка ↓
+    /** Актуальный state для clearLine (без устаревшего замыкания). */
+    const stateRef = useRef(state)
+    stateRef.current = state
+
+    /**
+     * Очищает один ряд через итератор мономино и эффект удаления.
+     * По умолчанию: BaseClearIterator + DefaultClearEffect (мгновенно, как раньше).
+     */
+    const clearLine = useCallback(
+        async (
+            line: number,
+            iterator: ClearIterator = new BaseClearIterator(),
+            effect: ClearEffect = new BaseClearEffect(),
+        ) => {
+            const workingBoard = stateRef.current.board.map((row) => [...row])
+
+            if (line < 0 || line >= workingBoard.length) {
+                return
+            }
+
+            const commitBoard = (board: Board) => {
+                dispatch({ type: EAction.SetBoard, board: board.map((row) => [...row]) })
+            }
+
+            const api: ClearApi = {
+                getBoard: () => workingBoard,
+                clearCell: (x, y) => {
+                    if (y < 0 || y >= workingBoard.length) {
+                        return
+                    }
+
+                    const row = workingBoard[y]
+                    if (x < 0 || x >= row.length) {
+                        return
+                    }
+
+                    workingBoard[y] = [...row]
+                    workingBoard[y][x] = 0
+                    commitBoard(workingBoard)
+                },
+            }
+
+            await iterator.iterate(line, workingBoard, effect, api)
+            commitBoard(removeLine(workingBoard, line))
+        },
+        [dispatch],
+    )
 
     /**
      * useTick — хук из @pixi/react, колбэк вызывается каждый кадр Pixi (~60 fps).
@@ -253,5 +321,5 @@ export function useTetrisGame(rows: number, cols: number) {
         softDropRef.current = false
     }, [dispatch])
 
-    return { state, togglePause: togglePauseGame }
+    return { state, togglePause: togglePauseGame, clearLine }
 }
