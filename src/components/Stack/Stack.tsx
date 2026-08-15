@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
-import { Grid } from '@components/Grid/Grid.tsx'
+import { Grid, computeCellSize } from '@components/Grid/Grid.tsx'
 import { GameField } from '@components/GameField.tsx'
 import { ButtonCircle } from '@components/ui/ButtonCircle.tsx'
 import { useTogglePause, useTetrisGameState } from '@src/tetris/TetrisGameContext'
@@ -43,7 +43,7 @@ export const Stack = () => {
         }
     }, [])
 
-    const cellSize = Math.max(0, parentSize.width - 6) / BOARD_COLS
+    const cellSize = computeCellSize(parentSize.width, BOARD_COLS)
 
     return (
         <layoutContainer

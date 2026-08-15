@@ -3,9 +3,14 @@ import { Graphics } from 'pixi.js'
 import { BOARD_COLS, BOARD_ROWS } from '@src/tetris/constants'
 import { useTheme } from '@src/ui/ThemeContext.tsx'
 
-const GRID_ALPHA = 0.5
-const FIELD_BORDER = 3
+const GRID_ALPHA = 0.3
+export const FIELD_BORDER = 3
 const FIELD_RADIUS = 4
+
+/** Целый размер клетки — иначе мономино и линии сетки «пляшут» на ±1px. */
+export function computeCellSize(fieldWidth: number, cols: number): number {
+    return Math.floor(Math.max(0, fieldWidth - FIELD_BORDER * 2) / cols)
+}
 
 type TProps = {
     width: number
@@ -23,39 +28,39 @@ export function Grid({
 }: TProps) {
     const theme = useTheme()
 
-    const innerWidth = Math.max(0, width - FIELD_BORDER * 2)
-    const cellSize = innerWidth / cols
-    const innerHeight = cellSize * rows
-    const outerHeight = innerHeight + FIELD_BORDER * 2
+    const cellSize = computeCellSize(width, cols)
+    const gridWidth = cellSize * cols
+    const gridHeight = cellSize * rows
+    const outerHeight = gridHeight + FIELD_BORDER * 2
 
     const drawGrid = useCallback(
         (graphics: Graphics) => {
             graphics.clear()
 
             graphics
-                .rect(0, 0, innerWidth, innerHeight)
+                .rect(0, 0, gridWidth, gridHeight)
                 .fill({ color: theme.GRID_FILL_COLOR, alpha: GRID_ALPHA })
 
             // Крайние линии (i/j = 0 и последняя) не рисуем — их заменяет рамка поля
             for (let i = 1; i < cols; i++) {
                 const x = i * cellSize
-                graphics.moveTo(x, 0).lineTo(x, innerHeight)
+                graphics.moveTo(x, 0).lineTo(x, gridHeight)
             }
 
             for (let j = 1; j < rows; j++) {
                 const y = j * cellSize
-                graphics.moveTo(0, y).lineTo(innerWidth, y)
+                graphics.moveTo(0, y).lineTo(gridWidth, y)
             }
 
             graphics.stroke({ color: theme.GRID_LINE_COLOR, width: 1, alpha: GRID_ALPHA })
         },
-        [cellSize, cols, innerHeight, innerWidth, rows, theme.GRID_FILL_COLOR, theme.GRID_LINE_COLOR],
+        [cellSize, cols, gridHeight, gridWidth, theme.GRID_FILL_COLOR, theme.GRID_LINE_COLOR],
     )
 
     return (
         <layoutContainer
             layout={{
-                width,
+                width: gridWidth + FIELD_BORDER * 2,
                 height: outerHeight,
                 borderWidth: FIELD_BORDER,
                 borderColor: theme.UI.BUTTON_FILL_TOP,

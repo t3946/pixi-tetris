@@ -1,9 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
-import { Grid } from '@components/Grid/Grid.tsx'
+import { Grid, computeCellSize } from '@components/Grid/Grid.tsx'
 import { SandboxField } from '@components/Stack/SandboxField'
 import debounce from 'lodash/debounce'
-
-const FIELD_BORDER = 3
 
 type Board = number[][]
 
@@ -49,7 +47,7 @@ export function SandboxStack({ cols, rows, board }: TProps) {
         }
     }, [])
 
-    const cellSize = Math.max(0, parentSize.width - FIELD_BORDER * 2) / cols
+    const cellSize = computeCellSize(parentSize.width, cols)
 
     return (
         <layoutContainer
