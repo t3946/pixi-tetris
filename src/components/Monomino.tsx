@@ -4,6 +4,7 @@ import {
     registerMonominoView,
     unregisterMonominoView,
 } from '@src/tetris/clear/monominoViewRegistry'
+import { playShatterAnimation } from '@src/tetris/clear/playShatterAnimation'
 
 const CELL_PADDING = 1
 
@@ -22,7 +23,7 @@ export function Monomino({ col, row, color, cellSize, alpha = 1 }: TProps) {
     const spriteRef = useRef<Sprite>(null)
     const step = Math.round(cellSize)
     const size = Math.max(0, step - CELL_PADDING * 2)
-    // Центр клетки (anchor 0.5) — чтобы shrink шёл к середине, а не в угол.
+    // Центр клетки (anchor 0.5) — чтобы shrink/pop/shatter шли из середины.
     const centerX = Math.round(col * step) + CELL_PADDING + size / 2
     const centerY = Math.round(row * step) + CELL_PADDING + size / 2
 
@@ -31,6 +32,14 @@ export function Monomino({ col, row, color, cellSize, alpha = 1 }: TProps) {
         if (!sprite) {
             return
         }
+
+        // После схлопывания ряда React/Pixi может переиспользовать инстанс с тем же key
+        // row-col — сбрасываем визуал, иначе залипает alpha=0 от shatter.
+        sprite.visible = true
+        sprite.alpha = alpha
+        sprite.tint = color
+        sprite.width = size
+        sprite.height = size
 
         const baseScaleX = sprite.scale.x
         const baseScaleY = sprite.scale.y
@@ -53,12 +62,13 @@ export function Monomino({ col, row, color, cellSize, alpha = 1 }: TProps) {
                 }
                 return sprite.scale.x / baseScaleX
             },
+            shatter: () => playShatterAnimation(sprite, step),
         })
 
         return () => {
             unregisterMonominoView(col, row)
         }
-    }, [col, row])
+    }, [alpha, col, color, row, size, step])
 
     return (
         <pixiSprite

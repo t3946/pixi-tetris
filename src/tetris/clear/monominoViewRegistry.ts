@@ -6,6 +6,11 @@ export type MonominoView = {
     /** Относительный scale: 1 = полный размер, 0 = точка. */
     setScale: (scale: number) => void
     getScale: () => number
+    /**
+     * Прячет исходный спрайт и запускает анимацию осколков.
+     * Резолвится, когда осколки доиграли и уничтожены.
+     */
+    shatter: () => Promise<void>
 }
 
 function viewKey(x: number, y: number): string {

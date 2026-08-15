@@ -22,7 +22,7 @@ export function GameField({ vertica, horizontal, cellSize }: TProps) {
             if (color !== 0) {
                 boardMonominoes.push(
                     <Monomino
-                        key={`board-${row}-${col}`}
+                        key={`board-${row}-${col}-${color}`}
                         col={col}
                         row={row}
                         color={color}

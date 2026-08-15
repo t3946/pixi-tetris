@@ -19,7 +19,9 @@ export function SandboxField({ board, cellSize }: TProps) {
             if (color !== 0) {
                 monominoes.push(
                     <Monomino
-                        key={`sandbox-${row}-${col}`}
+                        // color в key: после removeLine в ту же клетку падает другой блок —
+                        // без этого Pixi может reuse'ить спрайт с alpha=0 от shatter.
+                        key={`sandbox-${row}-${col}-${color}`}
                         col={col}
                         row={row}
                         color={color}
