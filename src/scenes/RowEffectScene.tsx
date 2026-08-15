@@ -76,7 +76,7 @@ export function RowEffectScene() {
                     continue
                 }
 
-                // effect по умолчанию — ShatterClearEffect
+                // effect по умолчанию — PixelRainClearEffect
                 await clearLine(line, iterator)
                 board = removeLineLocal(board, line)
                 // Индекс не уменьшаем — на место сгоревшего ряда упал верхний.

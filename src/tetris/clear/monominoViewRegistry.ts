@@ -11,6 +11,8 @@ export type MonominoView = {
      * Резолвится, когда осколки доиграли и уничтожены.
      */
     shatter: () => Promise<void>
+    /** Пиксельный дождь: мелкие квадраты падают вниз с разной скоростью. */
+    pixelRain: () => Promise<void>
 }
 
 function viewKey(x: number, y: number): string {

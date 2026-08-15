@@ -5,6 +5,7 @@ import {
     unregisterMonominoView,
 } from '@src/tetris/clear/monominoViewRegistry'
 import { playShatterAnimation } from '@src/tetris/clear/playShatterAnimation'
+import { playPixelRainAnimation } from '@src/tetris/clear/playPixelRainAnimation'
 
 const CELL_PADDING = 1
 
@@ -63,6 +64,7 @@ export function Monomino({ col, row, color, cellSize, alpha = 1 }: TProps) {
                 return sprite.scale.x / baseScaleX
             },
             shatter: () => playShatterAnimation(sprite, step),
+            pixelRain: () => playPixelRainAnimation(sprite, step),
         })
 
         return () => {
