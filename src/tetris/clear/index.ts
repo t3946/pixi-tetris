@@ -3,3 +3,5 @@ export { ClearEffect } from '@src/tetris/clear/ClearEffect'
 export { BaseClearEffect } from '@src/tetris/clear/BaseClearEffect.ts'
 export { ClearIterator } from '@src/tetris/clear/ClearIterator'
 export { BaseClearIterator } from '@src/tetris/clear/BaseClearIterator'
+export { SequentialClearIterator } from '@src/tetris/clear/SequentialClearIterator'
+

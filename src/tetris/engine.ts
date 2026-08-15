@@ -59,6 +59,19 @@ export function createInitialState(rows: number, cols: number): GameState {
     }
 }
 
+/** Статичное поле без активной фигуры (песочница эффектов). */
+export function createSandboxState(rows: number, cols: number): GameState {
+    return {
+        board: createEmptyBoard(rows, cols),
+        piece: null,
+        nextType: randomPieceType(),
+        gameOver: false,
+        paused: true,
+        linesCleared: 0,
+        score: 0,
+    }
+}
+
 /**
  * Берёт фигуру типа `type` как текущую и сразу готовит случайную следующую.
  * Если текущая не влезает на поле — piece = null (game over).

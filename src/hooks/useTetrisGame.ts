@@ -13,6 +13,7 @@ import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { useTick } from '@pixi/react'
 import {
     createInitialState,
+    createSandboxState,
     hardDrop,
     moveDown,
     moveHorizontal,
@@ -128,9 +129,14 @@ function removeLine(board: Board, line: number): Board {
  *
  * @param rows — число строк поля (vertica из GameField)
  * @param cols — число столбцов (horizontal из GameField)
+ * @param options.sandbox — песочница: пустое поле, без фигуры, на паузе
  * @returns текущее состояние игры; GameField читает его для отрисовки
  */
-export function useTetrisGame(rows: number, cols: number) {
+export function useTetrisGame(
+    rows: number,
+    cols: number,
+    options?: { sandbox?: boolean },
+) {
     /**
      * useReducer — альтернатива useState для сложного состояния.
      *
@@ -146,10 +152,12 @@ export function useTetrisGame(rows: number, cols: number) {
      * Зачем init-функция? Чтобы начальное состояние зависело от rows/cols
      * без лишней логики в теле компонента.
      */
+    const sandbox = options?.sandbox === true
+
     const [state, dispatchBase] = useReducer(
         (currentState: GameState, action: Action) => gameReducer(currentState, action, cols),
         null,
-        () => createInitialState(rows, cols),
+        () => (sandbox ? createSandboxState(rows, cols) : createInitialState(rows, cols)),
     )
 
     /**
@@ -177,7 +185,7 @@ export function useTetrisGame(rows: number, cols: number) {
 
     /**
      * Очищает один ряд через итератор мономино и эффект удаления.
-     * По умолчанию: BaseClearIterator + DefaultClearEffect (мгновенно, как раньше).
+     * По умолчанию: BaseClearIterator + BaseClearEffect (мгновенно, как раньше).
      */
     const clearLine = useCallback(
         async (
@@ -192,7 +200,10 @@ export function useTetrisGame(rows: number, cols: number) {
             }
 
             const commitBoard = (board: Board) => {
-                dispatch({ type: EAction.SetBoard, board: board.map((row) => [...row]) })
+                const next = board.map((row) => [...row])
+                dispatch({ type: EAction.SetBoard, board: next })
+                // Сразу обновляем ref — иначе следующий clearLine увидит старый board.
+                stateRef.current = { ...stateRef.current, board: next }
             }
 
             const api: ClearApi = {
@@ -215,6 +226,15 @@ export function useTetrisGame(rows: number, cols: number) {
 
             await iterator.iterate(line, workingBoard, effect, api)
             commitBoard(removeLine(workingBoard, line))
+        },
+        [dispatch],
+    )
+
+    const setBoard = useCallback(
+        (board: Board) => {
+            const next = board.map((row) => [...row])
+            dispatch({ type: EAction.SetBoard, board: next })
+            stateRef.current = { ...stateRef.current, board: next }
         },
         [dispatch],
     )
@@ -321,5 +341,5 @@ export function useTetrisGame(rows: number, cols: number) {
         softDropRef.current = false
     }, [dispatch])
 
-    return { state, togglePause: togglePauseGame, clearLine }
+    return { state, togglePause: togglePauseGame, clearLine, setBoard }
 }
