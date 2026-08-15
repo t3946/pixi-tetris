@@ -15,6 +15,8 @@ export type MonominoView = {
     pixelRain: () => Promise<void>
     /** Взрыв конфетти из центра клетки. */
     confetti: () => Promise<void>
+    /** Мелкие белые блёстки (после вспышки в SparkleClearEffect). */
+    sparkle: () => Promise<void>
 }
 
 function viewKey(x: number, y: number): string {

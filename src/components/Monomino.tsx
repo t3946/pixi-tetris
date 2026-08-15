@@ -7,6 +7,7 @@ import {
 import { playShatterAnimation } from '@src/tetris/clear/playShatterAnimation'
 import { playPixelRainAnimation } from '@src/tetris/clear/playPixelRainAnimation'
 import { playConfettiAnimation } from '@src/tetris/clear/playConfettiAnimation'
+import { playSparkleAnimation } from '@src/tetris/clear/playSparkleAnimation'
 
 const CELL_PADDING = 1
 
@@ -67,6 +68,7 @@ export function Monomino({ col, row, color, cellSize, alpha = 1 }: TProps) {
             shatter: () => playShatterAnimation(sprite, step),
             pixelRain: () => playPixelRainAnimation(sprite, step),
             confetti: () => playConfettiAnimation(sprite, step),
+            sparkle: () => playSparkleAnimation(sprite, step),
         })
 
         return () => {
