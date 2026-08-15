@@ -13,6 +13,8 @@ export type MonominoView = {
     shatter: () => Promise<void>
     /** Пиксельный дождь: мелкие квадраты падают вниз с разной скоростью. */
     pixelRain: () => Promise<void>
+    /** Взрыв конфетти из центра клетки. */
+    confetti: () => Promise<void>
 }
 
 function viewKey(x: number, y: number): string {

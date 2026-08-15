@@ -28,7 +28,7 @@ import {
     BaseClearIterator,
     ClearIterator,
     ClearEffect,
-    PixelRainClearEffect,
+    ConfettiClearEffect,
     getMonominoView,
     type ClearApi,
 } from '@src/tetris/clear'
@@ -186,13 +186,13 @@ export function useTetrisGame(
 
     /**
      * Очищает один ряд через итератор мономино и эффект удаления.
-     * По умолчанию: BaseClearIterator + PixelRainClearEffect.
+     * По умолчанию: BaseClearIterator + ConfettiClearEffect.
      */
     const clearLine = useCallback(
         async (
             line: number,
             iterator: ClearIterator = new BaseClearIterator(),
-            effect: ClearEffect = new PixelRainClearEffect(),
+            effect: ClearEffect = new ConfettiClearEffect(),
         ) => {
             const workingBoard = stateRef.current.board.map((row) => [...row])
 
