@@ -3,6 +3,9 @@ export type MonominoView = {
     setAlpha: (alpha: number) => void
     getTint: () => number
     getAlpha: () => number
+    /** Относительный scale: 1 = полный размер, 0 = точка. */
+    setScale: (scale: number) => void
+    getScale: () => number
 }
 
 function viewKey(x: number, y: number): string {

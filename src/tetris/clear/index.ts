@@ -8,6 +8,7 @@ export {
 export { ClearEffect } from '@src/tetris/clear/ClearEffect'
 export { BaseClearEffect } from '@src/tetris/clear/BaseClearEffect.ts'
 export { FlashFadeClearEffect } from '@src/tetris/clear/FlashFadeClearEffect'
+export { ShrinkClearEffect } from '@src/tetris/clear/ShrinkClearEffect'
 export { ClearIterator } from '@src/tetris/clear/ClearIterator'
 export { BaseClearIterator } from '@src/tetris/clear/BaseClearIterator'
 export { SequentialClearIterator } from '@src/tetris/clear/SequentialClearIterator'
