@@ -17,6 +17,8 @@ export type MonominoView = {
     confetti: () => Promise<void>
     /** Мелкие белые блёстки (после вспышки в SparkleClearEffect). */
     sparkle: () => Promise<void>
+    /** Горизонтальный разрез: две половинки падают вниз. */
+    samuraiCut: () => Promise<void>
 }
 
 function viewKey(x: number, y: number): string {

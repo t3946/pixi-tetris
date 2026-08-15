@@ -4,10 +4,11 @@ import {
     registerMonominoView,
     unregisterMonominoView,
 } from '@src/tetris/clear/monominoViewRegistry'
-import { playShatterAnimation } from '@src/tetris/clear/playShatterAnimation'
-import { playPixelRainAnimation } from '@src/tetris/clear/playPixelRainAnimation'
-import { playConfettiAnimation } from '@src/tetris/clear/playConfettiAnimation'
-import { playSparkleAnimation } from '@src/tetris/clear/playSparkleAnimation'
+import { playShatterAnimation } from '@src/tetris/clear/shatter/playShatterAnimation'
+import { playPixelRainAnimation } from '@src/tetris/clear/pixelRain/playPixelRainAnimation'
+import { playConfettiAnimation } from '@src/tetris/clear/confetti/playConfettiAnimation'
+import { playSparkleAnimation } from '@src/tetris/clear/sparkle/playSparkleAnimation'
+import { playSamuraiCutAnimation } from '@src/tetris/clear/samuraiCut/playSamuraiCutAnimation'
 
 const CELL_PADDING = 1
 
@@ -69,6 +70,7 @@ export function Monomino({ col, row, color, cellSize, alpha = 1 }: TProps) {
             pixelRain: () => playPixelRainAnimation(sprite, step),
             confetti: () => playConfettiAnimation(sprite, step),
             sparkle: () => playSparkleAnimation(sprite, step),
+            samuraiCut: () => playSamuraiCutAnimation(sprite, step),
         })
 
         return () => {
