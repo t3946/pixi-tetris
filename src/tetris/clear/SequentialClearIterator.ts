@@ -13,7 +13,7 @@ function wait(ms: number): Promise<void> {
 
 /**
  * Обходит мономино ряда слева направо с паузой между клетками
- * и применяет переданный эффект (для песочницы — BaseClearEffect).
+ * и применяет переданный эффект (по умолчанию — FlashFadeClearEffect).
  */
 export class SequentialClearIterator extends ClearIterator {
     constructor(private readonly intervalMs: number = DEFAULT_INTERVAL_MS) {

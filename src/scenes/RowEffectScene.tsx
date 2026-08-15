@@ -6,7 +6,7 @@ import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useAppLayout } from '@src/scenes/useAppLayout'
 import { useTetrisGame } from '@src/hooks/useTetrisGame'
 import { createEmptyBoard, type Board } from '@src/tetris/engine'
-import { BaseClearEffect, SequentialClearIterator } from '@src/tetris/clear'
+import { SequentialClearIterator } from '@src/tetris/clear'
 
 /** Песочница: стакан 10×4 для просмотра эффекта сгорания ряда. */
 const SANDBOX_COLS = 10
@@ -65,7 +65,6 @@ export function RowEffectScene() {
 
         try {
             const iterator = new SequentialClearIterator(20)
-            const effect = new BaseClearEffect()
 
             // Локальный снимок для выбора рядов; clearLine сам синхронизирует stateRef.
             let board = state.board.map((row) => [...row])
@@ -77,7 +76,8 @@ export function RowEffectScene() {
                     continue
                 }
 
-                await clearLine(line, iterator, effect)
+                // effect по умолчанию — FlashFadeClearEffect
+                await clearLine(line, iterator)
                 board = removeLineLocal(board, line)
                 // Индекс не уменьшаем — на место сгоревшего ряда упал верхний.
             }

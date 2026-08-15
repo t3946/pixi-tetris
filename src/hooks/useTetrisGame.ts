@@ -28,7 +28,8 @@ import {
     BaseClearIterator,
     ClearIterator,
     ClearEffect,
-    BaseClearEffect,
+    FlashFadeClearEffect,
+    getMonominoView,
     type ClearApi,
 } from '@src/tetris/clear'
 
@@ -185,13 +186,13 @@ export function useTetrisGame(
 
     /**
      * Очищает один ряд через итератор мономино и эффект удаления.
-     * По умолчанию: BaseClearIterator + BaseClearEffect (мгновенно, как раньше).
+     * По умолчанию: BaseClearIterator + FlashFadeClearEffect.
      */
     const clearLine = useCallback(
         async (
             line: number,
             iterator: ClearIterator = new BaseClearIterator(),
-            effect: ClearEffect = new BaseClearEffect(),
+            effect: ClearEffect = new FlashFadeClearEffect(),
         ) => {
             const workingBoard = stateRef.current.board.map((row) => [...row])
 
@@ -222,6 +223,7 @@ export function useTetrisGame(
                     workingBoard[y][x] = 0
                     commitBoard(workingBoard)
                 },
+                getView: (x, y) => getMonominoView(x, y),
             }
 
             await iterator.iterate(line, workingBoard, effect, api)
