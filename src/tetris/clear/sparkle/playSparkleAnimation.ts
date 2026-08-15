@@ -1,7 +1,8 @@
 import { Sprite, Texture, type Container } from 'pixi.js'
 
 const GRAVITY = 0.08
-const LIFE_MS = 480
+/** Длительность разлёта блёсток (после вспышки). */
+export const SPARKLE_PARTICLE_MS = 480
 
 type Sparkle = {
     sprite: Sprite
@@ -71,7 +72,7 @@ export function playSparkleAnimation(source: Sprite, cellSize: number): Promise<
             const dt = Math.min(32, now - last) / 16.67
             last = now
 
-            const life = Math.min(1, elapsed / LIFE_MS)
+            const life = Math.min(1, elapsed / SPARKLE_PARTICLE_MS)
             const fade = 1 - life
 
             for (const sparkle of sparkles) {
@@ -88,7 +89,7 @@ export function playSparkleAnimation(source: Sprite, cellSize: number): Promise<
                 sparkle.sprite.alpha = fade * twinkle
             }
 
-            if (elapsed < LIFE_MS) {
+            if (elapsed < SPARKLE_PARTICLE_MS) {
                 requestAnimationFrame(tick)
                 return
             }

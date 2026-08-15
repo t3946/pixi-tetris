@@ -5,7 +5,8 @@ import { Easing } from '@src/utils/bezier'
 
 /** Доля смешения к белому (не 100%, как просили). */
 const WHITE_BLEND = 0.8
-const FLASH_MS = 80
+/** Длительность вспышки к белому. */
+export const SPARKLE_FLASH_MS = 40
 
 function blendTowardWhite(color: number, amount: number): number {
     const r = (color >> 16) & 0xff
@@ -75,7 +76,7 @@ export class SparkleClearEffect extends ClearEffect {
 
         const fromTint = monomino.color
         const flashTint = blendTowardWhite(fromTint, WHITE_BLEND)
-        await animateTint(view, fromTint, flashTint, FLASH_MS)
+        await animateTint(view, fromTint, flashTint, SPARKLE_FLASH_MS)
 
         const sparkleDone = view.sparkle()
         api.clearCell(monomino.x, monomino.y)
