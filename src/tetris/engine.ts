@@ -286,21 +286,26 @@ export function rotate(state: GameState): GameState {
     }
 }
 
+/** Фигура в клетке, куда она упадёт (shadow / ghost). Поворот и форма те же. */
+export function getGhostPiece(piece: ActivePiece, board: Board): ActivePiece {
+    let ghost = piece
+    let next = movePiece(ghost, board, 0, 1)
+
+    while (next) {
+        ghost = next
+        next = movePiece(ghost, board, 0, 1)
+    }
+
+    return ghost
+}
+
 /** Мгновенно опускает фигуру до упора и фиксирует её на поле */
 export function hardDrop(state: GameState, cols: number): GameState {
     if (state.gameOver || state.paused || isSettling(state) || !state.piece) {
         return state
     }
 
-    let piece = state.piece
-    let next = movePiece(piece, state.board, 0, 1)
-
-    while (next) {
-        piece = next
-        next = movePiece(piece, state.board, 0, 1)
-    }
-
-    return settlePiece({ ...state, piece }, cols)
+    return settlePiece({ ...state, piece: getGhostPiece(state.piece, state.board) }, cols)
 }
 
 /** Переключает паузу (повторное нажатие снимает паузу) */

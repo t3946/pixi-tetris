@@ -1,3 +1,4 @@
+import { GhostPiece } from '@components/GhostPiece'
 import { Monomino } from '@components/Monomino'
 import { useTetrisGameState } from '@src/tetris/TetrisGameContext'
 import { getPieceCells } from '@src/tetris/tetrominoes'
@@ -51,6 +52,9 @@ export function GameField({ vertica, horizontal, cellSize }: TProps) {
     return (
         <pixiContainer>
             {boardMonominoes}
+            {piece != null && (
+                <GhostPiece piece={piece} board={board} cellSize={cellSize} />
+            )}
             {pieceMonominoes}
 
             {(gameOver || paused) && (
