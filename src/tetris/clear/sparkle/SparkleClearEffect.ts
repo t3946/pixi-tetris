@@ -2,11 +2,10 @@ import { ClearEffect } from '@src/tetris/clear/ClearEffect'
 import type { ClearApi, Monomino } from '@src/tetris/clear/types'
 import type { MonominoView } from '@src/tetris/clear/monominoViewRegistry'
 import { Easing } from '@src/utils/bezier'
-
-/** Доля смешения к белому (не 100%, как просили). */
-const WHITE_BLEND = 0.8
-/** Длительность вспышки к белому. */
-export const SPARKLE_FLASH_MS = 40
+import {
+    SPARKLE_FLASH_MS,
+    SPARKLE_WHITE_BLEND,
+} from '@src/tetris/clear/sparkle/sparkleSettings'
 
 function blendTowardWhite(color: number, amount: number): number {
     const r = (color >> 16) & 0xff
@@ -75,7 +74,7 @@ export class SparkleClearEffect extends ClearEffect {
         }
 
         const fromTint = monomino.color
-        const flashTint = blendTowardWhite(fromTint, WHITE_BLEND)
+        const flashTint = blendTowardWhite(fromTint, SPARKLE_WHITE_BLEND)
         await animateTint(view, fromTint, flashTint, SPARKLE_FLASH_MS)
 
         const sparkleDone = view.sparkle()

@@ -2,14 +2,10 @@ import type { Board } from '@src/tetris/engine'
 import { ClearIterator } from '@src/tetris/clear/ClearIterator'
 import type { ClearEffect } from '@src/tetris/clear/ClearEffect'
 import type { ClearApi, Monomino } from '@src/tetris/clear/types'
-import { SPARKLE_FLASH_MS } from '@src/tetris/clear/sparkle/SparkleClearEffect'
-import { SPARKLE_PARTICLE_MS } from '@src/tetris/clear/sparkle/playSparkleAnimation'
-
-/** Полная длительность одного SparkleClearEffect (вспышка + частицы). */
-export const SPARKLE_EFFECT_MS = SPARKLE_FLASH_MS + SPARKLE_PARTICLE_MS
-
-/** Интервал между стартами = 90% длительности эффекта (лёгкий overlap ~10%). */
-const INTERVAL_RATIO = 0.04
+import {
+    SPARKLE_EFFECT_MS,
+    SPARKLE_INTERVAL_RATIO,
+} from '@src/tetris/clear/sparkle/sparkleSettings'
 
 function wait(ms: number): Promise<void> {
     return new Promise((resolve) => {
@@ -28,10 +24,10 @@ function shuffle<T>(items: T[]): T[] {
 
 /**
  * Итератор для Sparkle: случайный порядок клеток,
- * следующий старт через 90% длительности эффекта (эффекты слегка перекрываются).
+ * следующий старт через SPARKLE_INTERVAL_RATIO от длительности эффекта.
  */
 export class SparkleClearIterator extends ClearIterator {
-    constructor(private readonly intervalRatio: number = INTERVAL_RATIO) {
+    constructor(private readonly intervalRatio: number = SPARKLE_INTERVAL_RATIO) {
         super()
     }
 

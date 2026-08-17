@@ -15,7 +15,8 @@ export { ShatterClearEffect } from '@src/tetris/clear/shatter/ShatterClearEffect
 export { PixelRainClearEffect } from '@src/tetris/clear/pixelRain/PixelRainClearEffect'
 export { ConfettiClearEffect } from '@src/tetris/clear/confetti/ConfettiClearEffect'
 export { SparkleClearEffect } from '@src/tetris/clear/sparkle/SparkleClearEffect'
-export { SparkleClearIterator, SPARKLE_EFFECT_MS } from '@src/tetris/clear/sparkle/SparkleClearIterator'
+export { SparkleClearIterator } from '@src/tetris/clear/sparkle/SparkleClearIterator'
+export { SPARKLE_EFFECT_MS } from '@src/tetris/clear/sparkle/sparkleSettings'
 export { SamuraiCutClearEffect } from '@src/tetris/clear/samuraiCut/SamuraiCutClearEffect'
 
 export { BaseClearIterator } from '@src/tetris/clear/iterators/BaseClearIterator'
