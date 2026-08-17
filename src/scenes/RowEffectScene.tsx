@@ -5,7 +5,7 @@ import { MenuButton } from '@components/ui/MenuButton'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useAppLayout } from '@src/scenes/useAppLayout'
 import { useTetrisGame } from '@src/hooks/useTetrisGame'
-import { createEmptyBoard, type Board } from '@src/tetris/engine'
+import { createEmptyBoard, findFullLines, removeLines, type Board } from '@src/tetris/engine'
 import { SparkleClearIterator } from '@src/tetris/clear'
 
 /** Песочница: стакан 10×4 для просмотра эффекта сгорания ряда. */
@@ -37,21 +37,10 @@ function createFilledBoard(rows: number, cols: number, filledRows: number): Boar
     return board
 }
 
-function isFullLine(row: number[]): boolean {
-    return row.length > 0 && row.every((cell) => cell !== 0)
-}
-
-function removeLineLocal(board: Board, line: number): Board {
-    const cols = board[0]?.length ?? 0
-    const next = board.filter((_, index) => index !== line)
-    next.unshift(Array(cols).fill(0))
-    return next
-}
-
 export function RowEffectScene() {
     const { screenSize, mainSize, ready } = useAppLayout()
     const { setScene } = useScene()
-    const { state, clearLine, setBoard } = useTetrisGame(SANDBOX_ROWS, SANDBOX_COLS, {
+    const { state, clearLines, setBoard } = useTetrisGame(SANDBOX_ROWS, SANDBOX_COLS, {
         sandbox: true,
     })
     const burningRef = useRef(false)
@@ -64,23 +53,14 @@ export function RowEffectScene() {
         burningRef.current = true
 
         try {
-            const iterator = new SparkleClearIterator()
+            const lines = findFullLines(state.board)
 
-            // Локальный снимок для выбора рядов; clearLine сам синхронизирует stateRef.
-            let board = state.board.map((row) => [...row])
-            let line = board.length - 1
-
-            while (line >= 0) {
-                if (!isFullLine(board[line])) {
-                    line -= 1
-                    continue
-                }
-
-                // SparkleClearIterator + SparkleClearEffect (дефолт clearLine)
-                await clearLine(line, iterator)
-                board = removeLineLocal(board, line)
-                // Индекс не уменьшаем — на место сгоревшего ряда упал верхний.
+            if (lines.length === 0) {
+                return
             }
+
+            await clearLines(lines, new SparkleClearIterator())
+            setBoard(removeLines(state.board, lines))
         } finally {
             burningRef.current = false
         }

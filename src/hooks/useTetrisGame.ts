@@ -6,12 +6,14 @@
  *  2. Автоматическое падение фигур — через useTick (игровой цикл Pixi)
  *  3. Управление с клавиатуры — через useEffect + addEventListener
  *
- * Сама логика тетриса (коллизии, поворот, очистка линий) живёт в @src/tetris/engine.ts.
- * Здесь мы только решаем КОГДА вызвать ту или иную функцию из engine.
+ * Правила тетриса (коллизии, lock, какие ряды полные, гравитация, очки) — @src/tetris/engine.ts.
+ * Визуальная очистка клеток — @src/tetris/clear через clearLines.
+ * Здесь мы решаем КОГДА вызвать engine и КОГДА проиграть эффект.
  */
 import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { useTick } from '@pixi/react'
 import {
+    completeLineClear,
     createInitialState,
     createSandboxState,
     hardDrop,
@@ -49,7 +51,8 @@ const SOFT_DROP_INTERVAL_MS = 50
  * - Rotate — поворот фигуры (↑)
  * - Pause — пауза / снятие паузы (P)
  * - Restart — перезапуск игры (R)
- * - SetBoard — прямая подмена поля (очистка линии через ClearIterator/ClearEffect)
+ * - SetBoard — прямая подмена поля (клетки во время эффекта очистки)
+ * - CompleteClear — гравитация, очки и спавн после визуальной очистки
  */
 enum EAction {
     Tick = 'TICK',
@@ -60,6 +63,7 @@ enum EAction {
     Pause = 'PAUSE',
     Restart = 'RESTART',
     SetBoard = 'SET_BOARD',
+    CompleteClear = 'COMPLETE_CLEAR',
 }
 
 /**
@@ -80,6 +84,7 @@ type Action =
     | { type: EAction.Pause }
     | { type: EAction.Restart; rows: number; cols: number }
     | { type: EAction.SetBoard; board: Board }
+    | { type: EAction.CompleteClear }
 
 /**
  * Reducer — чистая функция (state + action) → newState.
@@ -111,17 +116,11 @@ function gameReducer(state: GameState, action: Action, cols: number): GameState 
             return restart(action.rows, action.cols)
         case EAction.SetBoard:
             return { ...state, board: action.board }
+        case EAction.CompleteClear:
+            return completeLineClear(state, cols)
         default:
             return state
     }
-}
-
-/** Удаляет пустой ряд `line` и добавляет пустой сверху (блоки «падают»). */
-function removeLine(board: Board, line: number): Board {
-    const cols = board[0]?.length ?? 0
-    const next = board.filter((_, index) => index !== line)
-    next.unshift(Array(cols).fill(0))
-    return next
 }
 
 /**
@@ -180,30 +179,37 @@ export function useTetrisGame(
      */
     const dropAccumulatorRef = useRef(0) // сколько миллисекунд прошло с последнего падения
     const softDropRef = useRef(false) // true, пока зажата стрелка ↓
-    /** Актуальный state для clearLine (без устаревшего замыкания). */
+    /** Актуальный state для clearLines (без устаревшего замыкания). */
     const stateRef = useRef(state)
     stateRef.current = state
+    /** Идёт визуальная очистка — тик и ввод заблокированы, без оверлея паузы. */
+    const clearingRef = useRef(false)
 
     /**
-     * Очищает один ряд через итератор мономино и эффект удаления.
-     * По умолчанию: SparkleClearIterator + SparkleClearEffect.
+     * Проигрывает эффект очистки на указанных рядах параллельно.
+     * Только обнуляет клетки; гравитацию делает engine.completeLineClear.
      */
-    const clearLine = useCallback(
+    const clearLines = useCallback(
         async (
-            line: number,
-            iterator: ClearIterator = new SparkleClearIterator(),
-            effect: ClearEffect = new SparkleClearEffect(),
+            lines: number[],
+            iterator?: ClearIterator,
+            effect?: ClearEffect,
         ) => {
             const workingBoard = stateRef.current.board.map((row) => [...row])
+            const validLines = [...new Set(lines)].filter(
+                (line) => line >= 0 && line < workingBoard.length,
+            )
 
-            if (line < 0 || line >= workingBoard.length) {
+            if (validLines.length === 0) {
                 return
             }
+
+            const activeIterator = iterator ?? new SparkleClearIterator()
+            const activeEffect = effect ?? new SparkleClearEffect()
 
             const commitBoard = (board: Board) => {
                 const next = board.map((row) => [...row])
                 dispatch({ type: EAction.SetBoard, board: next })
-                // Сразу обновляем ref — иначе следующий clearLine увидит старый board.
                 stateRef.current = { ...stateRef.current, board: next }
             }
 
@@ -226,10 +232,22 @@ export function useTetrisGame(
                 getView: (x, y) => getMonominoView(x, y),
             }
 
-            await iterator.iterate(line, workingBoard, effect, api)
-            commitBoard(removeLine(workingBoard, line))
+            await Promise.all(
+                validLines.map((line) =>
+                    activeIterator.iterate(line, workingBoard, activeEffect, api),
+                ),
+            )
         },
         [dispatch],
+    )
+
+    const clearLine = useCallback(
+        (
+            line: number,
+            iterator?: ClearIterator,
+            effect?: ClearEffect,
+        ) => clearLines([line], iterator, effect),
+        [clearLines],
     )
 
     const setBoard = useCallback(
@@ -241,6 +259,33 @@ export function useTetrisGame(
         [dispatch],
     )
 
+    const pendingClearKey = state.pendingClearLines.join(',')
+
+    /**
+     * После lock engine выставляет pendingClearLines.
+     * Хук проигрывает эффект, затем просит engine сделать гравитацию и спавн.
+     */
+    useEffect(() => {
+        if (sandbox || pendingClearKey === '' || clearingRef.current) {
+            return
+        }
+
+        const linesToClear = pendingClearKey.split(',').map(Number)
+        clearingRef.current = true
+        dropAccumulatorRef.current = 0
+        softDropRef.current = false
+
+        void (async () => {
+            try {
+                await clearLines(linesToClear)
+                dispatch({ type: EAction.CompleteClear })
+            } finally {
+                clearingRef.current = false
+                dropAccumulatorRef.current = 0
+            }
+        })()
+    }, [sandbox, pendingClearKey, clearLines, dispatch])
+
     /**
      * useTick — хук из @pixi/react, колбэк вызывается каждый кадр Pixi (~60 fps).
      * Это наш игровой цикл для автоматического падения фигур.
@@ -249,7 +294,7 @@ export function useTetrisGame(
      * Мы копим их в dropAccumulatorRef и, когда набирается interval, делаем TICK.
      */
     useTick((ticker) => {
-        if (state.gameOver || state.paused) {
+        if (state.gameOver || state.paused || clearingRef.current || state.pendingClearLines.length > 0) {
             return
         }
 
@@ -280,6 +325,21 @@ export function useTetrisGame(
      */
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
+            if (clearingRef.current || stateRef.current.pendingClearLines.length > 0) {
+                if (
+                    event.code === 'ArrowLeft' ||
+                    event.code === 'ArrowRight' ||
+                    event.code === 'ArrowDown' ||
+                    event.code === 'ArrowUp' ||
+                    event.code === 'Space' ||
+                    event.code === 'KeyP' ||
+                    event.code === 'KeyR'
+                ) {
+                    event.preventDefault()
+                }
+                return
+            }
+
             switch (event.code) {
                 case 'ArrowLeft':
                     event.preventDefault() // не скроллить страницу стрелками
@@ -338,10 +398,14 @@ export function useTetrisGame(
 
     // Компонент GameField получает state и перерисовывает поле при каждом изменении
     const togglePauseGame = useCallback(() => {
+        if (clearingRef.current || stateRef.current.pendingClearLines.length > 0) {
+            return
+        }
+
         dispatch({ type: EAction.Pause })
         dropAccumulatorRef.current = 0
         softDropRef.current = false
     }, [dispatch])
 
-    return { state, togglePause: togglePauseGame, clearLine, setBoard }
+    return { state, togglePause: togglePauseGame, clearLine, clearLines, setBoard }
 }

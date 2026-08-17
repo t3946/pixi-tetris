@@ -18,6 +18,8 @@ export type GameState = {
     paused: boolean
     linesCleared: number
     score: number
+    /** Индексы полных рядов, ждущих визуальной очистки. Пока не пусто — фигура не спавнится. */
+    pendingClearLines: number[]
 }
 
 /** Очки за очистку: Single / Double / Triple / Tetris */
@@ -56,6 +58,7 @@ export function createInitialState(rows: number, cols: number): GameState {
         paused: false,
         linesCleared: 0,
         score: 0,
+        pendingClearLines: [],
     }
 }
 
@@ -69,6 +72,7 @@ export function createSandboxState(rows: number, cols: number): GameState {
         paused: true,
         linesCleared: 0,
         score: 0,
+        pendingClearLines: [],
     }
 }
 
@@ -120,17 +124,39 @@ function lockPiece(piece: ActivePiece, board: Board): Board {
     return nextBoard
 }
 
-function clearFullLines(board: Board): { board: Board; cleared: number } {
-    const rows = board.length
-    const cols = board[0]?.length ?? 0
-    const remainingRows = board.filter((row) => row.some((cell) => cell === 0))
-    const cleared = rows - remainingRows.length
+/** Индексы полностью заполненных рядов (сверху вниз). */
+export function findFullLines(board: Board): number[] {
+    const lines: number[] = []
 
-    while (remainingRows.length < rows) {
+    for (let y = 0; y < board.length; y++) {
+        const row = board[y]
+        if (row.length > 0 && row.every((cell) => cell !== 0)) {
+            lines.push(y)
+        }
+    }
+
+    return lines
+}
+
+/** Удаляет указанные ряды и добавляет пустые сверху (блоки «падают»). */
+export function removeLines(board: Board, lines: readonly number[]): Board {
+    if (lines.length === 0) {
+        return board.map((row) => [...row])
+    }
+
+    const lineSet = new Set(lines)
+    const cols = board[0]?.length ?? 0
+    const remainingRows = board.filter((_, index) => !lineSet.has(index))
+
+    while (remainingRows.length < board.length) {
         remainingRows.unshift(Array(cols).fill(0))
     }
 
-    return { board: remainingRows, cleared }
+    return remainingRows
+}
+
+function isSettling(state: GameState): boolean {
+    return state.pendingClearLines.length > 0
 }
 
 function movePiece(piece: ActivePiece, board: Board, dx: number, dy: number): ActivePiece | null {
@@ -165,22 +191,54 @@ function settlePiece(state: GameState, cols: number): GameState {
     }
 
     const lockedBoard = lockPiece(state.piece, state.board)
-    const { board, cleared } = clearFullLines(lockedBoard)
+    const pendingClearLines = findFullLines(lockedBoard)
+
+    if (pendingClearLines.length === 0) {
+        const { piece, nextType } = spawnFromQueue(lockedBoard, cols, state.nextType)
+
+        return {
+            ...state,
+            board: lockedBoard,
+            piece,
+            nextType,
+            gameOver: piece === null,
+            pendingClearLines: [],
+        }
+    }
+
+    return {
+        ...state,
+        board: lockedBoard,
+        piece: null,
+        pendingClearLines,
+    }
+}
+
+/** Гравитация, очки и спавн следующей фигуры после визуальной очистки. */
+export function completeLineClear(state: GameState, cols: number): GameState {
+    const lines = state.pendingClearLines
+
+    if (lines.length === 0) {
+        return state
+    }
+
+    const board = removeLines(state.board, lines)
     const { piece, nextType } = spawnFromQueue(board, cols, state.nextType)
 
     return {
+        ...state,
         board,
         piece,
         nextType,
         gameOver: piece === null,
-        paused: state.paused,
-        linesCleared: state.linesCleared + cleared,
-        score: state.score + scoreForClearedLines(cleared),
+        pendingClearLines: [],
+        linesCleared: state.linesCleared + lines.length,
+        score: state.score + scoreForClearedLines(lines.length),
     }
 }
 
 export function tick(state: GameState, cols: number): GameState {
-    if (state.gameOver || state.paused || !state.piece) {
+    if (state.gameOver || state.paused || isSettling(state) || !state.piece) {
         return state
     }
 
@@ -194,7 +252,7 @@ export function tick(state: GameState, cols: number): GameState {
 }
 
 export function moveHorizontal(state: GameState, direction: -1 | 1): GameState {
-    if (state.gameOver || state.paused || !state.piece) {
+    if (state.gameOver || state.paused || isSettling(state) || !state.piece) {
         return state
     }
 
@@ -204,7 +262,7 @@ export function moveHorizontal(state: GameState, direction: -1 | 1): GameState {
 }
 
 export function moveDown(state: GameState, cols: number): GameState {
-    if (state.gameOver || state.paused || !state.piece) {
+    if (state.gameOver || state.paused || isSettling(state) || !state.piece) {
         return state
     }
 
@@ -218,7 +276,7 @@ export function moveDown(state: GameState, cols: number): GameState {
 }
 
 export function rotate(state: GameState): GameState {
-    if (state.gameOver || state.paused || !state.piece) {
+    if (state.gameOver || state.paused || isSettling(state) || !state.piece) {
         return state
     }
 
@@ -230,7 +288,7 @@ export function rotate(state: GameState): GameState {
 
 /** Мгновенно опускает фигуру до упора и фиксирует её на поле */
 export function hardDrop(state: GameState, cols: number): GameState {
-    if (state.gameOver || state.paused || !state.piece) {
+    if (state.gameOver || state.paused || isSettling(state) || !state.piece) {
         return state
     }
 
@@ -247,7 +305,7 @@ export function hardDrop(state: GameState, cols: number): GameState {
 
 /** Переключает паузу (повторное нажатие снимает паузу) */
 export function togglePause(state: GameState): GameState {
-    if (state.gameOver) {
+    if (state.gameOver || isSettling(state)) {
         return state
     }
 
