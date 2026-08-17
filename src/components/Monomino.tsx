@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { Sprite, Texture } from 'pixi.js'
+import { Sprite } from 'pixi.js'
 import {
     registerMonominoView,
     unregisterMonominoView,
@@ -9,6 +9,7 @@ import { playPixelRainAnimation } from '@src/tetris/clear/pixelRain/playPixelRai
 import { playConfettiAnimation } from '@src/tetris/clear/confetti/playConfettiAnimation'
 import { playSparkleAnimation } from '@src/tetris/clear/sparkle/playSparkleAnimation'
 import { playSamuraiCutAnimation } from '@src/tetris/clear/samuraiCut/playSamuraiCutAnimation'
+import { useBlockTexture } from '@src/hooks/useBlockTexture'
 
 const CELL_PADDING = 1
 
@@ -22,8 +23,9 @@ type TProps = {
     alpha?: number
 }
 
-/** Один квадратик-мономино: белый спрайт с tint. */
+/** Один квадратик-мономино: скин-текстура с tint цвета фигуры. */
 export function Monomino({ col, row, color, cellSize, alpha = 1 }: TProps) {
+    const texture = useBlockTexture()
     const spriteRef = useRef<Sprite>(null)
     const step = Math.round(cellSize)
     const size = Math.max(0, step - CELL_PADDING * 2)
@@ -42,6 +44,7 @@ export function Monomino({ col, row, color, cellSize, alpha = 1 }: TProps) {
         sprite.visible = true
         sprite.alpha = alpha
         sprite.tint = color
+        sprite.texture = texture
         sprite.width = size
         sprite.height = size
 
@@ -76,12 +79,12 @@ export function Monomino({ col, row, color, cellSize, alpha = 1 }: TProps) {
         return () => {
             unregisterMonominoView(col, row)
         }
-    }, [alpha, col, color, row, size, step])
+    }, [alpha, col, color, row, size, step, texture])
 
     return (
         <pixiSprite
             ref={spriteRef}
-            texture={Texture.WHITE}
+            texture={texture}
             anchor={0.5}
             x={centerX}
             y={centerY}

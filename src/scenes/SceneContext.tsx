@@ -5,6 +5,7 @@ export enum SceneId {
     Game = 'game',
     Dev = 'dev',
     RowEffect = 'rowEffect',
+    BlockSkin = 'blockSkin',
 }
 
 type SceneContextValue = {

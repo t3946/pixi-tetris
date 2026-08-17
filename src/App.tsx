@@ -9,6 +9,7 @@ import { MainMenuScene } from '@src/scenes/MainMenuScene'
 import { GameScene } from '@src/scenes/GameScene'
 import { DevScene } from '@src/scenes/DevScene'
 import { RowEffectScene } from '@src/scenes/RowEffectScene'
+import { BlockSkinScene } from '@src/scenes/BlockSkinScene'
 
 extend({
     Container,
@@ -31,6 +32,8 @@ function Scenes() {
             return <DevScene />
         case SceneId.RowEffect:
             return <RowEffectScene />
+        case SceneId.BlockSkin:
+            return <BlockSkinScene />
     }
 }
 
