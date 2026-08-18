@@ -46,6 +46,7 @@ export function GameField({ vertica, horizontal, cellSize }: TProps) {
                           row={cell.y}
                           color={cell.color}
                           cellSize={cellSize}
+                          pieceType={piece.type}
                       />
                   ))
 

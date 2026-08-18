@@ -1,15 +1,16 @@
 import { useTetrisGameState } from '@src/tetris/TetrisGameContext'
 import { getShapeLocalCells } from '@src/tetris/tetrominoes'
-import { useBlockTexture } from '@src/hooks/useBlockTexture'
+import { useBlockTheme } from '@src/hooks/useBlockTheme'
 
 const CELL_PADDING = 1
 /** Область контента панели (высота дашборда минус полоска заголовка) */
 const PREVIEW_BOX = 56
 
 export const NextTetrominoes = () => {
-    const { nextType } = useTetrisGameState()
-    const texture = useBlockTexture()
-    const cells = getShapeLocalCells(nextType)
+    const { nextType, nextCellColors } = useTetrisGameState()
+    const theme = useBlockTheme()
+    const material = theme.getMaterial(nextType)
+    const cells = getShapeLocalCells(nextType, 0, nextCellColors)
 
     if (cells.length === 0) {
         return (
@@ -50,7 +51,7 @@ export const NextTetrominoes = () => {
                     return (
                         <pixiSprite
                             key={`${nextType}-${index}-${cell.x}-${cell.y}`}
-                            texture={texture}
+                            texture={material.texture}
                             tint={cell.color}
                             x={offsetX + col * cellSize + CELL_PADDING}
                             y={offsetY + row * cellSize + CELL_PADDING}

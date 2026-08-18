@@ -4,6 +4,7 @@ import { Application, extend } from '@pixi/react'
 import { Container, Graphics, Sprite, Text } from 'pixi.js'
 import { LayoutContainer, LayoutText } from '@pixi/layout/components'
 import { ThemeProvider } from '@src/ui/ThemeContext'
+import { UserProvider } from '@src/user/UserContext'
 import { SceneId, SceneProvider, useScene } from '@src/scenes/SceneContext'
 import { MainMenuScene } from '@src/scenes/MainMenuScene'
 import { GameScene } from '@src/scenes/GameScene'
@@ -40,17 +41,19 @@ function Scenes() {
 export function App() {
     return (
         <ThemeProvider>
-            <SceneProvider>
-                <Application
-                    resizeTo={window}
-                    backgroundColor={0x1099bb}
-                    antialias={true}
-                    resolution={window.devicePixelRatio}
-                    autoDensity={true}
-                >
-                    <Scenes />
-                </Application>
-            </SceneProvider>
+            <UserProvider>
+                <SceneProvider>
+                    <Application
+                        resizeTo={window}
+                        backgroundColor={0x1099bb}
+                        antialias={true}
+                        resolution={window.devicePixelRatio}
+                        autoDensity={true}
+                    >
+                        <Scenes />
+                    </Application>
+                </SceneProvider>
+            </UserProvider>
         </ThemeProvider>
     )
 }

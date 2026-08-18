@@ -1,11 +1,13 @@
 import {
     ActivePiece,
+    countShapeCells,
     createPiece,
     getPieceCells,
     randomPieceType,
     TETROMINOES,
     type PieceType,
 } from './tetrominoes'
+import { getActiveBlockTheme } from './blocks/themes'
 
 export type Board = number[][]
 
@@ -14,6 +16,8 @@ export type GameState = {
     piece: ActivePiece | null
     /** Тип следующей фигуры (показывается в превью) */
     nextType: PieceType
+    /** Цвета клеток следующей фигуры, выбранные темой при постановке в очередь */
+    nextCellColors: number[]
     gameOver: boolean
     paused: boolean
     linesCleared: number
@@ -48,12 +52,19 @@ export function createEmptyBoard(rows: number, cols: number): Board {
 
 export function createInitialState(rows: number, cols: number): GameState {
     const board = createEmptyBoard(rows, cols)
-    const { piece, nextType } = spawnFromQueue(board, cols, randomPieceType())
+    const firstType = randomPieceType()
+    const { piece, nextType, nextCellColors } = spawnFromQueue(
+        board,
+        cols,
+        firstType,
+        rollThemeColors(firstType),
+    )
 
     return {
         board,
         piece,
         nextType,
+        nextCellColors,
         gameOver: piece === null,
         paused: false,
         linesCleared: 0,
@@ -68,12 +79,20 @@ export function createSandboxState(rows: number, cols: number): GameState {
         board: createEmptyBoard(rows, cols),
         piece: null,
         nextType: randomPieceType(),
+        nextCellColors: [],
         gameOver: false,
         paused: true,
         linesCleared: 0,
         score: 0,
         pendingClearLines: [],
     }
+}
+
+function rollThemeColors(type: PieceType): number[] {
+    const theme = getActiveBlockTheme()
+    const count = countShapeCells(type)
+
+    return Array.from({ length: count }, () => theme.getMaterial(type).color)
 }
 
 /**
@@ -84,15 +103,17 @@ function spawnFromQueue(
     board: Board,
     cols: number,
     type: PieceType,
-): { piece: ActivePiece | null; nextType: PieceType } {
-    const piece = createPiece(type, cols)
+    cellColors: number[],
+): { piece: ActivePiece | null; nextType: PieceType; nextCellColors: number[] } {
+    const piece = createPiece(type, cols, cellColors)
     const nextType = randomPieceType()
+    const nextCellColors = rollThemeColors(nextType)
 
     if (!isValidPosition(piece, board)) {
-        return { piece: null, nextType }
+        return { piece: null, nextType, nextCellColors }
     }
 
-    return { piece, nextType }
+    return { piece, nextType, nextCellColors }
 }
 
 export function isValidPosition(piece: ActivePiece, board: Board): boolean {
@@ -194,13 +215,19 @@ function settlePiece(state: GameState, cols: number): GameState {
     const pendingClearLines = findFullLines(lockedBoard)
 
     if (pendingClearLines.length === 0) {
-        const { piece, nextType } = spawnFromQueue(lockedBoard, cols, state.nextType)
+        const { piece, nextType, nextCellColors } = spawnFromQueue(
+            lockedBoard,
+            cols,
+            state.nextType,
+            state.nextCellColors,
+        )
 
         return {
             ...state,
             board: lockedBoard,
             piece,
             nextType,
+            nextCellColors,
             gameOver: piece === null,
             pendingClearLines: [],
         }
@@ -223,13 +250,19 @@ export function completeLineClear(state: GameState, cols: number): GameState {
     }
 
     const board = removeLines(state.board, lines)
-    const { piece, nextType } = spawnFromQueue(board, cols, state.nextType)
+    const { piece, nextType, nextCellColors } = spawnFromQueue(
+        board,
+        cols,
+        state.nextType,
+        state.nextCellColors,
+    )
 
     return {
         ...state,
         board,
         piece,
         nextType,
+        nextCellColors,
         gameOver: piece === null,
         pendingClearLines: [],
         linesCleared: state.linesCleared + lines.length,

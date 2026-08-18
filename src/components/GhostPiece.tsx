@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { Graphics } from 'pixi.js'
 import { getGhostPiece, type Board } from '@src/tetris/engine'
-import { getShapeLocalCells, TETROMINOES, type ActivePiece } from '@src/tetris/tetrominoes'
+import { getShapeLocalCells, type ActivePiece } from '@src/tetris/tetrominoes'
 
 /** Как у Monomino: контур на 1px внутри клетки. */
 const INSET = 1
@@ -114,7 +114,7 @@ function insetPolygon(points: Point[], inset: number): Point[] {
  */
 export function GhostPiece({ piece, board, cellSize }: TProps) {
     const ghost = useMemo(() => getGhostPiece(piece, board), [board, piece])
-    const color = TETROMINOES[piece.type].color
+    const color = piece.color
     const landed = ghost.y === piece.y
 
     const drawGhost = useCallback(

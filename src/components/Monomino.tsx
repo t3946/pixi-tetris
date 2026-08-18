@@ -9,7 +9,8 @@ import { playPixelRainAnimation } from '@src/tetris/clear/pixelRain/playPixelRai
 import { playConfettiAnimation } from '@src/tetris/clear/confetti/playConfettiAnimation'
 import { playSparkleAnimation } from '@src/tetris/clear/sparkle/playSparkleAnimation'
 import { playSamuraiCutAnimation } from '@src/tetris/clear/samuraiCut/playSamuraiCutAnimation'
-import { useBlockTexture } from '@src/hooks/useBlockTexture'
+import { useBlockTheme } from '@src/hooks/useBlockTheme'
+import { EPieceType } from '@src/tetris/blocks/themes'
 
 const CELL_PADDING = 1
 
@@ -21,11 +22,14 @@ type TProps = {
     /** Ожидается целое число (см. computeCellSize) */
     cellSize: number
     alpha?: number
+    pieceType?: EPieceType
 }
 
-/** Один квадратик-мономино: скин-текстура с tint цвета фигуры. */
-export function Monomino({ col, row, color, cellSize, alpha = 1 }: TProps) {
-    const texture = useBlockTexture()
+/** Один квадратик-мономино: материал темы + tint цвета фигуры. */
+export function Monomino({ col, row, color, cellSize, alpha = 1, pieceType = EPieceType.I }: TProps) {
+    const theme = useBlockTheme()
+    const material = theme.getMaterial(pieceType)
+    const texture = material.texture
     const spriteRef = useRef<Sprite>(null)
     const step = Math.round(cellSize)
     const size = Math.max(0, step - CELL_PADDING * 2)

@@ -1,10 +1,16 @@
-export type PieceType = 'I' | 'O' | 'T' | 'S' | 'Z' | 'J' | 'L'
+import { EPieceType } from '@src/tetris/blocks/themes'
+
+export type PieceType = EPieceType
 
 export type ActivePiece = {
     type: PieceType
     rotation: number
     x: number
     y: number
+    /** Цвет первой клетки — для ghost и запасной tint. */
+    color: number
+    /** Цвет каждой заполненной клетки в порядке обхода текущего shape. */
+    cellColors: number[]
 }
 
 type TetrominoDefinition = {
@@ -12,7 +18,15 @@ type TetrominoDefinition = {
     shapes: number[][][]
 }
 
-export const PIECE_TYPES: PieceType[] = ['I', 'O', 'T', 'S', 'Z', 'J', 'L']
+export const PIECE_TYPES: PieceType[] = [
+    EPieceType.I,
+    EPieceType.O,
+    EPieceType.T,
+    EPieceType.S,
+    EPieceType.Z,
+    EPieceType.J,
+    EPieceType.L,
+]
 
 export const TETROMINOES: Record<PieceType, TetrominoDefinition> = {
     I: {
@@ -206,19 +220,38 @@ export function randomPieceType(): PieceType {
     return PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)]
 }
 
-export function createPiece(type: PieceType, cols: number): ActivePiece {
+export function countShapeCells(type: PieceType, rotation = 0): number {
+    const { shapes } = TETROMINOES[type]
+    const shape = shapes[rotation % shapes.length]
+    let count = 0
+
+    for (const row of shape) {
+        for (const cell of row) {
+            if (cell) {
+                count += 1
+            }
+        }
+    }
+
+    return count
+}
+
+export function createPiece(type: PieceType, cols: number, cellColors: number[]): ActivePiece {
     return {
         type,
         rotation: 0,
         x: Math.floor((cols - 4) / 2),
         y: 0,
+        color: cellColors[0] ?? 0,
+        cellColors,
     }
 }
 
 export function getPieceCells(piece: ActivePiece): { x: number; y: number; color: number }[] {
-    const { color, shapes } = TETROMINOES[piece.type]
+    const { shapes } = TETROMINOES[piece.type]
     const shape = shapes[piece.rotation % shapes.length]
     const cells: { x: number; y: number; color: number }[] = []
+    let colorIndex = 0
 
     for (let row = 0; row < shape.length; row++) {
         for (let col = 0; col < shape[row].length; col++) {
@@ -226,8 +259,9 @@ export function getPieceCells(piece: ActivePiece): { x: number; y: number; color
                 cells.push({
                     x: piece.x + col,
                     y: piece.y + row,
-                    color,
+                    color: piece.cellColors[colorIndex] ?? piece.color,
                 })
+                colorIndex += 1
             }
         }
     }
@@ -239,15 +273,24 @@ export function getPieceCells(piece: ActivePiece): { x: number; y: number; color
 export function getShapeLocalCells(
     type: PieceType,
     rotation = 0,
+    color: number | readonly number[] = TETROMINOES[type].color,
 ): { x: number; y: number; color: number }[] {
-    const { color, shapes } = TETROMINOES[type]
+    const { shapes } = TETROMINOES[type]
     const shape = shapes[rotation % shapes.length]
     const cells: { x: number; y: number; color: number }[] = []
+    const palette = typeof color === 'number' ? null : color
+    const fallback = typeof color === 'number' ? color : (color[0] ?? TETROMINOES[type].color)
+    let colorIndex = 0
 
     for (let row = 0; row < shape.length; row++) {
         for (let col = 0; col < shape[row].length; col++) {
             if (shape[row][col]) {
-                cells.push({ x: col, y: row, color })
+                cells.push({
+                    x: col,
+                    y: row,
+                    color: palette?.[colorIndex] ?? fallback,
+                })
+                colorIndex += 1
             }
         }
     }

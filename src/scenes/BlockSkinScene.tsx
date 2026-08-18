@@ -1,45 +1,86 @@
-import { useEffect, useState } from 'react'
-import { Texture } from 'pixi.js'
+import { useSyncExternalStore } from 'react'
 import { Background } from '@components/Stack/Background.tsx'
 import { MenuButton } from '@components/ui/MenuButton'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useAppLayout } from '@src/scenes/useAppLayout'
+import { BLOCK_MATERIALS } from '@src/tetris/blocks'
 import {
-    BLOCK_MATERIALS,
-    BLOCK_SKIN_ORDER,
-    loadBlockMaterialTexture,
-    type BlockSkinId,
-} from '@src/tetris/blocks'
-import { setBlockSkin, useBlockSkinId } from '@src/hooks/useBlockTexture'
-import { PIECE_TYPES, TETROMINOES } from '@src/tetris/tetrominoes'
+    BLOCK_THEME_ORDER,
+    EPieceType,
+    getBlockTheme,
+    type EBlockTheme,
+} from '@src/tetris/blocks/themes'
+import { useUser } from '@src/user/UserContext'
+import { PIECE_TYPES } from '@src/tetris/tetrominoes'
 
 const CELL = 28
 const GAP = 3
 
+function ThemePreviewRow({ id }: { id: EBlockTheme }) {
+    const theme = getBlockTheme(id)
+    useSyncExternalStore(theme.subscribe, theme.getRevision, theme.getRevision)
+    const { user, setBlockTheme } = useUser()
+    const selected = id === user.blockTheme
+    const sample = theme.getMaterial(EPieceType.I)
+
+    return (
+        <layoutContainer
+            eventMode="static"
+            cursor="pointer"
+            onPointerTap={() => setBlockTheme(id)}
+            layout={{
+                width: '100%',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: 6,
+                paddingTop: 8,
+                paddingBottom: 8,
+                borderRadius: 8,
+                borderWidth: selected ? 2 : 0,
+                borderColor: selected ? 0x9a80f6 : 0x000000,
+            }}
+        >
+            <layoutText
+                text={BLOCK_MATERIALS[id].label}
+                style={{
+                    fontSize: 16,
+                    fill: 0xffffff,
+                    fontWeight: selected ? 'bold' : 'normal',
+                }}
+                layout={{ objectFit: 'none' }}
+            />
+            <layoutContainer
+                layout={{
+                    width: PIECE_TYPES.length * (CELL + GAP) - GAP,
+                    height: CELL,
+                }}
+            >
+                <pixiContainer>
+                    {PIECE_TYPES.map((type, index) => {
+                        const material = theme.getMaterial(type)
+
+                        return (
+                            <pixiSprite
+                                key={type}
+                                texture={sample.texture}
+                                tint={material.color}
+                                x={index * (CELL + GAP)}
+                                y={0}
+                                width={CELL}
+                                height={CELL}
+                                roundPixels={true}
+                            />
+                        )
+                    })}
+                </pixiContainer>
+            </layoutContainer>
+        </layoutContainer>
+    )
+}
+
 export function BlockSkinScene() {
     const { screenSize, mainSize, ready } = useAppLayout()
     const { setScene } = useScene()
-    const activeId = useBlockSkinId()
-    const [textures, setTextures] = useState<Partial<Record<BlockSkinId, Texture>>>({})
-
-    useEffect(() => {
-        let cancelled = false
-
-        void Promise.all(
-            BLOCK_SKIN_ORDER.map(async (id) => {
-                const texture = await loadBlockMaterialTexture(id)
-                return [id, texture] as const
-            }),
-        ).then((entries) => {
-            if (!cancelled) {
-                setTextures(Object.fromEntries(entries))
-            }
-        })
-
-        return () => {
-            cancelled = true
-        }
-    }, [])
 
     if (!ready) {
         return null
@@ -97,63 +138,9 @@ export function BlockSkinScene() {
                         paddingEnd: '7%',
                     }}
                 >
-                    {BLOCK_SKIN_ORDER.map((id) => {
-                        const texture = textures[id]
-                        const selected = id === activeId
-
-                        return (
-                            <layoutContainer
-                                key={id}
-                                eventMode="static"
-                                cursor="pointer"
-                                onPointerTap={() => setBlockSkin(id)}
-                                layout={{
-                                    width: '100%',
-                                    flexDirection: 'column',
-                                    alignItems: 'center',
-                                    gap: 6,
-                                    paddingTop: 8,
-                                    paddingBottom: 8,
-                                    borderRadius: 8,
-                                    borderWidth: selected ? 2 : 0,
-                                    borderColor: selected ? 0x9a80f6 : 0x000000,
-                                }}
-                            >
-                                <layoutText
-                                    text={BLOCK_MATERIALS[id].label}
-                                    style={{
-                                        fontSize: 16,
-                                        fill: 0xffffff,
-                                        fontWeight: selected ? 'bold' : 'normal',
-                                    }}
-                                    layout={{ objectFit: 'none' }}
-                                />
-                                {texture && (
-                                    <layoutContainer
-                                        layout={{
-                                            width: PIECE_TYPES.length * (CELL + GAP) - GAP,
-                                            height: CELL,
-                                        }}
-                                    >
-                                        <pixiContainer>
-                                            {PIECE_TYPES.map((type, index) => (
-                                                <pixiSprite
-                                                    key={type}
-                                                    texture={texture}
-                                                    tint={TETROMINOES[type].color}
-                                                    x={index * (CELL + GAP)}
-                                                    y={0}
-                                                    width={CELL}
-                                                    height={CELL}
-                                                    roundPixels={true}
-                                                />
-                                            ))}
-                                        </pixiContainer>
-                                    </layoutContainer>
-                                )}
-                            </layoutContainer>
-                        )
-                    })}
+                    {BLOCK_THEME_ORDER.map((id) => (
+                        <ThemePreviewRow key={id} id={id} />
+                    ))}
                 </layoutContainer>
             </layoutContainer>
         </layoutContainer>

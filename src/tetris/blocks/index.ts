@@ -7,3 +7,4 @@ export {
     type BlockSkinId,
 } from './materials'
 export { loadBlockMaterialTexture } from './bakeMaterialTexture'
+export * from './themes'
