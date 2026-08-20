@@ -59,8 +59,6 @@ export function GameScene() {
                             width: '100%',
                             flex: 1,
                             overflow: 'hidden',
-                            paddingStart: '7%',
-                            paddingEnd: '7%',
                         }}
                     >
                         <Stack />

@@ -1,15 +1,18 @@
 import { NextTetrominoes } from '@components/GameDashboard/NextTetrominoes.tsx'
 import { Score } from '@components/GameDashboard/Score.tsx'
+import { useGameColumnLayout } from '@components/gameColumnLayout.ts'
 import { Panel } from '@components/ui/Panel.tsx'
 
 export const GameDashboard = function () {
+    const { paddingStart, paddingEnd } = useGameColumnLayout()
+
     return (
         <layoutContainer
             layout={{
                 gap: '2%',
                 padding: '0',
-                paddingStart: '7%',
-                paddingEnd: '7%',
+                paddingStart,
+                paddingEnd,
                 height: '80',
             }}
         >
