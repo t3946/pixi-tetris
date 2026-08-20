@@ -39,6 +39,8 @@ export const theme = {
         BUTTON_SECONDARY_HOVER: palette.purple_800,
         BUTTON_DANGER_TEXT: palette.coral_400,
         BUTTON_DANGER_TEXT_HOVER: palette.coral_300,
+        NAV_BAR: palette.gray_900,
+        NAV_ICON: palette.white,
     }
 } as const
 
