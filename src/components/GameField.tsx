@@ -12,7 +12,7 @@ type TProps = {
 }
 
 export function GameField({ vertica, horizontal, cellSize }: TProps) {
-    const { board, piece, gameOver, paused } = useTetrisGameState()
+    const { board, piece, gameOver } = useTetrisGameState()
 
     const boardMonominoes: ReactNode[] = []
 
@@ -58,7 +58,7 @@ export function GameField({ vertica, horizontal, cellSize }: TProps) {
             )}
             {pieceMonominoes}
 
-            {(gameOver || paused) && (
+            {gameOver && (
                 <pixiSprite
                     texture={Texture.WHITE}
                     width={horizontal * cellSize}
