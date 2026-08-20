@@ -37,9 +37,14 @@ export const palette = {
     orange_500: '#f0a000',
 
     purple_100: '#e3dcfd',
-    purple_300: '#9A80F6',
+    purple_300: '#83c8e3',
+    purple_400: '#7E64E8',
     purple_700: '#3B1F84',
+    purple_800: '#2E3554',
+    purple_900: '#6090e5',
     purple_950: '#151A31',
+    coral_300: '#F0919E',
+    coral_400: '#E07A8A',
 } as const
 
 export type PaletteColor = keyof typeof palette

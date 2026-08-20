@@ -1,5 +1,5 @@
 import { Modal } from '@components/ui/Modal'
-import { MenuButton } from '@components/ui/MenuButton'
+import { FlatButton } from '@components/ui/FlatButton'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useTogglePause, useTetrisGameState } from '@src/tetris/TetrisGameContext'
 import { useTheme } from '@src/ui/ThemeContext'
@@ -17,21 +17,29 @@ export function PauseModal() {
                 style={{
                     fontSize: 28,
                     fill: theme.TEXT_COLOR,
-                    fontWeight: 'bold',
+                    fontWeight: 'normal',
                     align: 'center',
+                    fontFamily: theme.UI.FONT_FAMILY,
                 }}
                 layout={{
                     objectFit: 'none',
                     objectPosition: 'center',
-                    marginBottom: 8,
+                    marginTop: 10,
+                    marginBottom: 24,
                 }}
             />
 
-            <MenuButton label="Продолжить" onPress={togglePause} />
-            <MenuButton label="Настройки" disabled />
-            <MenuButton
+            <FlatButton label="Продолжить" variant="primary" onPress={togglePause} />
+
+            <FlatButton label="Настройки" variant="secondary" />
+
+            <FlatButton
                 label="Завершить"
+                variant="danger"
                 onPress={() => setScene(SceneId.MainMenu)}
+                layout={{
+                    marginTop: 8,
+                }}
             />
         </Modal>
     )

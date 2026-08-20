@@ -4,6 +4,7 @@
  */
 
 import { palette } from '../palette'
+import { FONT_FAMILY } from '@src/assets/fonts'
 
 export const theme = {
     // Surfaces
@@ -31,6 +32,13 @@ export const theme = {
         ICON: palette.purple_100,
         PANEL_FILL: palette.purple_950,
         PANEL_LABEL: palette.white,
+        FONT_FAMILY,
+        BUTTON_PRIMARY: palette.purple_300,
+        BUTTON_PRIMARY_HOVER: palette.purple_400,
+        BUTTON_SECONDARY: palette.purple_900,
+        BUTTON_SECONDARY_HOVER: palette.purple_800,
+        BUTTON_DANGER_TEXT: palette.coral_400,
+        BUTTON_DANGER_TEXT_HOVER: palette.coral_300,
     }
 } as const
 
