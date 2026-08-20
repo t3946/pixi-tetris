@@ -14,7 +14,6 @@ export function computeCellSize(fieldWidth: number, cols: number): number {
 
 type TProps = {
     width: number
-    height: number
     cols?: number
     rows?: number
     children?: ReactNode
