@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Assets, FillGradient, Graphics, Texture } from 'pixi.js'
-import { icons, type IconName } from '@src/assets/icons'
+import { FillGradient, Graphics, Texture } from 'pixi.js'
+import type { IconName } from '@src/assets/icons'
+import { loadIconTexture } from '@src/hooks/useIconTexture'
 import { useTheme } from '@src/ui/ThemeContext'
 
 type TProps = {
@@ -52,7 +53,7 @@ export function ButtonCircle({
     useEffect(() => {
         let cancelled = false
 
-        Assets.load<Texture>(icons[icon]).then((texture) => {
+        loadIconTexture(icon).then((texture) => {
             if (!cancelled) {
                 setIconTexture(texture)
             }

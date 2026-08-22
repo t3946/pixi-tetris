@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Assets, Texture } from 'pixi.js'
-import { icons, type IconName } from '@src/assets/icons'
+import { useState } from 'react'
+import type { IconName } from '@src/assets/icons'
+import { useIconTexture } from '@src/hooks/useIconTexture'
 import { useTheme } from '@src/ui/ThemeContext'
 
 export type BottomNavTab = 'home' | 'ranking' | 'achievements' | 'settings'
@@ -111,24 +111,4 @@ function NavButton({
             )}
         </layoutContainer>
     )
-}
-
-function useIconTexture(name: IconName) {
-    const [texture, setTexture] = useState<Texture | null>(null)
-
-    useEffect(() => {
-        let cancelled = false
-
-        Assets.load<Texture>(icons[name]).then((loaded) => {
-            if (!cancelled) {
-                setTexture(loaded)
-            }
-        })
-
-        return () => {
-            cancelled = true
-        }
-    }, [name])
-
-    return texture
 }
