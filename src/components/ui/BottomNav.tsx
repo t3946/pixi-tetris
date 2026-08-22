@@ -100,7 +100,7 @@ function NavButton({
             {texture && (
                 <pixiSprite
                     texture={texture}
-                    tint={theme.UI.NAV_ICON}
+                    tint={active ? theme.UI.NAV_ICON_ACTIVE : theme.UI.NAV_ICON}
                     alpha={alpha}
                     layout={{
                         width: ICON_SIZE,

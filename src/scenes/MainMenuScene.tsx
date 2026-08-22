@@ -1,9 +1,12 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { useTheme } from '@src/ui/ThemeContext'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useAppLayout } from '@src/scenes/useAppLayout'
 import { MenuButton } from '@components/ui/MenuButton'
 import { BottomNav, type BottomNavTab } from '@components/ui/BottomNav'
+import { MenuAtmosphere } from '@components/MainMenu/MenuAtmosphere'
+import { MenuTopBar } from '@components/MainMenu/TopBar/MenuTopBar'
+import { HomeTab } from '@components/MainMenu/HomeTab'
 
 export function MainMenuScene() {
     const { screenSize, mainSize, ready } = useAppLayout()
@@ -29,94 +32,60 @@ export function MainMenuScene() {
                     width: mainSize.width,
                     height: mainSize.height,
                     flexDirection: 'column',
-                    backgroundColor: theme.SURFACE_COLOR,
+                    backgroundColor: theme.MENU.BG_MID,
+                    overflow: 'hidden',
                 }}
             >
-                <layoutContainer
-                    layout={{
-                        width: '100%',
-                        flex: 1,
-                        flexDirection: 'column',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        gap: 24,
-                    }}
-                >
-                    {tab === 'home' && (
-                        <>
-                            <layoutText
-                                text="Тетрис"
-                                style={{
-                                    fontSize: 48,
-                                    fill: theme.TEXT_COLOR,
-                                    fontWeight: 'bold',
-                                    align: 'center',
-                                }}
-                                layout={{
-                                    objectFit: 'none',
-                                    objectPosition: 'center',
-                                    marginBottom: 24,
-                                }}
-                            />
-                            <MenuButton label="Играть" onPress={() => setScene(SceneId.Game)} />
-                        </>
-                    )}
+                <MenuAtmosphere width={mainSize.width} height={mainSize.height} />
+                <MenuTopBar width={mainSize.width} />
 
-                    {tab === 'ranking' && (
-                        <layoutText
-                            text="Рейтинг"
-                            style={{
-                                fontSize: 36,
-                                fill: theme.TEXT_COLOR,
-                                fontWeight: 'bold',
-                                align: 'center',
-                            }}
-                            layout={{
-                                objectFit: 'none',
-                                objectPosition: 'center',
-                            }}
-                        />
-                    )}
+                {tab === 'home' && (
+                    <HomeTab width={mainSize.width} onPlay={() => setScene(SceneId.Game)} />
+                )}
 
-                    {tab === 'achievements' && (
-                        <layoutText
-                            text="Достижения"
-                            style={{
-                                fontSize: 36,
-                                fill: theme.TEXT_COLOR,
-                                fontWeight: 'bold',
-                                align: 'center',
-                            }}
-                            layout={{
-                                objectFit: 'none',
-                                objectPosition: 'center',
-                            }}
-                        />
-                    )}
-
-                    {tab === 'settings' && (
-                        <>
-                            <layoutText
-                                text="Настройки"
-                                style={{
-                                    fontSize: 36,
-                                    fill: theme.TEXT_COLOR,
-                                    fontWeight: 'bold',
-                                    align: 'center',
-                                }}
-                                layout={{
-                                    objectFit: 'none',
-                                    objectPosition: 'center',
-                                    marginBottom: 24,
-                                }}
-                            />
-                            <MenuButton label="Разработка" onPress={() => setScene(SceneId.Dev)} />
-                        </>
-                    )}
-                </layoutContainer>
+                {tab === 'ranking' && <MenuPlaceholder title="Рейтинг" />}
+                {tab === 'achievements' && <MenuPlaceholder title="Достижения" />}
+                {tab === 'settings' && (
+                    <MenuPlaceholder title="Настройки">
+                        <MenuButton label="Разработка" onPress={() => setScene(SceneId.Dev)} />
+                    </MenuPlaceholder>
+                )}
 
                 <BottomNav active={tab} onChange={setTab} />
             </layoutContainer>
+        </layoutContainer>
+    )
+}
+
+function MenuPlaceholder({ title, children }: { title: string; children?: ReactNode }) {
+    const theme = useTheme()
+
+    return (
+        <layoutContainer
+            layout={{
+                width: '100%',
+                flex: 1,
+                flexDirection: 'column',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: 24,
+            }}
+        >
+            <layoutText
+                text={title}
+                style={{
+                    fontFamily: theme.UI.FONT_FAMILY,
+                    fontSize: 36,
+                    fill: theme.TEXT_COLOR,
+                    fontWeight: 'bold',
+                    align: 'center',
+                }}
+                layout={{
+                    objectFit: 'none',
+                    objectPosition: 'center',
+                }}
+            />
+            {children}
         </layoutContainer>
     )
 }

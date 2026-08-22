@@ -4,7 +4,7 @@
  */
 
 import { palette } from '../palette'
-import { FONT_FAMILY } from '@src/assets/fonts'
+import { FONT_DISPLAY, FONT_FAMILY } from '@src/assets/fonts'
 
 export const theme = {
     // Surfaces
@@ -39,9 +39,27 @@ export const theme = {
         BUTTON_SECONDARY_HOVER: palette.purple_800,
         BUTTON_DANGER_TEXT: palette.coral_400,
         BUTTON_DANGER_TEXT_HOVER: palette.coral_300,
-        NAV_BAR: palette.gray_900,
+        NAV_BAR: palette.navy_980,
         NAV_ICON: palette.white,
-    }
+        NAV_ICON_ACTIVE: palette.violet_300,
+    },
+
+    MENU: {
+        BG_TOP: palette.navy_800,
+        BG_MID: palette.navy_900,
+        BG_BOTTOM: palette.navy_950,
+        LETTERBOX: palette.navy_980,
+        PANEL: palette.navy_990,
+        GLOW: palette.violet_500,
+        TITLE_LIGHT: palette.cyan_200,
+        TITLE_MID: palette.cyan_400,
+        TITLE_DARK: palette.cyan_700,
+        PLAY: palette.violet_500,
+        PLAY_HOVER: palette.violet_600,
+        ACCENT: palette.violet_300,
+        GOLD: palette.gold_400,
+        FONT_DISPLAY,
+    },
 } as const
 
 export type Theme = typeof theme

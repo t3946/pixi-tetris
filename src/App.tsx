@@ -45,7 +45,7 @@ export function App() {
                 <SceneProvider>
                     <Application
                         resizeTo={window}
-                        backgroundColor={0x1099bb}
+                        backgroundColor={0x0a0a1a}
                         antialias={true}
                         resolution={window.devicePixelRatio}
                         autoDensity={true}
