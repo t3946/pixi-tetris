@@ -1,9 +1,9 @@
 import '@pixi/layout'
 import '@pixi/layout/react'
 import { Application, extend } from '@pixi/react'
-import { Container, Graphics, Sprite, Text } from 'pixi.js'
+import { Color, Container, Graphics, Sprite, Text } from 'pixi.js'
 import { LayoutContainer, LayoutText } from '@pixi/layout/components'
-import { ThemeProvider } from '@src/ui/ThemeContext'
+import { ThemeProvider, useTheme } from '@src/ui/ThemeContext'
 import { UserProvider } from '@src/user/UserContext'
 import { SceneId, SceneProvider, useScene } from '@src/scenes/SceneContext'
 import { MainMenuScene } from '@src/scenes/MainMenuScene'
@@ -11,6 +11,7 @@ import { GameScene } from '@src/scenes/GameScene'
 import { DevScene } from '@src/scenes/DevScene'
 import { RowEffectScene } from '@src/scenes/RowEffectScene'
 import { BlockSkinScene } from '@src/scenes/BlockSkinScene'
+import type { ReactNode } from 'react'
 
 extend({
     Container,
@@ -38,20 +39,30 @@ function Scenes() {
     }
 }
 
+function ThemedApplication({ children }: { children: ReactNode }) {
+    const theme = useTheme()
+
+    return (
+        <Application
+            resizeTo={window}
+            backgroundColor={new Color(theme.MENU.LETTERBOX).toNumber()}
+            antialias={true}
+            resolution={window.devicePixelRatio}
+            autoDensity={true}
+        >
+            {children}
+        </Application>
+    )
+}
+
 export function App() {
     return (
         <ThemeProvider>
             <UserProvider>
                 <SceneProvider>
-                    <Application
-                        resizeTo={window}
-                        backgroundColor={0x0a0a1a}
-                        antialias={true}
-                        resolution={window.devicePixelRatio}
-                        autoDensity={true}
-                    >
+                    <ThemedApplication>
                         <Scenes />
-                    </Application>
+                    </ThemedApplication>
                 </SceneProvider>
             </UserProvider>
         </ThemeProvider>

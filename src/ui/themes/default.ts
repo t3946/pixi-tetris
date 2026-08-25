@@ -49,7 +49,7 @@ export const theme = {
         BG_TOP: palette.navy_800,
         BG_MID: palette.navy_900,
         BG_BOTTOM: palette.navy_950,
-        LETTERBOX: palette.navy_980,
+        LETTERBOX: palette.black,
         PANEL: palette.navy_990,
         GLOW: palette.violet_500,
         TITLE_LIGHT: palette.cyan_200,

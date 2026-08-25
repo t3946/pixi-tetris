@@ -25,6 +25,7 @@ export function MainMenuScene() {
                 height: screenSize.height,
                 justifyContent: 'center',
                 alignItems: 'center',
+                backgroundColor: theme.MENU.LETTERBOX,
             }}
         >
             <layoutContainer
