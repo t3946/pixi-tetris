@@ -11,6 +11,7 @@ import {
     type EBlockTheme,
 } from '@src/tetris/blocks/themes'
 import { useUser } from '@src/user/UserContext'
+import { useTheme } from '@src/ui/ThemeContext'
 import { PIECE_TYPES } from '@src/tetris/tetrominoes'
 
 const CELL = 28
@@ -18,6 +19,7 @@ const GAP = 3
 
 function ThemePreviewRow({ id }: { id: EBlockTheme }) {
     const theme = getBlockTheme(id)
+    const uiTheme = useTheme()
     useSyncExternalStore(theme.subscribe, theme.getRevision, theme.getRevision)
     const { user, setBlockTheme } = useUser()
     const selected = id === user.blockTheme
@@ -43,6 +45,7 @@ function ThemePreviewRow({ id }: { id: EBlockTheme }) {
             <layoutText
                 text={BLOCK_MATERIALS[id].label}
                 style={{
+                    fontFamily: uiTheme.UI.FONT_FAMILY,
                     fontSize: 16,
                     fill: 0xffffff,
                     fontWeight: selected ? 'bold' : 'normal',

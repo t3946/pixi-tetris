@@ -35,6 +35,7 @@ export function DevScene() {
                 <layoutText
                     text="Разработка"
                     style={{
+                        fontFamily: theme.UI.FONT_FAMILY,
                         fontSize: 36,
                         fill: theme.TEXT_COLOR,
                         fontWeight: 'bold',

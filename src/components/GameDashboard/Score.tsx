@@ -29,6 +29,7 @@ export const Score = () => {
         <pixiText
             text={String(displayScore)}
             style={{
+                fontFamily: theme.UI.FONT_FAMILY,
                 fontSize: SCORE_FONT_SIZE,
                 fill: theme.TEXT_COLOR,
                 fontWeight: 'bold',

@@ -49,6 +49,7 @@ export function Panel({
                 <layoutText
                     text={title}
                     style={{
+                        fontFamily: theme.UI.FONT_FAMILY,
                         fontSize: TITLE_FONT_SIZE,
                         fill: theme.UI.PANEL_LABEL,
                         fontWeight: 'bold',
