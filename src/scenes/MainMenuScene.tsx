@@ -33,7 +33,7 @@ export function MainMenuScene() {
                     height: mainSize.height,
                     flexDirection: 'column',
                     backgroundColor: theme.MENU.BG_MID,
-                    overflow: 'hidden',
+                    overflow: 'visible',
                 }}
             >
                 <MenuAtmosphere width={mainSize.width} height={mainSize.height} />

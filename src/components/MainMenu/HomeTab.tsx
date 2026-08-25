@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { UiIcon } from '@components/ui/UiIcon'
+import { PlayButton } from '@components/ui/PlayButton'
 import { useTheme } from '@src/ui/ThemeContext'
 import { MENU_DESIGN_WIDTH } from './gameModes'
 import { GameTitle } from './GameTitle'
-import { ModeCarousel } from './ModeCarousel'
+import { GameMode } from './GameMode/GameMode.tsx'
 
 type TProps = {
     width: number
@@ -14,6 +15,7 @@ export function HomeTab({ width, onPlay }: TProps) {
     const u = width / MENU_DESIGN_WIDTH
     const pad = Math.round(24 * u)
     const titleSize = Math.round(Math.min(56, Math.max(40, width * 0.13)))
+    const playWidth = Math.max(1, width - pad * 2)
 
     return (
         <layoutContainer
@@ -25,68 +27,24 @@ export function HomeTab({ width, onPlay }: TProps) {
                 justifyContent: 'center',
                 paddingLeft: pad,
                 paddingRight: pad,
-                // gap: Math.round(20 * u),
                 overflow: 'visible',
             }}
         >
-            <layoutContainer layout={{marginBottom: 37}}>
+            <layoutContainer layout={{ marginBottom: 37, overflow: 'visible' }}>
                 <GameTitle fontSize={titleSize} />
             </layoutContainer>
 
-            <layoutContainer layout={{marginBottom: 37}}>
-                <ModeCarousel width={width} />
+            <layoutContainer layout={{ marginBottom: 37, overflow: 'visible' }}>
+                <GameMode width={width} />
             </layoutContainer>
 
-            <layoutContainer layout={{marginBottom: 20}}>
-                <PlayButton scale={u} onPress={onPlay} />
+            <layoutContainer layout={{ marginBottom: 20, overflow: 'visible' }}>
+                <PlayButton width={playWidth} scale={u} onPress={onPlay} />
             </layoutContainer>
 
-            <CollectionsButton scale={u} />
-        </layoutContainer>
-    )
-}
-
-function PlayButton({
-    scale,
-    onPress,
-}: {
-    scale: number
-    onPress: () => void
-}) {
-    const theme = useTheme()
-    const [hovered, setHovered] = useState(false)
-    const height = Math.round(56 * scale)
-
-    return (
-        <layoutContainer
-            eventMode="static"
-            cursor="pointer"
-            onPointerTap={onPress}
-            onPointerOver={() => setHovered(true)}
-            onPointerOut={() => setHovered(false)}
-            layout={{
-                width: '100%',
-                height,
-                borderRadius: Math.round(18 * scale),
-                backgroundColor: hovered ? theme.MENU.PLAY_HOVER : theme.MENU.PLAY,
-                justifyContent: 'center',
-                alignItems: 'center',
-                flexShrink: 0,
-            }}
-        >
-            <layoutText
-                text="НАЧАТЬ"
-                style={{
-                    fontFamily: theme.UI.FONT_FAMILY,
-                    fontSize: Math.round(20 * scale),
-                    fill: theme.TEXT_COLOR,
-                    fontWeight: 'bold',
-                    letterSpacing: 2,
-                    align: 'center',
-                }}
-                layout={{ objectFit: 'none' }}
-                eventMode="none"
-            />
+            <layoutContainer layout={{ overflow: 'visible' }}>
+                <CollectionsButton scale={u} />
+            </layoutContainer>
         </layoutContainer>
     )
 }
