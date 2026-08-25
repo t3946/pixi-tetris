@@ -1,10 +1,8 @@
-import { useState } from 'react'
-import { UiIcon } from '@components/ui/UiIcon'
 import { PlayButton } from '@components/ui/PlayButton'
-import { useTheme } from '@src/ui/ThemeContext'
 import { MENU_DESIGN_WIDTH } from './gameModes'
 import { GameTitle } from './GameTitle'
 import { GameMode } from './GameMode/GameMode.tsx'
+import { CollectionsButton } from './CollectionsButton'
 
 type TProps = {
     width: number
@@ -44,93 +42,6 @@ export function HomeTab({ width, onPlay }: TProps) {
 
             <layoutContainer layout={{ overflow: 'visible' }}>
                 <CollectionsButton scale={u} />
-            </layoutContainer>
-        </layoutContainer>
-    )
-}
-
-function CollectionsButton({ scale }: { scale: number }) {
-    const theme = useTheme()
-    const [hovered, setHovered] = useState(false)
-    const height = Math.round(50 * scale)
-
-    return (
-        <layoutContainer
-            eventMode="static"
-            cursor="pointer"
-            onPointerOver={() => setHovered(true)}
-            onPointerOut={() => setHovered(false)}
-            layout={{
-                width: '100%',
-                height,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                paddingLeft: Math.round(20 * scale),
-                paddingRight: Math.round(20 * scale),
-                borderRadius: Math.round(16 * scale),
-                borderWidth: 2,
-                borderColor: theme.MENU.ACCENT,
-                flexShrink: 0,
-                overflow: 'hidden',
-            }}
-        >
-            <layoutContainer
-                eventMode="none"
-                alpha={hovered ? 0.1 : 0.06}
-                layout={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    backgroundColor: hovered ? theme.MENU.ACCENT : theme.TEXT_COLOR,
-                    borderRadius: Math.round(16 * scale),
-                }}
-            />
-            <layoutContainer
-                eventMode="none"
-                layout={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: Math.round(10 * scale),
-                }}
-            >
-                <UiIcon name="palette" size={Math.round(16 * scale)} tint={theme.MENU.ACCENT} />
-                <layoutText
-                    text="КОЛЛЕКЦИИ"
-                    style={{
-                        fontFamily: theme.UI.FONT_FAMILY,
-                        fontSize: Math.round(15 * scale),
-                        fill: theme.MENU.ACCENT,
-                        fontWeight: 'bold',
-                        letterSpacing: 1.8,
-                    }}
-                    layout={{ objectFit: 'none' }}
-                />
-            </layoutContainer>
-            <layoutContainer
-                eventMode="none"
-                layout={{
-                    width: Math.round(24 * scale),
-                    height: Math.round(24 * scale),
-                    borderRadius: Math.round(12 * scale),
-                    backgroundColor: theme.MENU.PLAY,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
-            >
-                <layoutText
-                    text="3"
-                    style={{
-                        fontFamily: theme.UI.FONT_FAMILY,
-                        fontSize: Math.round(12 * scale),
-                        fill: theme.TEXT_COLOR,
-                        fontWeight: 'bold',
-                        align: 'center',
-                    }}
-                    layout={{ objectFit: 'none' }}
-                />
             </layoutContainer>
         </layoutContainer>
     )
