@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { IconName } from '@src/assets/icons'
-import { useIconTexture } from '@src/hooks/useIconTexture'
+import { UiIcon } from '@components/ui/UiIcon'
 import { useTheme } from '@src/ui/ThemeContext'
 
 export type BottomNavTab = 'home' | 'ranking' | 'achievements' | 'settings'
@@ -10,16 +10,18 @@ type TProps = {
     onChange: (tab: BottomNavTab) => void
 }
 
-const NAV_HEIGHT = 64
-const CORNER_RADIUS = 8
+const NAV_HEIGHT = 72
+const BORDER_WIDTH = 1
 const ICON_SIZE = 28
+const LABEL_SIZE = 11
+const ICON_LABEL_GAP = 8
 const INACTIVE_ALPHA = 0.4
 
-const TABS: { id: BottomNavTab; icon: IconName }[] = [
-    { id: 'home', icon: 'houseBlank' },
-    { id: 'ranking', icon: 'rankingStar' },
-    { id: 'achievements', icon: 'medal' },
-    { id: 'settings', icon: 'gear' },
+const TABS: { id: BottomNavTab; icon: IconName; label: string }[] = [
+    { id: 'home', icon: 'houseBlank', label: 'Главная' },
+    { id: 'ranking', icon: 'rankingStar', label: 'Турниры' },
+    { id: 'achievements', icon: 'medal', label: 'Рекорды' },
+    { id: 'settings', icon: 'gear', label: 'Настройки' },
 ]
 
 export function BottomNav({ active, onChange }: TProps) {
@@ -31,10 +33,8 @@ export function BottomNav({ active, onChange }: TProps) {
                 width: '100%',
                 height: NAV_HEIGHT,
                 flexShrink: 0,
-                overflow: 'hidden',
             }}
         >
-            {/* Лишняя высота обрезается — скругление остаётся только у верхних углов */}
             <layoutContainer
                 eventMode="none"
                 layout={{
@@ -42,9 +42,19 @@ export function BottomNav({ active, onChange }: TProps) {
                     top: 0,
                     left: 0,
                     width: '100%',
-                    height: NAV_HEIGHT + CORNER_RADIUS,
+                    height: '100%',
                     backgroundColor: theme.UI.NAV_BAR,
-                    borderRadius: CORNER_RADIUS,
+                }}
+            />
+            <layoutContainer
+                eventMode="none"
+                layout={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    height: BORDER_WIDTH,
+                    backgroundColor: theme.UI.NAV_BORDER,
                 }}
             />
 
@@ -60,6 +70,7 @@ export function BottomNav({ active, onChange }: TProps) {
                     <NavButton
                         key={tab.id}
                         icon={tab.icon}
+                        label={tab.label}
                         active={tab.id === active}
                         onPress={() => onChange(tab.id)}
                     />
@@ -71,16 +82,18 @@ export function BottomNav({ active, onChange }: TProps) {
 
 function NavButton({
     icon,
+    label,
     active,
     onPress,
 }: {
     icon: IconName
+    label: string
     active: boolean
     onPress: () => void
 }) {
     const theme = useTheme()
     const [hovered, setHovered] = useState(false)
-    const texture = useIconTexture(icon)
+    const tint = active ? theme.UI.NAV_ICON_ACTIVE : theme.UI.NAV_ICON
     const alpha = active ? 1 : hovered ? 0.75 : INACTIVE_ALPHA
 
     return (
@@ -93,22 +106,30 @@ function NavButton({
             layout={{
                 flex: 1,
                 height: '100%',
+                flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
+                gap: ICON_LABEL_GAP,
             }}
         >
-            {texture && (
-                <pixiSprite
-                    texture={texture}
-                    tint={active ? theme.UI.NAV_ICON_ACTIVE : theme.UI.NAV_ICON}
-                    alpha={alpha}
-                    layout={{
-                        width: ICON_SIZE,
-                        height: ICON_SIZE,
-                        objectFit: 'contain',
-                    }}
-                />
-            )}
+            <layoutContainer layout={{ width: ICON_SIZE, height: ICON_SIZE, flexShrink: 0 }}>
+                <UiIcon name={icon} size={ICON_SIZE} tint={tint} alpha={alpha} />
+            </layoutContainer>
+            <layoutText
+                text={label}
+                style={{
+                    fontFamily: theme.UI.FONT_FAMILY,
+                    fontSize: LABEL_SIZE,
+                    fill: tint,
+                    align: 'center',
+                }}
+                alpha={alpha}
+                layout={{
+                    objectFit: 'none',
+                    objectPosition: 'center',
+                }}
+                eventMode="none"
+            />
         </layoutContainer>
     )
 }

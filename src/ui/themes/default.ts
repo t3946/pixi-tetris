@@ -40,6 +40,7 @@ export const theme = {
         BUTTON_DANGER_TEXT: palette.coral_400,
         BUTTON_DANGER_TEXT_HOVER: palette.coral_300,
         NAV_BAR: palette.navy_980,
+        NAV_BORDER: palette.purple_800,
         NAV_ICON: palette.white,
         NAV_ICON_ACTIVE: palette.violet_300,
     },

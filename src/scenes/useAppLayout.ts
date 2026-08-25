@@ -15,7 +15,7 @@ function computeMainSize(app: Application) {
         width = height * (w / h)
     }
 
-    return { width, height }
+    return { width: Math.round(width), height: Math.round(height) }
 }
 
 export function useAppLayout() {
