@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Color, Graphics } from 'pixi.js'
 import { UiIcon } from '@components/ui/UiIcon'
-import type { IconName } from '@src/assets/icons'
 import { useTheme } from '@src/ui/ThemeContext'
 import {
     GAME_MODES,
@@ -338,18 +337,11 @@ function ModeGlyph({
     color: string
     size: number
 }) {
-    const icon = MODE_GLYPH_ICONS[modeId]
-    if (icon) {
-        return <UiIcon name={icon} size={size} tint={color} />
+    if (modeId !== 'free') {
+        return null
     }
 
     return <FreeModeStar color={color} size={size} />
-}
-
-const MODE_GLYPH_ICONS: Partial<Record<GameModeId, IconName>> = {
-    blitz: 'skull',
-    challenge: 'skullAndEyePatch',
-    hardcore: 'skullAndEyePatch',
 }
 
 function FreeModeStar({ color, size }: { color: string; size: number }) {

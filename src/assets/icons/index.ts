@@ -9,8 +9,6 @@ import star from './star.svg'
 import layers from './layers.svg'
 import palette from './palette.svg'
 import leftArrow from './left-arrow.svg'
-import skull from './skull.svg'
-import skullAndEyePatch from './skull-and-eye-patch.svg'
 
 export const icons = {
     pause,
@@ -24,8 +22,6 @@ export const icons = {
     layers,
     palette,
     leftArrow,
-    skull,
-    skullAndEyePatch,
 } as const
 
 export type IconName = keyof typeof icons
