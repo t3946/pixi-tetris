@@ -2,6 +2,7 @@
 
 vec3 bgColor = vec3(0.01, 0.16, 0.42);
 vec3 rectColor = vec3(0.01, 0.26, 0.57);
+vec3 edgeColor = vec3(0.02, 0.03, 0.08);
 
 //noise background
 const float noiseIntensity = 2.8;
@@ -90,8 +91,9 @@ vec4 mainImage(vec4 fragColor, vec2 fragCoord, vec3 iResolution)
     vec2 uv = fragCoord.xy / iResolution.xy * 2. - 1.;
     uv.x *= iResolution.x / iResolution.y;
 
-    //bg
-    vec3 color = bg(uv) * (2. - abs(uv.y * 2.));
+    //bg — по краям уходим в тёмно-синий, а не в чистый чёрный
+    float edgeFade = max(0.0, 2.0 - abs(uv.y * 2.0));
+    vec3 color = bg(uv) * edgeFade + edgeColor * (1.0 - min(edgeFade, 1.0));
 
     //rectangles
     // After 90° swap, screen vertical maps to uv.x with range ±aspect.
