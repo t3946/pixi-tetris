@@ -1,14 +1,11 @@
 import { useCallback, useMemo } from 'react'
 import { Graphics } from 'pixi.js'
-import { getShapeLocalCells, type PieceType } from '@src/tetris/tetrominoes'
+import type { MosaicFillSource } from '@shaders/mosaicFill'
+import { MosaicFillLayer } from '@components/Collections/Mosaic/MosaicFillLayer'
+import { getPieceBoardCells, type MosaicPiece } from '@components/Collections/Mosaic/mosaicPieceCells'
 
-export type MosaicPiece = {
-    type: PieceType
-    /** Клетка сетки — левый верх занятого bbox фигуры */
-    x: number
-    y: number
-    rotation?: number
-}
+export type { MosaicPiece } from '@components/Collections/Mosaic/mosaicPieceCells'
+export { getPieceBoardCells } from '@components/Collections/Mosaic/mosaicPieceCells'
 
 type TProps = {
     /** Мультипликатор клетки сетки */
@@ -18,6 +15,8 @@ type TProps = {
     pieces: readonly MosaicPiece[]
     /** Сколько первых деталей показать после сортировки */
     progress?: number
+    /** Шейдерная заливка (запекается в текстуру и маскируется по клеткам) */
+    fill?: MosaicFillSource
 }
 
 function sortMosaicPieces(pieces: readonly MosaicPiece[]): MosaicPiece[] {
@@ -33,7 +32,7 @@ function sortMosaicPieces(pieces: readonly MosaicPiece[]): MosaicPiece[] {
 /**
  * Абстрактный конструктор мозаики: рисует набор тетромино-деталей на сетке.
  */
-export function MosaicBase({ size, cols, rows, pieces, progress }: TProps) {
+export function MosaicBase({ size, cols, rows, pieces, progress, fill }: TProps) {
     const unit = typeof size === 'string' ? Number(size) : size
     const width = cols * unit
     const height = rows * unit
@@ -53,12 +52,63 @@ export function MosaicBase({ size, cols, rows, pieces, progress }: TProps) {
             }}
         >
             <pixiContainer>
-                {visiblePieces.map((piece, index) => (
-                    <MosaicPieceGraphics key={index} piece={piece} unit={unit} />
-                ))}
+                {fill != null && (
+                    <MosaicFillLayer
+                        fill={fill}
+                        width={width}
+                        height={height}
+                        unit={unit}
+                        pieces={visiblePieces}
+                    />
+                )}
+
+                {visiblePieces.map((piece, index) =>
+                    fill != null ? (
+                        <MosaicPieceEdges key={index} piece={piece} unit={unit} />
+                    ) : (
+                        <MosaicPieceGraphics key={index} piece={piece} unit={unit} />
+                    ),
+                )}
             </pixiContainer>
         </layoutContainer>
     )
+}
+
+function MosaicPieceEdges({ piece, unit }: { piece: MosaicPiece; unit: number }) {
+    const cells = getPieceBoardCells(piece)
+
+    const draw = useCallback(
+        (graphics: Graphics) => {
+            graphics.clear()
+
+            const occupied = new Set(cells.map((cell) => `${cell.x},${cell.y}`))
+
+            for (const cell of cells) {
+                const x0 = cell.x * unit
+                const y0 = cell.y * unit
+                const x1 = x0 + unit
+                const y1 = y0 + unit
+
+                if (!occupied.has(`${cell.x},${cell.y - 1}`)) {
+                    graphics.moveTo(x0, y0).lineTo(x1, y0)
+                }
+                if (!occupied.has(`${cell.x},${cell.y + 1}`)) {
+                    graphics.moveTo(x0, y1).lineTo(x1, y1)
+                }
+                if (!occupied.has(`${cell.x - 1},${cell.y}`)) {
+                    graphics.moveTo(x0, y0).lineTo(x0, y1)
+                }
+                if (!occupied.has(`${cell.x + 1},${cell.y}`)) {
+                    graphics.moveTo(x1, y0).lineTo(x1, y1)
+                }
+            }
+
+            graphics.stroke({ width: 2, color: 0x000000 })
+        },
+        [cells, unit],
+    )
+
+    return <pixiGraphics draw={draw} />
 }
 
 function MosaicPieceGraphics({ piece, unit }: { piece: MosaicPiece; unit: number }) {
@@ -100,16 +150,4 @@ function MosaicPieceGraphics({ piece, unit }: { piece: MosaicPiece; unit: number
     )
 
     return <pixiGraphics draw={draw} />
-}
-
-/** Клетки фигуры на доске: (x, y) — левый верх bbox занятых клеток. */
-export function getPieceBoardCells(piece: MosaicPiece): { x: number; y: number }[] {
-    const local = getShapeLocalCells(piece.type, piece.rotation ?? 0)
-    const minX = Math.min(...local.map((cell) => cell.x))
-    const minY = Math.min(...local.map((cell) => cell.y))
-
-    return local.map((cell) => ({
-        x: piece.x + (cell.x - minX),
-        y: piece.y + (cell.y - minY),
-    }))
 }

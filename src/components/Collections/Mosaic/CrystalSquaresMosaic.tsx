@@ -1,5 +1,6 @@
 import { EPieceType } from '@src/tetris/blocks/themes'
-import { MosaicBase, type MosaicPiece } from '@components/Collections/MosaicBase'
+import { crystalSquaresFill } from '@shaders/mosaicFill'
+import { MosaicBase, type MosaicPiece } from '@components/Collections/Mosaic/MosaicBase'
 
 const COLS = 5
 const ROWS = 8
@@ -23,9 +24,19 @@ const PIECES: MosaicPiece[] = [
 
 type TProps = {
     size: number | string
+    progress?: number
 }
 
-/** Мозаика коллекций из тетромино. */
-export function Mosaic({ size }: TProps) {
-    return <MosaicBase size={size} cols={COLS} rows={ROWS} pieces={PIECES} />
+/** Мозaика «Crystal Squares» — bg-blue шейдер под маской тетромино. */
+export function CrystalSquaresMosaic({ size, progress }: TProps) {
+    return (
+        <MosaicBase
+            size={size}
+            cols={COLS}
+            rows={ROWS}
+            pieces={PIECES}
+            progress={progress}
+            fill={crystalSquaresFill}
+        />
+    )
 }
