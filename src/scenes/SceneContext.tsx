@@ -3,6 +3,7 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from 're
 export enum SceneId {
     MainMenu = 'mainMenu',
     Game = 'game',
+    Collections = 'collections',
     Dev = 'dev',
     RowEffect = 'rowEffect',
     BlockSkin = 'blockSkin',
@@ -16,7 +17,7 @@ type SceneContextValue = {
 const SceneContext = createContext<SceneContextValue | null>(null)
 
 export function SceneProvider({ children }: { children: ReactNode }) {
-    const [scene, setScene] = useState<SceneId>(SceneId.MainMenu)
+    const [scene, setScene] = useState<SceneId>(SceneId.Collections)
 
     const value = useMemo(() => ({ scene, setScene }), [scene])
 

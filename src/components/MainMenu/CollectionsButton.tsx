@@ -5,9 +5,10 @@ import { useTheme } from '@src/ui/ThemeContext'
 
 type TProps = {
     scale: number
+    onPress: () => void
 }
 
-export function CollectionsButton({ scale }: TProps) {
+export function CollectionsButton({ scale, onPress }: TProps) {
     const theme = useTheme()
     const [hovered, setHovered] = useState(false)
     const height = Math.round(50 * scale)
@@ -25,6 +26,7 @@ export function CollectionsButton({ scale }: TProps) {
             cursor="pointer"
             onPointerOver={() => setHovered(true)}
             onPointerOut={() => setHovered(false)}
+            onPointerTap={onPress}
             layout={{
                 width: '100%',
                 height,

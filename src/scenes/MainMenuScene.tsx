@@ -41,7 +41,11 @@ export function MainMenuScene() {
                 <MenuTopBar width={mainSize.width} />
 
                 {tab === 'home' && (
-                    <HomeTab width={mainSize.width} onPlay={() => setScene(SceneId.Game)} />
+                    <HomeTab
+                        width={mainSize.width}
+                        onPlay={() => setScene(SceneId.Game)}
+                        onCollections={() => setScene(SceneId.Collections)}
+                    />
                 )}
 
                 {tab === 'ranking' && <MenuPlaceholder title="Рейтинг" />}

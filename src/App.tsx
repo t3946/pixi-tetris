@@ -11,6 +11,7 @@ import { GameScene } from '@src/scenes/GameScene'
 import { DevScene } from '@src/scenes/DevScene'
 import { RowEffectScene } from '@src/scenes/RowEffectScene'
 import { BlockSkinScene } from '@src/scenes/BlockSkinScene'
+import { CollectionsScene } from '@src/scenes/CollectionsScene'
 import type { ReactNode } from 'react'
 
 extend({
@@ -30,6 +31,8 @@ function Scenes() {
             return <MainMenuScene />
         case SceneId.Game:
             return <GameScene />
+        case SceneId.Collections:
+            return <CollectionsScene />
         case SceneId.Dev:
             return <DevScene />
         case SceneId.RowEffect:

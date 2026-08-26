@@ -7,9 +7,10 @@ import { CollectionsButton } from './CollectionsButton'
 type TProps = {
     width: number
     onPlay: () => void
+    onCollections: () => void
 }
 
-export function HomeTab({ width, onPlay }: TProps) {
+export function HomeTab({ width, onPlay, onCollections }: TProps) {
     const u = width / MENU_DESIGN_WIDTH
     const pad = Math.round(24 * u)
     const titleSize = Math.round(Math.min(56, Math.max(40, width * 0.13)))
@@ -41,7 +42,7 @@ export function HomeTab({ width, onPlay }: TProps) {
             </layoutContainer>
 
             <layoutContainer layout={{ overflow: 'visible' }}>
-                <CollectionsButton scale={u} />
+                <CollectionsButton scale={u} onPress={onCollections} />
             </layoutContainer>
         </layoutContainer>
     )
