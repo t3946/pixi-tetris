@@ -1,9 +1,7 @@
 import type { ReactNode } from 'react'
 import type { LayoutStyles } from '@pixi/layout'
 import { useAppLayout } from '@src/scenes/useAppLayout'
-
-/** Доля высоты экрана под системный интерфейс (status bar / notch). */
-export const SAFE_AREA_TOP = '5%'
+import { SafeAreaTop } from '@src/scenes/SafeAreaTop'
 
 type TProps = {
     children: ReactNode
@@ -53,15 +51,23 @@ export function SceneFrame({
                     ...layout,
                 }}
             >
-                {backdrop}
+                {/* absolute — иначе fullscreen-backdrop забирает всю высоту flex-колонки */}
+                {backdrop != null && (
+                    <layoutContainer
+                        eventMode="none"
+                        layout={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                        }}
+                    >
+                        {backdrop}
+                    </layoutContainer>
+                )}
 
-                <layoutContainer
-                    layout={{
-                        width: '100%',
-                        height: SAFE_AREA_TOP,
-                        flexShrink: 0,
-                    }}
-                />
+                <SafeAreaTop backgroundColor={backgroundColor} />
 
                 {children}
             </layoutContainer>
