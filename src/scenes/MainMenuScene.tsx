@@ -2,6 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { useTheme } from '@src/ui/ThemeContext'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useAppLayout } from '@src/scenes/useAppLayout'
+import { SceneFrame } from '@src/scenes/SceneFrame'
 import { MenuButton } from '@components/ui/MenuButton'
 import { BottomNav, type BottomNavTab } from '@components/ui/BottomNav'
 import { MenuAtmosphere } from '@components/MainMenu/MenuAtmosphere'
@@ -9,7 +10,7 @@ import { MenuTopBar } from '@components/MainMenu/TopBar/MenuTopBar'
 import { HomeTab } from '@components/MainMenu/HomeTab'
 
 export function MainMenuScene() {
-    const { screenSize, mainSize, ready } = useAppLayout()
+    const { mainSize, ready } = useAppLayout()
     const { setScene } = useScene()
     const theme = useTheme()
     const [tab, setTab] = useState<BottomNavTab>('home')
@@ -19,46 +20,32 @@ export function MainMenuScene() {
     }
 
     return (
-        <layoutContainer
-            layout={{
-                width: screenSize.width,
-                height: screenSize.height,
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: theme.MENU.LETTERBOX,
-            }}
+        <SceneFrame
+            backgroundColor={theme.MENU.BG_MID}
+            letterboxColor={theme.MENU.LETTERBOX}
+            layout={{ overflow: 'visible' }}
+            backdrop={<MenuAtmosphere width={mainSize.width} height={mainSize.height} />}
         >
-            <layoutContainer
-                layout={{
-                    width: mainSize.width,
-                    height: mainSize.height,
-                    flexDirection: 'column',
-                    backgroundColor: theme.MENU.BG_MID,
-                    overflow: 'visible',
-                }}
-            >
-                <MenuAtmosphere width={mainSize.width} height={mainSize.height} />
-                <MenuTopBar width={mainSize.width} />
+            <MenuTopBar width={mainSize.width} />
 
-                {tab === 'home' && (
-                    <HomeTab
-                        width={mainSize.width}
-                        onPlay={() => setScene(SceneId.Game)}
-                        onCollections={() => setScene(SceneId.Collections)}
-                    />
-                )}
+            {tab === 'home' && (
+                <HomeTab
+                    width={mainSize.width}
+                    onPlay={() => setScene(SceneId.Game)}
+                    onCollections={() => setScene(SceneId.Collections)}
+                />
+            )}
 
-                {tab === 'ranking' && <MenuPlaceholder title="Рейтинг" />}
-                {tab === 'achievements' && <MenuPlaceholder title="Достижения" />}
-                {tab === 'settings' && (
-                    <MenuPlaceholder title="Настройки">
-                        <MenuButton label="Разработка" onPress={() => setScene(SceneId.Dev)} />
-                    </MenuPlaceholder>
-                )}
+            {tab === 'ranking' && <MenuPlaceholder title="Рейтинг" />}
+            {tab === 'achievements' && <MenuPlaceholder title="Достижения" />}
+            {tab === 'settings' && (
+                <MenuPlaceholder title="Настройки">
+                    <MenuButton label="Разработка" onPress={() => setScene(SceneId.Dev)} />
+                </MenuPlaceholder>
+            )}
 
-                <BottomNav active={tab} onChange={setTab} />
-            </layoutContainer>
-        </layoutContainer>
+            <BottomNav active={tab} onChange={setTab} />
+        </SceneFrame>
     )
 }
 

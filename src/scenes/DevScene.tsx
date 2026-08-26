@@ -1,35 +1,22 @@
 import { useTheme } from '@src/ui/ThemeContext'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
-import { useAppLayout } from '@src/scenes/useAppLayout'
+import { SceneFrame } from '@src/scenes/SceneFrame'
 import { MenuButton } from '@components/ui/MenuButton'
 
 export function DevScene() {
-    const { screenSize, mainSize, ready } = useAppLayout()
     const { setScene } = useScene()
     const theme = useTheme()
 
-    if (!ready) {
-        return null
-    }
-
     return (
-        <layoutContainer
-            layout={{
-                width: screenSize.width,
-                height: screenSize.height,
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}
-        >
+        <SceneFrame backgroundColor={theme.SURFACE_COLOR}>
             <layoutContainer
                 layout={{
-                    width: mainSize.width,
-                    height: mainSize.height,
+                    width: '100%',
+                    flex: 1,
                     flexDirection: 'column',
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: 24,
-                    backgroundColor: theme.SURFACE_COLOR,
                 }}
             >
                 <layoutText
@@ -52,6 +39,6 @@ export function DevScene() {
                 <MenuButton label="Скины блоков" onPress={() => setScene(SceneId.BlockSkin)} />
                 <MenuButton label="Назад" onPress={() => setScene(SceneId.MainMenu)} />
             </layoutContainer>
-        </layoutContainer>
+        </SceneFrame>
     )
 }

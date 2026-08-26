@@ -4,9 +4,10 @@ import { PauseModal } from '@components/PauseModal'
 import { TetrisGameProvider } from '@src/tetris/TetrisGameContext'
 import { Background } from '@components/Stack/Background.tsx'
 import { useAppLayout } from '@src/scenes/useAppLayout'
+import { SceneFrame } from '@src/scenes/SceneFrame'
 
 export function GameScene() {
-    const { screenSize, mainSize, ready } = useAppLayout()
+    const { mainSize, ready } = useAppLayout()
 
     if (!ready) {
         return null
@@ -14,59 +15,33 @@ export function GameScene() {
 
     return (
         <TetrisGameProvider>
-            <layoutContainer
-                layout={{
-                    width: screenSize.width,
-                    height: screenSize.height,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
+            <SceneFrame
+                backgroundColor="black"
+                backdrop={<Background width={mainSize.width} height={mainSize.height} />}
             >
                 <layoutContainer
                     layout={{
-                        width: mainSize.width,
-                        height: mainSize.height,
-                        flexDirection: 'column',
+                        width: '100%',
+                        flexShrink: 0,
+                        paddingBottom: '15',
                         backgroundColor: 'black',
                     }}
                 >
-                    {/*game background*/}
-                    <Background width={mainSize.width} height={mainSize.height} />
-
-                    {/*offset*/}
-                    <layoutContainer
-                        layout={{
-                            width: '100%',
-                            height: '5%',
-                            flexShrink: 0,
-                            backgroundColor: 'black',
-                        }}
-                    />
-
-                    <layoutContainer
-                        layout={{
-                            width: '100%',
-                            flexShrink: 0,
-                            paddingBottom: '15',
-                            backgroundColor: 'black',
-                        }}
-                    >
-                        <GameDashboard />
-                    </layoutContainer>
-
-                    <layoutContainer
-                        layout={{
-                            width: '100%',
-                            flex: 1,
-                            overflow: 'hidden',
-                        }}
-                    >
-                        <Stack />
-                    </layoutContainer>
-
-                    <PauseModal />
+                    <GameDashboard />
                 </layoutContainer>
-            </layoutContainer>
+
+                <layoutContainer
+                    layout={{
+                        width: '100%',
+                        flex: 1,
+                        overflow: 'hidden',
+                    }}
+                >
+                    <Stack />
+                </layoutContainer>
+
+                <PauseModal />
+            </SceneFrame>
         </TetrisGameProvider>
     )
 }

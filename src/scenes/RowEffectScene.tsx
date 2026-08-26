@@ -4,6 +4,7 @@ import { SandboxStack } from '@components/Stack/SandboxStack.tsx'
 import { MenuButton } from '@components/ui/MenuButton'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useAppLayout } from '@src/scenes/useAppLayout'
+import { SceneFrame } from '@src/scenes/SceneFrame'
 import { useTetrisGame } from '@src/hooks/useTetrisGame'
 import { createEmptyBoard, findFullLines, removeLines, type Board } from '@src/tetris/engine'
 import { SparkleClearIterator } from '@src/tetris/clear'
@@ -38,7 +39,7 @@ function createFilledBoard(rows: number, cols: number, filledRows: number): Boar
 }
 
 export function RowEffectScene() {
-    const { screenSize, mainSize, ready } = useAppLayout()
+    const { mainSize, ready } = useAppLayout()
     const { setScene } = useScene()
     const { state, clearLines, setBoard } = useTetrisGame(SANDBOX_ROWS, SANDBOX_COLS, {
         sandbox: true,
@@ -71,95 +72,71 @@ export function RowEffectScene() {
     }
 
     return (
-        <layoutContainer
-            layout={{
-                width: screenSize.width,
-                height: screenSize.height,
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}
+        <SceneFrame
+            backgroundColor="black"
+            backdrop={<Background width={mainSize.width} height={mainSize.height} />}
         >
             <layoutContainer
                 layout={{
-                    width: mainSize.width,
-                    height: mainSize.height,
-                    flexDirection: 'column',
+                    width: '100%',
+                    flexShrink: 0,
+                    paddingBottom: 15,
+                    justifyContent: 'center',
+                    alignItems: 'center',
                     backgroundColor: 'black',
                 }}
             >
-                <Background width={mainSize.width} height={mainSize.height} />
+                <MenuButton label="Назад" onPress={() => setScene(SceneId.Dev)} />
+            </layoutContainer>
 
+            <layoutContainer
+                layout={{
+                    width: '100%',
+                    flex: 1,
+                    overflow: 'hidden',
+                    paddingStart: '7%',
+                    paddingEnd: '7%',
+                }}
+            >
+                <SandboxStack cols={SANDBOX_COLS} rows={SANDBOX_ROWS} board={state.board} />
+            </layoutContainer>
+
+            <layoutContainer
+                layout={{
+                    width: '100%',
+                    flexShrink: 0,
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: 16,
+                    paddingTop: 16,
+                    paddingBottom: 24,
+                    paddingStart: '7%',
+                    paddingEnd: '7%',
+                    backgroundColor: 'black',
+                }}
+            >
                 <layoutContainer
                     layout={{
-                        width: '100%',
-                        height: '5%',
-                        flexShrink: 0,
-                        backgroundColor: 'black',
-                    }}
-                />
-
-                <layoutContainer
-                    layout={{
-                        width: '100%',
-                        flexShrink: 0,
-                        paddingBottom: 15,
+                        flexDirection: 'column',
                         justifyContent: 'center',
                         alignItems: 'center',
-                        backgroundColor: 'black',
+                        gap: 12,
                     }}
                 >
-                    <MenuButton label="Назад" onPress={() => setScene(SceneId.Dev)} />
+                    {([1, 2, 3, 4] as const).map((count) => (
+                        <MenuButton
+                            key={count}
+                            label={String(count)}
+                            compact
+                            onPress={() =>
+                                setBoard(createFilledBoard(SANDBOX_ROWS, SANDBOX_COLS, count))
+                            }
+                        />
+                    ))}
                 </layoutContainer>
 
-                <layoutContainer
-                    layout={{
-                        width: '100%',
-                        flex: 1,
-                        overflow: 'hidden',
-                        paddingStart: '7%',
-                        paddingEnd: '7%',
-                    }}
-                >
-                    <SandboxStack cols={SANDBOX_COLS} rows={SANDBOX_ROWS} board={state.board} />
-                </layoutContainer>
-
-                <layoutContainer
-                    layout={{
-                        width: '100%',
-                        flexShrink: 0,
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: 16,
-                        paddingTop: 16,
-                        paddingBottom: 24,
-                        paddingStart: '7%',
-                        paddingEnd: '7%',
-                        backgroundColor: 'black',
-                    }}
-                >
-                    <layoutContainer
-                        layout={{
-                            flexDirection: 'column',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            gap: 12,
-                        }}
-                    >
-                        {([1, 2, 3, 4] as const).map((count) => (
-                            <MenuButton
-                                key={count}
-                                label={String(count)}
-                                compact
-                                onPress={() =>
-                                    setBoard(createFilledBoard(SANDBOX_ROWS, SANDBOX_COLS, count))
-                                }
-                            />
-                        ))}
-                    </layoutContainer>
-
-                    <MenuButton label="Сжечь" onPress={() => void handleBurn()} />
-                </layoutContainer>
+                <MenuButton label="Сжечь" onPress={() => void handleBurn()} />
             </layoutContainer>
-        </layoutContainer>
+        </SceneFrame>
     )
 }

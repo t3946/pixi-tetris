@@ -2,11 +2,12 @@ import { useState } from 'react'
 import { useTheme } from '@src/ui/ThemeContext'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useAppLayout } from '@src/scenes/useAppLayout'
+import { SceneFrame } from '@src/scenes/SceneFrame'
 import { UiIcon } from '@components/ui/UiIcon'
 import { MENU_DESIGN_WIDTH } from '@components/MainMenu/gameModes'
 
 export function CollectionsScene() {
-    const { screenSize, mainSize, ready } = useAppLayout()
+    const { mainSize, ready } = useAppLayout()
     const { setScene } = useScene()
     const theme = useTheme()
 
@@ -22,71 +23,54 @@ export function CollectionsScene() {
     const headerGap = Math.round(14 * scale)
 
     return (
-        <layoutContainer
-            layout={{
-                width: screenSize.width,
-                height: screenSize.height,
-                justifyContent: 'center',
-                alignItems: 'center',
-                backgroundColor: theme.MENU.LETTERBOX,
-            }}
-        >
+        <SceneFrame backgroundColor={theme.MENU.BG_MID} letterboxColor={theme.MENU.LETTERBOX}>
             <layoutContainer
                 layout={{
-                    width: mainSize.width,
-                    height: mainSize.height,
-                    flexDirection: 'column',
-                    backgroundColor: theme.MENU.BG_MID,
+                    flexShrink: 0,
+                    width: '100%',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: headerGap,
+                    paddingTop: pad,
+                    paddingBottom: pad,
+                    paddingLeft: pad,
+                    paddingRight: pad,
                 }}
             >
-                <layoutContainer
-                    layout={{
-                        flexShrink: 0,
-                        width: '100%',
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        gap: headerGap,
-                        paddingTop: pad,
-                        paddingBottom: pad,
-                        paddingLeft: pad,
-                        paddingRight: pad,
-                    }}
-                >
-                    <BackButton
-                        size={buttonSize}
-                        iconSize={iconSize}
-                        onPress={() => setScene(SceneId.MainMenu)}
-                    />
-
-                    <layoutText
-                        text="Коллекции"
-                        style={{
-                            fontFamily: theme.UI.FONT_FAMILY,
-                            fontSize: titleSize,
-                            fill: theme.TEXT_COLOR,
-                            fontWeight: 'bold',
-                        }}
-                        layout={{ objectFit: 'none' }}
-                    />
-                </layoutContainer>
-
-                <layoutContainer
-                    layout={{
-                        width: '100%',
-                        height: 1,
-                        flexShrink: 0,
-                        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                    }}
+                <BackButton
+                    size={buttonSize}
+                    iconSize={iconSize}
+                    onPress={() => setScene(SceneId.MainMenu)}
                 />
 
-                <layoutContainer
-                    layout={{
-                        width: '100%',
-                        flex: 1,
+                <layoutText
+                    text="Коллекции"
+                    style={{
+                        fontFamily: theme.UI.FONT_FAMILY,
+                        fontSize: titleSize,
+                        fill: theme.TEXT_COLOR,
+                        fontWeight: 'bold',
                     }}
+                    layout={{ objectFit: 'none' }}
                 />
             </layoutContainer>
-        </layoutContainer>
+
+            <layoutContainer
+                layout={{
+                    width: '100%',
+                    height: 1,
+                    flexShrink: 0,
+                    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                }}
+            />
+
+            <layoutContainer
+                layout={{
+                    width: '100%',
+                    flex: 1,
+                }}
+            />
+        </SceneFrame>
     )
 }
 
