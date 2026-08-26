@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { Container, Graphics } from 'pixi.js'
-import type { MosaicFillSource } from '@shaders/mosaicFill'
+import type { MosaicFillSource } from '@components/Collections/Mosaic/mosaicFill'
 import { getPieceBoardCells, type MosaicPiece } from '@components/Collections/Mosaic/mosaicPieceCells'
 import { useShaderBakeTexture } from '@components/Collections/Mosaic/useShaderBakeTexture'
 

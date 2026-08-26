@@ -1,7 +1,8 @@
 import { useEffect, useMemo } from 'react'
 import { Container, RenderTexture, Sprite, Texture } from 'pixi.js'
 import { useApplication, useTick } from '@pixi/react'
-import type { MosaicFillSource } from '@shaders/mosaicFill'
+import type { MosaicFillSource } from '@components/Collections/Mosaic/mosaicFill'
+import { createMosaicFilter, tickMosaicFilter } from '@components/Collections/Mosaic/mosaicFill'
 
 /** Рендерит шейдер во внутренний RenderTexture (500×800 и т.п.), обновляя каждый кадр. */
 export function useShaderBakeTexture(fill: MosaicFillSource): RenderTexture {
@@ -19,12 +20,12 @@ export function useShaderBakeTexture(fill: MosaicFillSource): RenderTexture {
             width: fill.bakeWidth,
             height: fill.bakeHeight,
         })
-        const filter = fill.createFilter(fill.bakeWidth, fill.bakeHeight)
+        const filter = createMosaicFilter(fill.shader, fill.bakeWidth, fill.bakeHeight)
         sprite.filters = [filter]
         container.addChild(sprite)
 
         return { container, filter }
-    }, [fill])
+    }, [fill.bakeHeight, fill.bakeWidth, fill.shader])
 
     useEffect(() => {
         return () => {
@@ -38,7 +39,7 @@ export function useShaderBakeTexture(fill: MosaicFillSource): RenderTexture {
             return
         }
 
-        fill.onTick?.(bakeScene.filter, ticker.deltaTime)
+        tickMosaicFilter(fill.shader, bakeScene.filter, ticker.deltaTime)
 
         app.renderer.render({
             container: bakeScene.container,
