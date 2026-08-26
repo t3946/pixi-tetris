@@ -3,6 +3,7 @@ import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useAppLayout } from '@src/scenes/useAppLayout'
 import { SceneFrame } from '@src/scenes/SceneFrame'
 import { InnerFrameHat } from '@components/Layout/InnerFrameHat'
+import { Mosaic } from '@components/Collections/Mosaic'
 
 export function CollectionsScene() {
     const { mainSize, ready } = useAppLayout()
@@ -34,8 +35,12 @@ export function CollectionsScene() {
                 layout={{
                     width: '100%',
                     flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
                 }}
-            />
+            >
+                <Mosaic size="50" />
+            </layoutContainer>
         </SceneFrame>
     )
 }
