@@ -10,8 +10,6 @@ export { getPieceBoardCells } from '@components/Collections/Mosaic/mosaicPieceCe
 type TProps = {
     /** Мультипликатор клетки сетки */
     size: number | string
-    cols: number
-    rows: number
     pieces: readonly MosaicPiece[]
     /** Сколько первых деталей показать после сортировки */
     progress?: number
@@ -32,7 +30,9 @@ function sortMosaicPieces(pieces: readonly MosaicPiece[]): MosaicPiece[] {
 /**
  * Абстрактный конструктор мозаики: рисует набор тетромино-деталей на сетке.
  */
-export function MosaicBase({ size, cols, rows, pieces, progress, fill }: TProps) {
+export function MosaicBase({ size, pieces, progress, fill }: TProps) {
+    const cols = 5
+    const rows = 8
     const unit = typeof size === 'string' ? Number(size) : size
     const width = cols * unit
     const height = rows * unit

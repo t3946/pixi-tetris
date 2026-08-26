@@ -2,7 +2,7 @@ import { useCallback, useMemo } from 'react'
 import { Filter, Texture, Ticker } from 'pixi.js'
 import { useTick } from '@pixi/react'
 import { filterShadingInOut } from '@shaders/linear-black-in-out/filter-shading-in-out'
-import { filterWadingWaterCaustic, wadingWaterCausticColors } from '@shaders/wading-water-caustic/wading-water-caustic.filter.js'
+import { filterWadingWaterCaustic, wadingWaterCausticColors } from '@shaders/game-backgrounds/wading-water-caustic/wading-water-caustic.filter.js'
 import { useGameTimeScale } from '@src/tetris/TetrisGameContext'
 
 export function Background({width, height}: {width: number, height: number}) {

@@ -3,7 +3,7 @@ import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useAppLayout } from '@src/scenes/useAppLayout'
 import { SceneFrame } from '@src/scenes/SceneFrame'
 import { InnerFrameHat } from '@components/Layout/InnerFrameHat'
-import { CrystalSquaresMosaic } from '@components/Collections/Mosaic/CrystalSquaresMosaic.tsx'
+import { CrystalSquaresMosaic } from '@components/GameThemes/CrystalSquares/CrystalSquaresMosaic.tsx'
 
 export function CollectionsScene() {
     const { mainSize, ready } = useAppLayout()
@@ -35,8 +35,12 @@ export function CollectionsScene() {
                 layout={{
                     width: '100%',
                     flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
+                    // justifyContent: 'center',
+                    // alignItems: 'center',
+                    paddingTop: 20,
+                    paddingBottom: 20,
+                    paddingLeft: '7%',
+                    paddingRight: '7%'
                 }}
             >
                 <CrystalSquaresMosaic size="50" />

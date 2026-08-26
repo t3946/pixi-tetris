@@ -1,6 +1,6 @@
 import {Filter, GlProgram} from 'pixi.js'
 import vertexShaderSource from '@shaders/basic/flat.vert?raw'
-import fragmentShaderSource from '@shaders/wading-water-caustic/wading-water-caustic.frag?raw'
+import fragmentShaderSource from '@shaders/game-backgrounds/wading-water-caustic/wading-water-caustic.frag?raw'
 
 /** Named color/speed presets for the caustic background */
 export const wadingWaterCausticPresets = {
