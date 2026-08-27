@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react'
-import { Graphics } from 'pixi.js'
+import { Color, Graphics } from 'pixi.js'
 import type { MosaicFillSource } from '@components/Collections/Mosaic/mosaicFill'
 import { MosaicFillLayer } from '@components/Collections/Mosaic/MosaicFillLayer'
 import { getPieceBoardCells, type MosaicPiece } from '@components/Collections/Mosaic/mosaicPieceCells'
@@ -7,14 +7,36 @@ import { getPieceBoardCells, type MosaicPiece } from '@components/Collections/Mo
 export type { MosaicPiece } from '@components/Collections/Mosaic/mosaicPieceCells'
 export { getPieceBoardCells } from '@components/Collections/Mosaic/mosaicPieceCells'
 
+const DEFAULT_BORDER_RADIUS = 5
+const FRAME_BORDER_WIDTH = 2
+/** Затемнение accent для заливки placeholder-деталей */
+const PLACEHOLDER_FILL_DARKEN = 0.20
+const PLACEHOLDER_EDGE = 0x000000
+
+function darkenColor(color: number, factor: number): number {
+    const [r, g, b] = new Color(color).toUint8RgbArray()
+
+    return new Color({
+        r: Math.round(r * factor),
+        g: Math.round(g * factor),
+        b: Math.round(b * factor),
+    }).toNumber()
+}
+
 type TProps = {
-    /** Мультипликатор клетки сетки */
-    size: number | string
+    /** Общая ширина мозаики в пикселях */
+    width: number
+    /** Скругление внешней рамки */
+    borderRadius?: number
     pieces: readonly MosaicPiece[]
-    /** Сколько первых деталей показать после сортировки */
+    /** Сколько первых деталей собрано; остальные — тёмный placeholder-слой на базе accent */
     progress?: number
     /** Шейдерная заливка (запекается в текстуру и маскируется по клеткам) */
     fill?: MosaicFillSource
+    /** Цвет рёбер деталей (по умолчанию чёрный) */
+    edgeColor?: number
+    /** Цвет внешней рамки (по умолчанию edgeColor) */
+    frameColor?: number
 }
 
 function sortMosaicPieces(pieces: readonly MosaicPiece[]): MosaicPiece[] {
@@ -30,18 +52,35 @@ function sortMosaicPieces(pieces: readonly MosaicPiece[]): MosaicPiece[] {
 /**
  * Абстрактный конструктор мозаики: рисует набор тетромино-деталей на сетке.
  */
-export function MosaicBase({ size, pieces, progress, fill }: TProps) {
-    const cols = 5
-    const rows = 8
-    const unit = typeof size === 'string' ? Number(size) : size
-    const width = cols * unit
+export function MosaicBase({
+    width,
+    borderRadius = DEFAULT_BORDER_RADIUS,
+    pieces,
+    progress,
+    fill,
+    edgeColor = 0x000000,
+    frameColor,
+}: TProps) {
+    const cols = 8
+    const rows = 5
+    const unit = width / cols
     const height = rows * unit
+    const outerFrameColor = frameColor ?? edgeColor
 
-    const visiblePieces = useMemo(() => {
-        const sorted = sortMosaicPieces(pieces)
+    const sortedPieces = useMemo(() => sortMosaicPieces(pieces), [pieces])
 
-        return progress != null ? sorted.slice(0, progress) : sorted
-    }, [pieces, progress])
+    const collectedPieces = useMemo(() => {
+        return progress != null ? sortedPieces.slice(0, progress) : sortedPieces
+    }, [sortedPieces, progress])
+
+    const placeholderPieces = useMemo(() => {
+        return progress != null ? sortedPieces.slice(progress) : []
+    }, [sortedPieces, progress])
+
+    const placeholderFillColor = useMemo(
+        () => darkenColor(edgeColor, PLACEHOLDER_FILL_DARKEN),
+        [edgeColor],
+    )
 
     return (
         <layoutContainer
@@ -49,32 +88,88 @@ export function MosaicBase({ size, pieces, progress, fill }: TProps) {
                 width,
                 height,
                 flexShrink: 0,
+                borderRadius,
+                overflow: 'hidden',
             }}
         >
             <pixiContainer>
+                {placeholderPieces.map((piece, index) => (
+                    <MosaicPieceGraphics
+                        key={`placeholder-${index}`}
+                        piece={piece}
+                        unit={unit}
+                        fillColor={placeholderFillColor}
+                        edgeColor={PLACEHOLDER_EDGE}
+                    />
+                ))}
+
                 {fill != null && (
                     <MosaicFillLayer
                         fill={fill}
                         width={width}
                         height={height}
                         unit={unit}
-                        pieces={visiblePieces}
+                        pieces={collectedPieces}
                     />
                 )}
 
-                {visiblePieces.map((piece, index) =>
+                {collectedPieces.map((piece, index) =>
                     fill != null ? (
-                        <MosaicPieceEdges key={index} piece={piece} unit={unit} />
+                        <MosaicPieceEdges key={index} piece={piece} unit={unit} edgeColor={edgeColor} />
                     ) : (
-                        <MosaicPieceGraphics key={index} piece={piece} unit={unit} />
+                        <MosaicPieceGraphics key={index} piece={piece} unit={unit} edgeColor={edgeColor} />
                     ),
                 )}
+
+                <MosaicOuterFrame
+                    width={width}
+                    height={height}
+                    borderRadius={borderRadius}
+                    color={outerFrameColor}
+                />
             </pixiContainer>
         </layoutContainer>
     )
 }
 
-function MosaicPieceEdges({ piece, unit }: { piece: MosaicPiece; unit: number }) {
+function MosaicOuterFrame({
+    width,
+    height,
+    borderRadius,
+    color,
+}: {
+    width: number
+    height: number
+    borderRadius: number
+    color: number
+}) {
+    const inset = FRAME_BORDER_WIDTH / 2
+    const frameRadius = Math.max(0, borderRadius - inset)
+
+    const draw = useCallback(
+        (graphics: Graphics) => {
+            graphics.clear()
+
+            graphics
+                .roundRect(inset, inset, width - FRAME_BORDER_WIDTH, height - FRAME_BORDER_WIDTH, frameRadius)
+                .fill({ color: 0xffffff, alpha: 0 })
+                .stroke({ width: FRAME_BORDER_WIDTH, color })
+        },
+        [width, height, frameRadius, color],
+    )
+
+    return <pixiGraphics draw={draw} eventMode="none" />
+}
+
+function MosaicPieceEdges({
+    piece,
+    unit,
+    edgeColor,
+}: {
+    piece: MosaicPiece
+    unit: number
+    edgeColor: number
+}) {
     const cells = getPieceBoardCells(piece)
 
     const draw = useCallback(
@@ -103,15 +198,25 @@ function MosaicPieceEdges({ piece, unit }: { piece: MosaicPiece; unit: number })
                 }
             }
 
-            graphics.stroke({ width: 2, color: 0x000000 })
+            graphics.stroke({ width: 2, color: edgeColor })
         },
-        [cells, unit],
+        [cells, unit, edgeColor],
     )
 
     return <pixiGraphics draw={draw} />
 }
 
-function MosaicPieceGraphics({ piece, unit }: { piece: MosaicPiece; unit: number }) {
+function MosaicPieceGraphics({
+    piece,
+    unit,
+    edgeColor,
+    fillColor = 0xffffff,
+}: {
+    piece: MosaicPiece
+    unit: number
+    edgeColor: number
+    fillColor?: number
+}) {
     const cells = getPieceBoardCells(piece)
 
     const draw = useCallback(
@@ -119,7 +224,7 @@ function MosaicPieceGraphics({ piece, unit }: { piece: MosaicPiece; unit: number
             graphics.clear()
 
             for (const cell of cells) {
-                graphics.rect(cell.x * unit, cell.y * unit, unit, unit).fill({ color: 0xffffff })
+                graphics.rect(cell.x * unit, cell.y * unit, unit, unit).fill({ color: fillColor })
             }
 
             const occupied = new Set(cells.map((cell) => `${cell.x},${cell.y}`))
@@ -144,9 +249,9 @@ function MosaicPieceGraphics({ piece, unit }: { piece: MosaicPiece; unit: number
                 }
             }
 
-            graphics.stroke({ width: 2, color: 0x000000 })
+            graphics.stroke({ width: 2, color: edgeColor })
         },
-        [cells, unit],
+        [cells, unit, edgeColor, fillColor],
     )
 
     return <pixiGraphics draw={draw} />

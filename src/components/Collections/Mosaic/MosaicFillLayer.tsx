@@ -17,6 +17,9 @@ export function MosaicFillLayer({ fill, width, height, unit, pieces }: TProps) {
     const maskRef = useRef<Graphics>(null)
     const groupRef = useRef<Container>(null)
 
+    /** Единый scale: портретная bake-текстура по ширине мозаики, без сплющивания */
+    const fillScale = width / fill.bakeWidth
+
     const cells = useMemo(
         () => pieces.flatMap((piece) => getPieceBoardCells(piece)),
         [pieces],
@@ -51,8 +54,16 @@ export function MosaicFillLayer({ fill, width, height, unit, pieces }: TProps) {
     return (
         <>
             <pixiGraphics ref={maskRef} draw={drawMask} eventMode="none" />
+
             <pixiContainer ref={groupRef} eventMode="none">
-                <pixiSprite texture={bakedTexture} width={width} height={height} eventMode="none" />
+                <pixiSprite
+                    texture={bakedTexture}
+                    x={0}
+                    y={height}
+                    anchor={{ x: 0, y: 1 }}
+                    scale={{ x: fillScale, y: fillScale }}
+                    eventMode="none"
+                />
             </pixiContainer>
         </>
     )

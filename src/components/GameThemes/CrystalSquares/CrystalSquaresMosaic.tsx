@@ -1,22 +1,38 @@
 import { EBackgroundShaderId } from '@shaders/game-backgrounds/EBackgroundShaderId.ts'
 import { getMosaicFillSource } from '@components/Collections/Mosaic/mosaicFill.ts'
 import { MosaicBase } from '@components/Collections/Mosaic/MosaicBase.tsx'
-import { MosaicPiecesPatterns } from "@components/Collections/Mosaic/MosaicPiecesPatterns.ts";
+import { MosaicPiecesPatterns } from '@components/Collections/Mosaic/MosaicPiecesPatterns.ts'
 
-const FILL = getMosaicFillSource(EBackgroundShaderId.CrystalSquares)
+/** Портретное разрешение bake-текстуры шейдера (альбомная мозаика показывает нижний фрагмент). */
+const MOSAIC_FILL_BAKE_WIDTH = 500
+const MOSAIC_FILL_BAKE_HEIGHT = 800
+
+const FILL = getMosaicFillSource(
+    EBackgroundShaderId.CrystalSquares,
+    MOSAIC_FILL_BAKE_WIDTH,
+    MOSAIC_FILL_BAKE_HEIGHT,
+)
+
+export const CRYSTAL_SQUARES_PIECES_TOTAL = MosaicPiecesPatterns.pattern_1.length
 
 type TProps = {
-    size: number | string
+    width: number
     progress?: number
+    edgeColor?: number
+    frameColor?: number
+    borderRadius?: number
 }
 
-export function CrystalSquaresMosaic({ size, progress }: TProps) {
+export function CrystalSquaresMosaic({ width, progress, edgeColor, frameColor, borderRadius }: TProps) {
     return (
         <MosaicBase
-            size={size}
+            width={width}
+            borderRadius={borderRadius}
             pieces={MosaicPiecesPatterns.pattern_1}
             progress={progress}
             fill={FILL}
+            edgeColor={edgeColor}
+            frameColor={frameColor}
         />
     )
 }

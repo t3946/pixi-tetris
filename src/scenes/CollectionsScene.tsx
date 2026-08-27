@@ -3,7 +3,7 @@ import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useAppLayout } from '@src/scenes/useAppLayout'
 import { SceneFrame } from '@src/scenes/SceneFrame'
 import { InnerFrameHat } from '@components/Layout/InnerFrameHat'
-import { CrystalSquaresMosaic } from '@components/GameThemes/CrystalSquares/CrystalSquaresMosaic.tsx'
+import { CrystalSquaresCollectionsItem } from '@components/GameThemes/CrystalSquares/CrystalSquaresCollectionsItem.tsx'
 
 export function CollectionsScene() {
     const { mainSize, ready } = useAppLayout()
@@ -13,6 +13,9 @@ export function CollectionsScene() {
     if (!ready) {
         return null
     }
+
+    const contentPadRatio = 0.07
+    const contentWidth = Math.round(mainSize.width * (1 - contentPadRatio * 2))
 
     return (
         <SceneFrame backgroundColor={theme.MENU.BG_MID} letterboxColor={theme.MENU.LETTERBOX}>
@@ -35,15 +38,19 @@ export function CollectionsScene() {
                 layout={{
                     width: '100%',
                     flex: 1,
-                    // justifyContent: 'center',
-                    // alignItems: 'center',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
                     paddingTop: 20,
                     paddingBottom: 20,
-                    paddingLeft: '7%',
-                    paddingRight: '7%'
+                    paddingLeft: `${contentPadRatio * 100}%`,
+                    paddingRight: `${contentPadRatio * 100}%`,
                 }}
             >
-                <CrystalSquaresMosaic size="50" />
+                <CrystalSquaresCollectionsItem
+                    title="Кристальные плитки"
+                    progress={5}
+                    width={contentWidth}
+                />
             </layoutContainer>
         </SceneFrame>
     )
