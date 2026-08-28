@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 import { Container, RenderTexture, Sprite, Texture } from 'pixi.js'
-import { useApplication, useTick } from '@pixi/react'
+import { useApplication } from '@pixi/react'
 import type { MosaicFillSource } from '@components/Collections/Mosaic/mosaicFill'
 import { createBackgroundFilter, tickBackgroundFilter } from '@components/Collections/Mosaic/mosaicFill'
 
@@ -31,8 +31,8 @@ function createBakeResources(fill: MosaicFillSource): BakeResources {
     return { bakedTexture, container, filter, fill }
 }
 
-/** Рендерит шейдер во внутренний RenderTexture (500×800 и т.п.), обновляя каждый кадр. */
-export function useShaderBakeTexture(fill: MosaicFillSource): RenderTexture {
+/** Однократный bake шейдера в RenderTexture (без анимации). */
+export function useShaderStaticBakeTexture(fill: MosaicFillSource): RenderTexture {
     const { app, isInitialised } = useApplication()
 
     const resources = useMemo(
@@ -41,13 +41,6 @@ export function useShaderBakeTexture(fill: MosaicFillSource): RenderTexture {
     )
 
     useEffect(() => {
-        return () => {
-            resources.bakedTexture.destroy(true)
-            resources.container.destroy({ children: true })
-        }
-    }, [resources])
-
-    useTick((ticker) => {
         if (!isInitialised || resources.bakedTexture.destroyed) {
             return
         }
@@ -55,7 +48,7 @@ export function useShaderBakeTexture(fill: MosaicFillSource): RenderTexture {
         tickBackgroundFilter(
             resources.fill.shader,
             resources.filter,
-            ticker.deltaTime,
+            0,
             resources.fill.shadingOptions,
         )
 
@@ -64,7 +57,14 @@ export function useShaderBakeTexture(fill: MosaicFillSource): RenderTexture {
             target: resources.bakedTexture,
             clear: true,
         })
-    })
+    }, [app.renderer, isInitialised, resources])
+
+    useEffect(() => {
+        return () => {
+            resources.bakedTexture.destroy(true)
+            resources.container.destroy({ children: true })
+        }
+    }, [resources])
 
     return resources.bakedTexture
 }

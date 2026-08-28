@@ -72,6 +72,7 @@ export function GameThemeCollectionsItem({
                 }}
             >
                 <layoutText
+                    key={id}
                     text={title}
                     style={{
                         fontFamily: uiTheme.UI.FONT_FAMILY,
