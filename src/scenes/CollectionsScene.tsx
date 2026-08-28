@@ -3,7 +3,9 @@ import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useAppLayout } from '@src/scenes/useAppLayout'
 import { SceneFrame } from '@src/scenes/SceneFrame'
 import { InnerFrameHat } from '@components/Layout/InnerFrameHat'
-import { CrystalSquaresCollectionsItem } from '@components/GameThemes/CrystalSquares/CrystalSquaresCollectionsItem.tsx'
+import { GameThemeCollectionsItem } from '@components/GameThemes/GameThemeCollectionsItem.tsx'
+import { GameThemesList } from '@components/GameThemes/GameTheme.ts'
+import { EGameTheme } from '@components/GameThemes/EGameTheme.ts'
 
 export function CollectionsScene() {
     const { mainSize, ready } = useAppLayout()
@@ -16,6 +18,14 @@ export function CollectionsScene() {
 
     const contentPadRatio = 0.07
     const contentWidth = Math.round(mainSize.width * (1 - contentPadRatio * 2))
+    const selectedTheme = EGameTheme.CrystalSquares
+
+    /** Демо-прогресс по темам; позже — из сохранения */
+    const themeProgress: Partial<Record<EGameTheme, number>> = {
+        [EGameTheme.CrystalSquares]: 10,
+        [EGameTheme.WadingCausticBlue]: 0,
+        [EGameTheme.WadingCausticRed]: 0,
+    }
 
     return (
         <SceneFrame backgroundColor={theme.MENU.BG_MID} letterboxColor={theme.MENU.LETTERBOX}>
@@ -40,17 +50,22 @@ export function CollectionsScene() {
                     flex: 1,
                     flexDirection: 'column',
                     alignItems: 'flex-start',
+                    gap: 16,
                     paddingTop: 20,
                     paddingBottom: 20,
                     paddingLeft: `${contentPadRatio * 100}%`,
                     paddingRight: `${contentPadRatio * 100}%`,
                 }}
             >
-                <CrystalSquaresCollectionsItem
-                    title="Кристальные плитки"
-                    progress={10}
-                    width={contentWidth}
-                />
+                {GameThemesList.map((themeConfig) => (
+                    <GameThemeCollectionsItem
+                        key={themeConfig.id}
+                        theme={themeConfig}
+                        progress={themeProgress[themeConfig.id] ?? 0}
+                        width={contentWidth}
+                        isSelected={themeConfig.id === selectedTheme}
+                    />
+                ))}
             </layoutContainer>
         </SceneFrame>
     )

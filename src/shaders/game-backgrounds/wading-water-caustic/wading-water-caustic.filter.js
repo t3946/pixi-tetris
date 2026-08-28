@@ -52,8 +52,8 @@ function hexToRgb01(hex) {
     ])
 }
 
-export const filterWadingWaterCaustic = (width, height) => {
-    const c = wadingWaterCausticColors
+export const filterWadingWaterCaustic = (width, height, preset = wadingWaterCausticColors) => {
+    const c = preset
 
     return new Filter({
         glProgram: new GlProgram({vertex: vertexShaderSource, fragment: fragmentShaderSource}),

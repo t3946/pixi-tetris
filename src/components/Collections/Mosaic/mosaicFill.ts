@@ -11,6 +11,7 @@ export type MosaicFillSource = {
     shader: EBackgroundShaderId
     bakeWidth: number
     bakeHeight: number
+    shadingOptions?: Record<string, unknown>
 }
 
 const DEFAULT_BAKE_WIDTH = 500
@@ -20,14 +21,16 @@ export function getMosaicFillSource(
     shader: EBackgroundShaderId,
     bakeWidth = DEFAULT_BAKE_WIDTH,
     bakeHeight = DEFAULT_BAKE_HEIGHT,
+    shadingOptions?: Record<string, unknown>,
 ): MosaicFillSource {
-    return { shader, bakeWidth, bakeHeight }
+    return { shader, bakeWidth, bakeHeight, shadingOptions }
 }
 
 export function createBackgroundFilter(
     shader: EBackgroundShaderId,
     width: number,
     height: number,
+    shadingOptions?: Record<string, unknown>,
 ): Filter {
     switch (shader) {
         case EBackgroundShaderId.CrystalSquares:
@@ -35,7 +38,11 @@ export function createBackgroundFilter(
         case EBackgroundShaderId.PurpleTiles:
             return filterPurpleTiles(width, height) as Filter
         case EBackgroundShaderId.WadingWaterCaustic:
-            return filterWadingWaterCaustic(width, height) as Filter
+            return filterWadingWaterCaustic(
+                width,
+                height,
+                shadingOptions?.preset as Parameters<typeof filterWadingWaterCaustic>[2],
+            ) as Filter
     }
 }
 
@@ -43,6 +50,7 @@ export function tickBackgroundFilter(
     shader: EBackgroundShaderId,
     filter: Filter,
     deltaTime: number,
+    shadingOptions?: Record<string, unknown>,
 ): void {
     const time = filter.resources.timeUniforms.uniforms.uTime as number
 
@@ -53,9 +61,11 @@ export function tickBackgroundFilter(
         case EBackgroundShaderId.PurpleTiles:
             filter.resources.timeUniforms.uniforms.uTime = time + 0.02 * deltaTime
             break
-        case EBackgroundShaderId.WadingWaterCaustic:
-            filter.resources.timeUniforms.uniforms.uTime =
-                time + 0.015 * wadingWaterCausticColors.speed * deltaTime
+        case EBackgroundShaderId.WadingWaterCaustic: {
+            const preset = shadingOptions?.preset as { speed?: number } | undefined
+            const speed = preset?.speed ?? wadingWaterCausticColors.speed
+            filter.resources.timeUniforms.uniforms.uTime = time + 0.015 * speed * deltaTime
             break
+        }
     }
 }

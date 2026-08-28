@@ -1,29 +1,29 @@
 import { Badge } from '@components/ui/Badge'
 import { BaseButton } from '@components/ui/BaseButton'
 import { useTheme } from '@src/ui/ThemeContext'
-import { Color } from '@src/utils/color'
-import {
-    CRYSTAL_SQUARES_PIECES_TOTAL,
-    CrystalSquaresMosaic,
-} from '@components/GameThemes/CrystalSquares/CrystalSquaresMosaic.tsx'
+import { GAME_THEME_PIECES_TOTAL, GameThemeMosaic } from '@components/GameThemes/GameThemeMosaic.tsx'
+import type { TThemeConfig } from '@components/GameThemes/GameTheme.ts'
 
 type TProps = {
-    title: string
+    theme: TThemeConfig
     /** Сколько частей собрано (и сколько показать на мозаике) */
     progress?: number
     /** Ширина контейнера панели */
     width: number
+    /** Показывать бейдж «Выбран» */
+    isSelected?: boolean
     onSelect?: () => void
 }
 
-export function CrystalSquaresCollectionsItem({
-    title,
+export function GameThemeCollectionsItem({
+    theme,
     progress = 0,
     width,
+    isSelected = false,
     onSelect,
 }: TProps) {
-    const accent = new Color('#4fb1ff')
-    const theme = useTheme()
+    const { accent, title } = theme
+    const uiTheme = useTheme()
     const edgeColor = accent.clone().setAlpha(0.2)
     const frameColor = accent.clone().setAlpha(0.6)
     const borderColor = accent.scale(0.55).rgb()
@@ -33,7 +33,7 @@ export function CrystalSquaresCollectionsItem({
     const pad = 16
     const gap = 12
     const mosaicWidth = Math.max(0, width - pad * 2)
-    const total = CRYSTAL_SQUARES_PIECES_TOTAL
+    const total = GAME_THEME_PIECES_TOTAL
     const collected = Math.min(Math.max(0, progress), total)
     const fillRatio = total > 0 ? collected / total : 0
     const isComplete = collected >= total
@@ -69,7 +69,7 @@ export function CrystalSquaresCollectionsItem({
                 <layoutText
                     text={title}
                     style={{
-                        fontFamily: theme.UI.FONT_FAMILY,
+                        fontFamily: uiTheme.UI.FONT_FAMILY,
                         fontSize: 16,
                         fill: accent,
                         fontWeight: 'bold',
@@ -80,10 +80,15 @@ export function CrystalSquaresCollectionsItem({
                     }}
                 />
 
-                <Badge accent={accent} layout={{width: 80, height: 24}}>Выбран</Badge>
+                {isSelected && (
+                    <Badge accent={accent} layout={{ width: 80, height: 24 }}>
+                        Выбран
+                    </Badge>
+                )}
             </layoutContainer>
 
-            <CrystalSquaresMosaic
+            <GameThemeMosaic
+                theme={theme}
                 width={mosaicWidth}
                 progress={collected}
                 edgeColor={edgeColor}
@@ -104,7 +109,7 @@ export function CrystalSquaresCollectionsItem({
                         onPress={onSelect}
                         fill={accent.toHex()}
                         fillHover={accentHover}
-                        textFill={theme.UI.PANEL_LABEL}
+                        textFill={uiTheme.UI.PANEL_LABEL}
                         fontSize={20}
                         appearance={{
                             width: '100%',
@@ -126,9 +131,9 @@ export function CrystalSquaresCollectionsItem({
                             <layoutText
                                 text="Собрано частей"
                                 style={{
-                                    fontFamily: theme.UI.FONT_FAMILY,
+                                    fontFamily: uiTheme.UI.FONT_FAMILY,
                                     fontSize: 13,
-                                    fill: theme.TEXT_MUTED,
+                                    fill: uiTheme.TEXT_MUTED,
                                 }}
                                 layout={{
                                     objectFit: 'none',
@@ -138,7 +143,7 @@ export function CrystalSquaresCollectionsItem({
                             <layoutText
                                 text={`${collected} / ${total}`}
                                 style={{
-                                    fontFamily: theme.UI.FONT_FAMILY,
+                                    fontFamily: uiTheme.UI.FONT_FAMILY,
                                     fontSize: 12,
                                     fill: accent,
                                     fontWeight: 'bold',

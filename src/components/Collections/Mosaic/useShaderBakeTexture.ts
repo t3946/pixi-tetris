@@ -20,12 +20,17 @@ export function useShaderBakeTexture(fill: MosaicFillSource): RenderTexture {
             width: fill.bakeWidth,
             height: fill.bakeHeight,
         })
-        const filter = createBackgroundFilter(fill.shader, fill.bakeWidth, fill.bakeHeight)
+        const filter = createBackgroundFilter(
+            fill.shader,
+            fill.bakeWidth,
+            fill.bakeHeight,
+            fill.shadingOptions,
+        )
         sprite.filters = [filter]
         container.addChild(sprite)
 
         return { container, filter }
-    }, [fill.bakeHeight, fill.bakeWidth, fill.shader])
+    }, [fill.bakeHeight, fill.bakeWidth, fill.shader, fill.shadingOptions])
 
     useEffect(() => {
         return () => {
@@ -39,7 +44,7 @@ export function useShaderBakeTexture(fill: MosaicFillSource): RenderTexture {
             return
         }
 
-        tickBackgroundFilter(fill.shader, bakeScene.filter, ticker.deltaTime)
+        tickBackgroundFilter(fill.shader, bakeScene.filter, ticker.deltaTime, fill.shadingOptions)
 
         app.renderer.render({
             container: bakeScene.container,
