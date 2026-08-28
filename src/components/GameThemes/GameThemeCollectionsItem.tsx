@@ -1,28 +1,22 @@
 import { Badge } from '@components/ui/Badge'
 import { BaseButton } from '@components/ui/BaseButton'
 import { useTheme } from '@src/ui/ThemeContext'
+import { useUser } from '@src/user/UserContext'
 import { GAME_THEME_PIECES_TOTAL, GameThemeMosaic } from '@components/GameThemes/GameThemeMosaic.tsx'
 import type { TThemeConfig } from '@components/GameThemes/GameTheme.ts'
 
 type TProps = {
     theme: TThemeConfig
-    /** Сколько частей собрано (и сколько показать на мозаике) */
-    progress?: number
     /** Ширина контейнера панели */
     width: number
-    /** Показывать бейдж «Выбран» */
-    isSelected?: boolean
-    onSelect?: () => void
 }
 
 export function GameThemeCollectionsItem({
     theme,
-    progress = 0,
     width,
-    isSelected = false,
-    onSelect,
 }: TProps) {
-    const { accent, title } = theme
+    const { accent, title, id } = theme
+    const { user, setGameTheme } = useUser()
     const uiTheme = useTheme()
     const edgeColor = accent.clone().setAlpha(0.2)
     const frameColor = accent.clone().setAlpha(0.6)
@@ -34,9 +28,15 @@ export function GameThemeCollectionsItem({
     const gap = 12
     const mosaicWidth = Math.max(0, width - pad * 2)
     const total = GAME_THEME_PIECES_TOTAL
+    const progress = user.progress.gameTheme[id] ?? 0
     const collected = Math.min(Math.max(0, progress), total)
     const fillRatio = total > 0 ? collected / total : 0
     const isComplete = collected >= total
+    const isSelected = user.gameTheme === id
+
+    const handleSelect = () => {
+        setGameTheme(id)
+    }
 
     return (
         <layoutContainer
@@ -105,8 +105,9 @@ export function GameThemeCollectionsItem({
             >
                 {isComplete ? (
                     <BaseButton
-                        label="Выбрать"
-                        onPress={onSelect}
+                        label={isSelected ? 'Выбран' : 'Выбрать'}
+                        onPress={isSelected ? undefined : handleSelect}
+                        disabled={isSelected}
                         fill={accent.toHex()}
                         fillHover={accentHover}
                         textFill={uiTheme.UI.PANEL_LABEL}
