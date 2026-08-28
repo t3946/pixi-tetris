@@ -55,6 +55,7 @@ export function InnerFrameHat({ title, width, onBack }: TProps) {
                     fontWeight: 'bold',
                 }}
                 layout={{ objectFit: 'none' }}
+                roundPixels={true}
             />
         </layoutContainer>
     )

@@ -51,7 +51,7 @@ function ThemedApplication({ children }: { children: ReactNode }) {
             resizeTo={window}
             backgroundColor={new Color(theme.MENU.LETTERBOX).toNumber()}
             antialias={true}
-            resolution={window.devicePixelRatio}
+            resolution={window.devicePixelRatio || 1}
             autoDensity={true}
         >
             {children}
