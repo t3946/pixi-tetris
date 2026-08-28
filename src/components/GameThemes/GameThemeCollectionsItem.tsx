@@ -1,3 +1,6 @@
+import { useCallback, useEffect, useMemo, useRef } from 'react'
+import { useTick } from '@pixi/react'
+import { BlurFilter, Container, Graphics, type Ticker } from 'pixi.js'
 import { Badge } from '@components/ui/Badge'
 import { BaseButton } from '@components/ui/BaseButton'
 import { useTheme } from '@src/ui/ThemeContext'
@@ -5,9 +8,18 @@ import { useUser } from '@src/user/UserContext'
 import { GAME_THEME_PIECES_TOTAL, GameThemeMosaic } from '@components/GameThemes/GameThemeMosaic.tsx'
 import type { TThemeConfig } from '@components/GameThemes/GameTheme.ts'
 import { palette } from '@src/ui/palette'
+import type { Color } from '@src/utils/color'
 
 const HEADER_ROW_HEIGHT = 32
 const BADGE_WIDTH = 70
+const MOSAIC_COLS = 8
+const MOSAIC_ROWS = 5
+const MOSAIC_BORDER_RADIUS = 5
+const GLOW_PULSE_PERIOD = 2.4
+const GLOW_ALPHA_MIN = 0.16
+const GLOW_ALPHA_MAX = 0.38
+const GLOW_BLUR_STRENGTH = 6
+const GLOW_PADDING = 22
 
 type TProps = {
     theme: TThemeConfig
@@ -108,9 +120,10 @@ export function GameThemeCollectionsItem({
                 </layoutContainer>
             </layoutContainer>
 
-            <GameThemeMosaic
-                theme={theme}
+            <MosaicWithGlow
+                accent={accent}
                 width={mosaicWidth}
+                theme={theme}
                 progress={collected}
                 edgeColor={edgeColor}
                 frameColor={frameColor}
@@ -200,6 +213,94 @@ export function GameThemeCollectionsItem({
                         </layoutContainer>
                     </>
                 )}
+            </layoutContainer>
+        </layoutContainer>
+    )
+}
+
+type MosaicWithGlowProps = {
+    accent: Color
+    width: number
+    theme: TThemeConfig
+    progress: number
+    edgeColor: Color
+    frameColor: Color
+}
+
+function MosaicWithGlow({
+    accent,
+    width,
+    theme,
+    progress,
+    edgeColor,
+    frameColor,
+}: MosaicWithGlowProps) {
+    const glowRef = useRef<Container>(null)
+    const pulseTimeRef = useRef(0)
+    const height = width * MOSAIC_ROWS / MOSAIC_COLS
+
+    const glowColor = useMemo(() => accent.clone().lighten(0.4).toNumber(), [accent])
+
+    const blur = useMemo(() => {
+        const filter = new BlurFilter({
+            strength: GLOW_BLUR_STRENGTH,
+            quality: 4,
+            padding: GLOW_PADDING,
+        })
+        filter.padding = GLOW_PADDING
+        return filter
+    }, [])
+
+    useEffect(() => () => blur.destroy(), [blur])
+
+    useTick(
+        useCallback((ticker: Ticker) => {
+            pulseTimeRef.current += ticker.deltaMS / 1000
+            const t = (Math.sin((pulseTimeRef.current * Math.PI * 2) / GLOW_PULSE_PERIOD) + 1) / 2
+            const alpha = GLOW_ALPHA_MIN + t * (GLOW_ALPHA_MAX - GLOW_ALPHA_MIN)
+
+            if (glowRef.current) {
+                glowRef.current.alpha = alpha
+            }
+        }, []),
+    )
+
+    const drawGlow = useCallback(
+        (graphics: Graphics) => {
+            graphics.clear()
+            graphics.roundRect(0, 0, width, height, MOSAIC_BORDER_RADIUS).fill({ color: glowColor })
+        },
+        [glowColor, height, width],
+    )
+
+    return (
+        <layoutContainer
+            layout={{
+                width,
+                height,
+                flexShrink: 0,
+                overflow: 'visible',
+            }}
+        >
+            <pixiContainer ref={glowRef} filters={[blur]} alpha={GLOW_ALPHA_MIN} eventMode="none">
+                <pixiGraphics draw={drawGlow} />
+            </pixiContainer>
+            <layoutContainer
+                layout={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width,
+                    height,
+                }}
+            >
+                <GameThemeMosaic
+                    theme={theme}
+                    width={width}
+                    progress={progress}
+                    edgeColor={edgeColor}
+                    frameColor={frameColor}
+                />
             </layoutContainer>
         </layoutContainer>
     )

@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react'
 import { Container, RenderTexture, Sprite, Texture } from 'pixi.js'
 import { useApplication } from '@pixi/react'
 import type { MosaicFillSource } from '@components/Collections/Mosaic/mosaicFill'
-import { createBackgroundFilter, tickBackgroundFilter } from '@components/Collections/Mosaic/mosaicFill'
+import { createBackgroundFilter, tickBackgroundFilter } from '@shaders/game-backgrounds/backgroundFilter'
 
 type BakeResources = {
     bakedTexture: RenderTexture
