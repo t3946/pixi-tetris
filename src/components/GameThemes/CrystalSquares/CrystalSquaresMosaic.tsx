@@ -2,6 +2,7 @@ import { EBackgroundShaderId } from '@shaders/game-backgrounds/EBackgroundShader
 import { getMosaicFillSource } from '@components/Collections/Mosaic/mosaicFill.ts'
 import { MosaicBase } from '@components/Collections/Mosaic/MosaicBase.tsx'
 import { MosaicPiecesPatterns } from '@components/Collections/Mosaic/MosaicPiecesPatterns.ts'
+import type { Color } from '@src/utils/color'
 
 /** Портретное разрешение bake-текстуры шейдера (альбомная мозаика показывает нижний фрагмент). */
 const MOSAIC_FILL_BAKE_WIDTH = 500
@@ -18,8 +19,8 @@ export const CRYSTAL_SQUARES_PIECES_TOTAL = MosaicPiecesPatterns.pattern_1.lengt
 type TProps = {
     width: number
     progress?: number
-    edgeColor?: number
-    frameColor?: number
+    edgeColor?: Color
+    frameColor?: Color
     borderRadius?: number
 }
 

@@ -49,6 +49,11 @@ export class Color extends PixiColor {
         return `rgba(${r}, ${g}, ${b}, ${alpha})`
     }
 
+    /** RGB и alpha для Pixi stroke/fill (toNumber() alpha не передаёт). */
+    toStroke(): { color: number; alpha: number } {
+        return { color: this.toNumber(), alpha: this.alpha }
+    }
+
     /** Умножает RGB-каналы (затемнение при factor < 1). Возвращает новый Color. */
     scale(factor: number): Color {
         return this.clone().multiply([factor, factor, factor, 1])

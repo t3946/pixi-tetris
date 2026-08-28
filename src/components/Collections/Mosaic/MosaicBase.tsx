@@ -10,9 +10,11 @@ export { getPieceBoardCells } from '@components/Collections/Mosaic/mosaicPieceCe
 
 const DEFAULT_BORDER_RADIUS = 5
 const FRAME_BORDER_WIDTH = 2
+const DEFAULT_EDGE_COLOR = new Color(0x000000)
 /** Затемнение accent для заливки placeholder-деталей */
 const PLACEHOLDER_FILL_DARKEN = 0.20
-const PLACEHOLDER_EDGE = 0x000000
+
+type StrokeColor = { color: number; alpha: number }
 
 type TProps = {
     /** Общая ширина мозаики в пикселях */
@@ -24,10 +26,10 @@ type TProps = {
     progress?: number
     /** Шейдерная заливка (запекается в текстуру и маскируется по клеткам) */
     fill?: MosaicFillSource
-    /** Цвет рёбер деталей (по умолчанию чёрный) */
-    edgeColor?: number
+    /** Цвет рёбер деталей (alpha учитывается при отрисовке) */
+    edgeColor?: Color
     /** Цвет внешней рамки (по умолчанию edgeColor) */
-    frameColor?: number
+    frameColor?: Color
 }
 
 function sortMosaicPieces(pieces: readonly MosaicPiece[]): MosaicPiece[] {
@@ -40,6 +42,10 @@ function sortMosaicPieces(pieces: readonly MosaicPiece[]): MosaicPiece[] {
     })
 }
 
+function resolveStroke(color: Color): StrokeColor {
+    return color.toStroke()
+}
+
 /**
  * Абстрактный конструктор мозаики: рисует набор тетромино-деталей на сетке.
  */
@@ -49,7 +55,7 @@ export function MosaicBase({
     pieces,
     progress,
     fill,
-    edgeColor = 0x000000,
+    edgeColor = DEFAULT_EDGE_COLOR,
     frameColor,
 }: TProps) {
     const cols = 8
@@ -57,6 +63,9 @@ export function MosaicBase({
     const unit = width / cols
     const height = rows * unit
     const outerFrameColor = frameColor ?? edgeColor
+
+    const edgeStroke = useMemo(() => resolveStroke(edgeColor), [edgeColor.toHexa()])
+    const frameStroke = useMemo(() => resolveStroke(outerFrameColor), [outerFrameColor.toHexa()])
 
     const sortedPieces = useMemo(() => sortMosaicPieces(pieces), [pieces])
 
@@ -69,8 +78,8 @@ export function MosaicBase({
     }, [sortedPieces, progress])
 
     const placeholderFillColor = useMemo(
-        () => new Color(edgeColor).darken(PLACEHOLDER_FILL_DARKEN).toNumber(),
-        [edgeColor],
+        () => edgeColor.clone().darken(PLACEHOLDER_FILL_DARKEN).toNumber(),
+        [edgeColor.toHexa()],
     )
 
     return (
@@ -90,7 +99,7 @@ export function MosaicBase({
                         piece={piece}
                         unit={unit}
                         fillColor={placeholderFillColor}
-                        edgeColor={PLACEHOLDER_EDGE}
+                        stroke={edgeStroke}
                     />
                 ))}
 
@@ -106,9 +115,9 @@ export function MosaicBase({
 
                 {collectedPieces.map((piece, index) =>
                     fill != null ? (
-                        <MosaicPieceEdges key={index} piece={piece} unit={unit} edgeColor={edgeColor} />
+                        <MosaicPieceEdges key={index} piece={piece} unit={unit} stroke={edgeStroke} />
                     ) : (
-                        <MosaicPieceGraphics key={index} piece={piece} unit={unit} edgeColor={edgeColor} />
+                        <MosaicPieceGraphics key={index} piece={piece} unit={unit} stroke={edgeStroke} />
                     ),
                 )}
 
@@ -116,7 +125,7 @@ export function MosaicBase({
                     width={width}
                     height={height}
                     borderRadius={borderRadius}
-                    color={outerFrameColor}
+                    stroke={frameStroke}
                 />
             </pixiContainer>
         </layoutContainer>
@@ -127,12 +136,12 @@ function MosaicOuterFrame({
     width,
     height,
     borderRadius,
-    color,
+    stroke,
 }: {
     width: number
     height: number
     borderRadius: number
-    color: number
+    stroke: StrokeColor
 }) {
     const inset = FRAME_BORDER_WIDTH / 2
     const frameRadius = Math.max(0, borderRadius - inset)
@@ -144,9 +153,9 @@ function MosaicOuterFrame({
             graphics
                 .roundRect(inset, inset, width - FRAME_BORDER_WIDTH, height - FRAME_BORDER_WIDTH, frameRadius)
                 .fill({ color: 0xffffff, alpha: 0 })
-                .stroke({ width: FRAME_BORDER_WIDTH, color })
+                .stroke({ width: FRAME_BORDER_WIDTH, color: stroke.color, alpha: stroke.alpha })
         },
-        [width, height, frameRadius, color],
+        [width, height, frameRadius, stroke.color, stroke.alpha],
     )
 
     return <pixiGraphics draw={draw} eventMode="none" />
@@ -155,11 +164,11 @@ function MosaicOuterFrame({
 function MosaicPieceEdges({
     piece,
     unit,
-    edgeColor,
+    stroke,
 }: {
     piece: MosaicPiece
     unit: number
-    edgeColor: number
+    stroke: StrokeColor
 }) {
     const cells = getPieceBoardCells(piece)
 
@@ -189,9 +198,9 @@ function MosaicPieceEdges({
                 }
             }
 
-            graphics.stroke({ width: 2, color: edgeColor })
+            graphics.stroke({ width: 2, color: stroke.color, alpha: stroke.alpha })
         },
-        [cells, unit, edgeColor],
+        [cells, unit, stroke.color, stroke.alpha],
     )
 
     return <pixiGraphics draw={draw} />
@@ -200,12 +209,12 @@ function MosaicPieceEdges({
 function MosaicPieceGraphics({
     piece,
     unit,
-    edgeColor,
+    stroke,
     fillColor = 0xffffff,
 }: {
     piece: MosaicPiece
     unit: number
-    edgeColor: number
+    stroke: StrokeColor
     fillColor?: number
 }) {
     const cells = getPieceBoardCells(piece)
@@ -240,9 +249,9 @@ function MosaicPieceGraphics({
                 }
             }
 
-            graphics.stroke({ width: 2, color: edgeColor })
+            graphics.stroke({ width: 2, color: stroke.color, alpha: stroke.alpha })
         },
-        [cells, unit, edgeColor, fillColor],
+        [cells, unit, stroke.color, stroke.alpha, fillColor],
     )
 
     return <pixiGraphics draw={draw} />

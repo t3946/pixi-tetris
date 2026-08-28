@@ -23,7 +23,8 @@ export function CrystalSquaresCollectionsItem({
 }: TProps) {
     const accent = new Color('#4fb1ff')
     const theme = useTheme()
-    const edgeColor = accent.toNumber()
+    const edgeColor = accent.clone().setAlpha(0.2)
+    const frameColor = accent.clone().setAlpha(0.6)
     const borderColor = accent.scale(0.55).rgb()
     const backgroundColor = accent.rgba(0.12)
     const accentHover = accent.lighten(0.12).rgb()
@@ -74,7 +75,7 @@ export function CrystalSquaresCollectionsItem({
                 width={mosaicWidth}
                 progress={collected}
                 edgeColor={edgeColor}
-                frameColor={edgeColor}
+                frameColor={frameColor}
             />
 
             <layoutContainer
