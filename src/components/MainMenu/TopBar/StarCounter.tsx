@@ -50,6 +50,7 @@ export function StarCounter({ scale, score }: TProps) {
                 layout={{
                     objectFit: 'none',
                 }}
+                roundPixels={true}
             />
         </layoutContainer>
     )

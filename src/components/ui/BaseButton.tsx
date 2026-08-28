@@ -2,7 +2,6 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { FillGradient, Graphics, type ColorSource, type FederatedPointerEvent } from 'pixi.js'
 import type { LayoutStyles } from '@pixi/layout'
 import type { LayoutContainer as LayoutContainerInstance } from '@pixi/layout/components'
-import type { LayoutText as LayoutTextInstance } from '@pixi/layout/components'
 import { useTheme } from '@src/ui/ThemeContext'
 import { useAnimatedNumber } from '@src/hooks/useAnimatedNumber'
 import { Color, type ColorInput } from '@src/utils/color'
@@ -33,7 +32,7 @@ function getAccentGradientColors(accent: Color) {
     }
 }
 
-function setRoundPixels(node: LayoutContainerInstance | LayoutTextInstance | null) {
+function setRoundPixels(node: LayoutContainerInstance | null) {
     if (node && 'roundPixels' in node) {
         ;(node as { roundPixels: boolean }).roundPixels = true
     }
@@ -62,7 +61,6 @@ export function BaseButton({
     const [hovered, setHovered] = useState(false)
     const rootRef = useRef<LayoutContainerInstance>(null)
     const labelWrapRef = useRef<LayoutContainerInstance>(null)
-    const labelRef = useRef<LayoutTextInstance>(null)
     const canPress = !disabled && onPress != null
     const targetAlpha = disabled ? disabledAlpha : 1
     const alpha = useAnimatedNumber(targetAlpha, { duration: 300, round: false })
@@ -115,7 +113,6 @@ export function BaseButton({
 
         setRoundPixels(rootRef.current)
         setRoundPixels(labelWrapRef.current)
-        setRoundPixels(labelRef.current)
     }, [useGradient, label, labelFill, fontSize])
 
     const handlePress = (event: FederatedPointerEvent) => {
@@ -144,7 +141,6 @@ export function BaseButton({
 
     const labelNode = (
         <layoutText
-            ref={labelRef}
             key={`${label}:${String(labelFill)}`}
             text={label}
             style={{
@@ -159,6 +155,7 @@ export function BaseButton({
                 objectPosition: 'center',
             }}
             eventMode="none"
+            roundPixels={true}
         />
     )
 

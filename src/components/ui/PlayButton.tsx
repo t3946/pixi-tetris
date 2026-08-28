@@ -142,6 +142,7 @@ export function PlayButton({ width, scale, onPress, label = 'НАЧАТЬ' }: TP
                     }}
                     layout={{ objectFit: 'none' }}
                     eventMode="none"
+                    roundPixels={true}
                 />
             </layoutContainer>
         </layoutContainer>

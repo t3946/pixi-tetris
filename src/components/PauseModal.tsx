@@ -27,6 +27,7 @@ export function PauseModal() {
                     marginTop: 10,
                     marginBottom: 24,
                 }}
+                roundPixels={true}
             />
 
             <FlatButton label="Продолжить" variant="primary" onPress={togglePause} />

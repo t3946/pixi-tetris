@@ -67,6 +67,7 @@ export function CollectionsButton({ scale, onPress }: TProps) {
                         letterSpacing: 1.8,
                     }}
                     layout={{ objectFit: 'none' }}
+                    roundPixels={true}
                 />
             </layoutContainer>
         </layoutContainer>

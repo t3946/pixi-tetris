@@ -161,6 +161,7 @@ export function GameThemeCollectionsItem({
                                     objectFit: 'none',
                                     objectPosition: 'left',
                                 }}
+                                roundPixels={true}
                             />
                             <layoutText
                                 text={`${collected} / ${total}`}
@@ -174,6 +175,7 @@ export function GameThemeCollectionsItem({
                                     objectFit: 'none',
                                     objectPosition: 'right',
                                 }}
+                                roundPixels={true}
                             />
                         </layoutContainer>
 

@@ -129,6 +129,7 @@ function NavButton({
                     objectPosition: 'center',
                 }}
                 eventMode="none"
+                roundPixels={true}
             />
         </layoutContainer>
     )

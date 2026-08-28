@@ -61,6 +61,7 @@ export function Panel({
                         objectFit: 'none',
                         objectPosition: 'center',
                     }}
+                    roundPixels={true}
                 />
             </layoutContainer>
 

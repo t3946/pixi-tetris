@@ -113,12 +113,14 @@ export function GameTitle({ fontSize }: TProps) {
                             filters={[blur]}
                             eventMode="none"
                             alpha={0.45}
+                            roundPixels={true}
                         />
                         <pixiText
                             text={line}
                             style={titleStyle}
                             anchor={0.5}
                             eventMode="none"
+                            roundPixels={true}
                         />
                     </pixiContainer>
                 </layoutContainer>

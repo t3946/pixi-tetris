@@ -94,6 +94,7 @@ export function ModeItem({ modeId, accent, sliding, scale }: TProps) {
                             letterSpacing: 1,
                         }}
                         layout={{ objectFit: 'none' }}
+                        roundPixels={true}
                     />
 
                     {/* Таймер до сброса миссий — справа, вне потока */}
@@ -116,6 +117,7 @@ export function ModeItem({ modeId, accent, sliding, scale }: TProps) {
                                     fontWeight: 'bold',
                                 }}
                                 layout={{ objectFit: 'none' }}
+                                roundPixels={true}
                             />
                         )}
                     </layoutContainer>

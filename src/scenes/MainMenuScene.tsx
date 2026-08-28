@@ -76,6 +76,7 @@ function MenuPlaceholder({ title, children }: { title: string; children?: ReactN
                     objectFit: 'none',
                     objectPosition: 'center',
                 }}
+                roundPixels={true}
             />
             {children}
         </layoutContainer>

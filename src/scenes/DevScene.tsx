@@ -33,6 +33,7 @@ export function DevScene() {
                         objectPosition: 'center',
                         marginBottom: 24,
                     }}
+                    roundPixels={true}
                 />
 
                 <MenuButton label="Эффект: Ряд" onPress={() => setScene(SceneId.RowEffect)} />

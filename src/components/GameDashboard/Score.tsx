@@ -39,6 +39,7 @@ export const Score = () => {
                 objectFit: 'none',
                 objectPosition: 'center',
             }}
+            roundPixels={true}
         />
     )
 }

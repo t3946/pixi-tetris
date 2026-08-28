@@ -52,6 +52,7 @@ function ThemePreviewRow({ id }: { id: EBlockTheme }) {
                     fontWeight: selected ? 'bold' : 'normal',
                 }}
                 layout={{ objectFit: 'none' }}
+                roundPixels={true}
             />
             <layoutContainer
                 layout={{

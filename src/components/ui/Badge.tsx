@@ -47,6 +47,7 @@ export function Badge({
                     objectFit: 'none',
                     objectPosition: 'center',
                 }}
+                roundPixels={true}
             />
         </layoutContainer>
     )
