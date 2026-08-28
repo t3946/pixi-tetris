@@ -31,21 +31,21 @@ export function BaseButton({
 }: TBaseButtonProps) {
     const theme = useTheme()
     const [hovered, setHovered] = useState(false)
-    const interactive = !disabled && onPress != null
+    const canPress = !disabled && onPress != null
     const labelFill = disabled
         ? theme.TEXT_MUTED
-        : hovered && interactive
+        : hovered && !disabled
             ? (textFillHover ?? textFill ?? theme.UI.PANEL_LABEL)
             : (textFill ?? theme.UI.PANEL_LABEL)
 
     return (
         <layoutContainer
-            eventMode={interactive ? 'static' : 'none'}
-            cursor={interactive ? 'pointer' : 'default'}
+            eventMode={disabled ? 'none' : 'static'}
+            cursor={canPress ? 'pointer' : 'default'}
             alpha={disabled ? 0.4 : 1}
-            onPointerTap={interactive ? onPress : undefined}
+            onPointerTap={canPress ? onPress : undefined}
             onPointerOver={() => {
-                if (interactive) {
+                if (!disabled) {
                     setHovered(true)
                 }
             }}
@@ -54,7 +54,7 @@ export function BaseButton({
                 justifyContent: 'center',
                 alignItems: 'center',
                 ...appearance,
-                backgroundColor: hovered && interactive ? fillHover : fill,
+                backgroundColor: hovered && !disabled ? fillHover : fill,
                 ...layout,
             }}
         >

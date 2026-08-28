@@ -1,3 +1,4 @@
+import { Badge } from '@components/ui/Badge'
 import { BaseButton } from '@components/ui/BaseButton'
 import { useTheme } from '@src/ui/ThemeContext'
 import { Color } from '@src/utils/color'
@@ -27,7 +28,7 @@ export function CrystalSquaresCollectionsItem({
     const frameColor = accent.clone().setAlpha(0.6)
     const borderColor = accent.scale(0.55).rgb()
     const backgroundColor = accent.rgba(0.12)
-    const accentHover = accent.lighten(0.12).rgb()
+    const accentHover = accent.clone().lighten(0.12).toHex()
 
     const pad = 16
     const gap = 12
@@ -56,20 +57,31 @@ export function CrystalSquaresCollectionsItem({
                 borderRadius: 12,
             }}
         >
-            <layoutText
-                text={title}
-                style={{
-                    fontFamily: theme.UI.FONT_FAMILY,
-                    fontSize: 16,
-                    fill: accent,
-                    fontWeight: 'bold',
-                }}
+            <layoutContainer
                 layout={{
-                    objectFit: 'none',
-                    objectPosition: 'left',
-                    marginBottom: 16
+                    width: '100%',
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: 16,
                 }}
-            />
+            >
+                <layoutText
+                    text={title}
+                    style={{
+                        fontFamily: theme.UI.FONT_FAMILY,
+                        fontSize: 16,
+                        fill: accent,
+                        fontWeight: 'bold',
+                    }}
+                    layout={{
+                        objectFit: 'none',
+                        objectPosition: 'left',
+                    }}
+                />
+
+                <Badge accent={accent} layout={{width: 80, height: 24}}>Выбран</Badge>
+            </layoutContainer>
 
             <CrystalSquaresMosaic
                 width={mosaicWidth}
@@ -90,7 +102,7 @@ export function CrystalSquaresCollectionsItem({
                     <BaseButton
                         label="Выбрать"
                         onPress={onSelect}
-                        fill={accent}
+                        fill={accent.toHex()}
                         fillHover={accentHover}
                         textFill={theme.UI.PANEL_LABEL}
                         fontSize={20}
