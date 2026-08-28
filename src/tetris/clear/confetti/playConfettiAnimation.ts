@@ -1,4 +1,5 @@
 import { Sprite, Texture, type Container } from 'pixi.js'
+import { Color } from '@src/utils/color'
 
 const GRAVITY = 0.12
 const LIFE_MS = 520
@@ -17,13 +18,6 @@ function randomRange(min: number, max: number): number {
     return min + Math.random() * (max - min)
 }
 
-function lightenTint(tint: number, amount: number): number {
-    const r = Math.min(255, ((tint >> 16) & 0xff) + amount)
-    const g = Math.min(255, ((tint >> 8) & 0xff) + amount)
-    const b = Math.min(255, (tint & 0xff) + amount)
-    return (r << 16) | (g << 8) | b
-}
-
 /**
  * Взрыв конфетти из центра клетки.
  * Исходный спрайт не трогает — его убирает clearCell/unmount.
@@ -40,7 +34,7 @@ export function playConfettiAnimation(source: Sprite, cellSize: number): Promise
     const count = 14 + Math.floor(Math.random() * 8) // 14..21
     const pieces: Confetti[] = []
 
-    const palette = [0xffffff, cellTint, lightenTint(cellTint, 80), 0xfff4a3]
+    const palette = [0xffffff, cellTint, new Color(cellTint).lightenBy(80).toNumber(), 0xfff4a3]
 
     for (let i = 0; i < count; i++) {
         const sprite = new Sprite(Texture.WHITE)

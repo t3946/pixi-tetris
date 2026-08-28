@@ -1,4 +1,4 @@
-import { Color } from 'pixi.js'
+import { Color } from '@src/utils/color'
 import { useTheme } from '@src/ui/ThemeContext'
 import { GAME_MODES, type GameModeId } from '../gameModes'
 import { MiniBoard } from './MiniBoard'
@@ -23,8 +23,7 @@ export function ModeItem({ modeId, accent, sliding, scale }: TProps) {
     const titleFontSize = Math.round(14 * scale)
     const titleGap = Math.round(8 * scale)
 
-    const [r, g, b] = new Color(accent).toUint8RgbArray()
-    const borderColor = `rgba(${r}, ${g}, ${b}, 0.333)`
+    const borderColor = new Color(accent).rgba(0.333)
 
     return (
         <layoutContainer

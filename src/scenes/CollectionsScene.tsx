@@ -48,7 +48,7 @@ export function CollectionsScene() {
             >
                 <CrystalSquaresCollectionsItem
                     title="Кристальные плитки"
-                    progress={5}
+                    progress={10}
                     width={contentWidth}
                 />
             </layoutContainer>

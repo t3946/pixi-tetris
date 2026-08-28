@@ -1,4 +1,5 @@
 import { Texture } from 'pixi.js'
+import { Color } from '@src/utils/color'
 import { EPieceType } from './EPieceType'
 import { loadBlockMaterialTexture } from '../bakeMaterialTexture'
 import type { BlockSkinId } from '../materials'
@@ -14,10 +15,6 @@ export type ThemeColors = Record<EPieceType, PieceColorWeights>
 export type BlockThemeMaterial = {
     texture: Texture
     color: number
-}
-
-function parseHexColor(hex: string): number {
-    return Number.parseInt(hex.slice(1), 16)
 }
 
 function pickWeightedHex(weights: PieceColorWeights): string {
@@ -60,7 +57,7 @@ export abstract class BlockThemes {
         const weights = this.colors[piece]
         const hex = pickWeightedHex(weights)
 
-        return parseHexColor(hex)
+        return new Color(hex).toNumber()
     }
 
     public getMaterial(piece: EPieceType): BlockThemeMaterial {

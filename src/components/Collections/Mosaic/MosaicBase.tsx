@@ -1,8 +1,9 @@
 import { useCallback, useMemo } from 'react'
-import { Color, Graphics } from 'pixi.js'
+import { Graphics } from 'pixi.js'
 import type { MosaicFillSource } from '@components/Collections/Mosaic/mosaicFill'
 import { MosaicFillLayer } from '@components/Collections/Mosaic/MosaicFillLayer'
 import { getPieceBoardCells, type MosaicPiece } from '@components/Collections/Mosaic/mosaicPieceCells'
+import { Color } from '@src/utils/color'
 
 export type { MosaicPiece } from '@components/Collections/Mosaic/mosaicPieceCells'
 export { getPieceBoardCells } from '@components/Collections/Mosaic/mosaicPieceCells'
@@ -12,16 +13,6 @@ const FRAME_BORDER_WIDTH = 2
 /** Затемнение accent для заливки placeholder-деталей */
 const PLACEHOLDER_FILL_DARKEN = 0.20
 const PLACEHOLDER_EDGE = 0x000000
-
-function darkenColor(color: number, factor: number): number {
-    const [r, g, b] = new Color(color).toUint8RgbArray()
-
-    return new Color({
-        r: Math.round(r * factor),
-        g: Math.round(g * factor),
-        b: Math.round(b * factor),
-    }).toNumber()
-}
 
 type TProps = {
     /** Общая ширина мозаики в пикселях */
@@ -78,7 +69,7 @@ export function MosaicBase({
     }, [sortedPieces, progress])
 
     const placeholderFillColor = useMemo(
-        () => darkenColor(edgeColor, PLACEHOLDER_FILL_DARKEN),
+        () => new Color(edgeColor).darken(PLACEHOLDER_FILL_DARKEN).toNumber(),
         [edgeColor],
     )
 

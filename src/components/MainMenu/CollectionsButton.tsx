@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Color } from 'pixi.js'
+import { Color } from '@src/utils/color'
 import { UiIcon } from '@components/ui/UiIcon'
 import { useTheme } from '@src/ui/ThemeContext'
 
@@ -14,11 +14,9 @@ export function CollectionsButton({ scale, onPress }: TProps) {
     const height = Math.round(50 * scale)
     const iconSize = Math.round(20 * scale)
 
-    const [ar, ag, ab] = new Color(theme.MENU.ACCENT).toUint8RgbArray()
-    const accent = hovered
-        ? `rgb(${Math.round(ar + (255 - ar) * 0.4)}, ${Math.round(ag + (255 - ag) * 0.4)}, ${Math.round(ab + (255 - ab) * 0.4)})`
-        : theme.MENU.ACCENT
-    const [r, g, b] = hovered ? [ar, ag, ab] : new Color(theme.TEXT_COLOR).toUint8RgbArray()
+    const accentColor = new Color(theme.MENU.ACCENT)
+    const accent = hovered ? accentColor.lighten(0.4).rgb() : theme.MENU.ACCENT
+    const textColor = hovered ? accentColor : new Color(theme.TEXT_COLOR)
 
     return (
         <layoutContainer
@@ -38,7 +36,7 @@ export function CollectionsButton({ scale, onPress }: TProps) {
                 borderRadius: Math.round(16 * scale),
                 borderWidth: 1,
                 borderColor: accent,
-                backgroundColor: `rgba(${r}, ${g}, ${b}, ${hovered ? 0.1 : 0.06})`,
+                backgroundColor: textColor.rgba(hovered ? 0.1 : 0.06),
                 flexShrink: 0,
             }}
         >

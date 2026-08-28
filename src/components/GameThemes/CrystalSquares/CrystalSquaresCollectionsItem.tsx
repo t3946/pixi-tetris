@@ -1,6 +1,6 @@
-import { Color } from 'pixi.js'
 import { BaseButton } from '@components/ui/BaseButton'
 import { useTheme } from '@src/ui/ThemeContext'
+import { Color } from '@src/utils/color'
 import {
     CRYSTAL_SQUARES_PIECES_TOTAL,
     CrystalSquaresMosaic,
@@ -21,13 +21,12 @@ export function CrystalSquaresCollectionsItem({
     width,
     onSelect,
 }: TProps) {
-    const accent = '#4fb1ff'
+    const accent = new Color('#4fb1ff')
     const theme = useTheme()
-    const [r, g, b] = new Color(accent).toUint8RgbArray()
-    const edgeColor = new Color(accent).toNumber()
-    const borderDarken = .55
-    const borderColor = `rgb(${Math.round(r * borderDarken)}, ${Math.round(g * borderDarken)}, ${Math.round(b * borderDarken)})`
-    const backgroundColor = `rgba(${r}, ${g}, ${b}, 0.12)`
+    const edgeColor = accent.toNumber()
+    const borderColor = accent.scale(0.55).rgb()
+    const backgroundColor = accent.rgba(0.12)
+    const accentHover = accent.lighten(0.12).rgb()
 
     const pad = 16
     const gap = 12
@@ -36,7 +35,6 @@ export function CrystalSquaresCollectionsItem({
     const collected = Math.min(Math.max(0, progress), total)
     const fillRatio = total > 0 ? collected / total : 0
     const isComplete = collected >= total
-    const accentHover = `rgb(${Math.round(r + (255 - r) * 0.12)}, ${Math.round(g + (255 - g) * 0.12)}, ${Math.round(b + (255 - b) * 0.12)})`
 
     return (
         <layoutContainer
@@ -143,7 +141,7 @@ export function CrystalSquaresCollectionsItem({
                             layout={{
                                 width: '100%',
                                 height: 6,
-                                backgroundColor: `rgba(${r}, ${g}, ${b}, 0.2)`,
+                                backgroundColor: accent.rgba(0.2),
                                 borderRadius: 3,
                                 overflow: 'hidden',
                             }}
@@ -152,7 +150,7 @@ export function CrystalSquaresCollectionsItem({
                                 layout={{
                                     width: `${Math.round(fillRatio * 100)}%`,
                                     height: '100%',
-                                    backgroundColor: accent,
+                                    backgroundColor: accent.toHex(),
                                     borderRadius: 3,
                                 }}
                             />
