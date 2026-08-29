@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react'
 import { BlurFilter, CanvasTextMetrics, FillGradient, TextStyle } from 'pixi.js'
 import { useTheme } from '@src/ui/ThemeContext'
+import { destroyBlurFilter } from '@src/utils/destroyBlurFilter'
 
 type TProps = {
     fontSize: number
@@ -30,23 +31,7 @@ export function GameTitle({ fontSize }: TProps) {
         [theme.MENU.TITLE_DARK, theme.MENU.TITLE_LIGHT, theme.MENU.TITLE_MID],
     )
 
-    const blur = useMemo(() => {
-        const filter = new BlurFilter({
-            strength: 14,
-            quality: 4,
-            padding: GLOW_PADDING,
-        })
-        filter.padding = GLOW_PADDING
-        return filter
-    }, [])
-
-    useEffect(
-        () => () => {
-            fill.destroy()
-            blur.destroy()
-        },
-        [blur, fill],
-    )
+    useEffect(() => () => fill.destroy(), [fill])
 
     const glowStyle = useMemo(
         () => ({
@@ -96,35 +81,83 @@ export function GameTitle({ fontSize }: TProps) {
             }}
         >
             {LINES.map((line) => (
-                <layoutContainer
+                <TitleLine
                     key={line}
-                    layout={{
-                        width: lineWidth,
-                        height: lineHeight,
-                        flexShrink: 0,
-                        overflow: 'visible',
-                    }}
-                >
-                    <pixiContainer x={lineWidth / 2} y={lineHeight / 2} eventMode="none">
-                        <pixiText
-                            text={line}
-                            style={glowStyle}
-                            anchor={0.5}
-                            filters={[blur]}
-                            eventMode="none"
-                            alpha={0.45}
-                            roundPixels={true}
-                        />
-                        <pixiText
-                            text={line}
-                            style={titleStyle}
-                            anchor={0.5}
-                            eventMode="none"
-                            roundPixels={true}
-                        />
-                    </pixiContainer>
-                </layoutContainer>
+                    text={line}
+                    width={lineWidth}
+                    height={lineHeight}
+                    glowStyle={glowStyle}
+                    titleStyle={titleStyle}
+                />
             ))}
+        </layoutContainer>
+    )
+}
+
+type TitleLineProps = {
+    text: string
+    width: number
+    height: number
+    glowStyle: {
+        fontFamily: string
+        fontSize: number
+        fontWeight: '900'
+        fill: string
+        letterSpacing: number
+        align: 'center'
+    }
+    titleStyle: {
+        fontFamily: string
+        fontSize: number
+        fontWeight: '900'
+        fill: FillGradient
+        letterSpacing: number
+        align: 'center'
+    }
+}
+
+function TitleLine({ text, width, height, glowStyle, titleStyle }: TitleLineProps) {
+    const blur = useMemo(() => {
+        const filter = new BlurFilter({
+            strength: 14,
+            quality: 4,
+            padding: GLOW_PADDING,
+        })
+        filter.padding = GLOW_PADDING
+        return filter
+    }, [])
+
+    const filters = useMemo(() => [blur], [blur])
+
+    useEffect(() => () => destroyBlurFilter(blur), [blur])
+
+    return (
+        <layoutContainer
+            layout={{
+                width,
+                height,
+                flexShrink: 0,
+                overflow: 'visible',
+            }}
+        >
+            <pixiContainer x={width / 2} y={height / 2} eventMode="none">
+                <pixiText
+                    text={text}
+                    style={glowStyle}
+                    anchor={0.5}
+                    filters={filters}
+                    eventMode="none"
+                    alpha={0.45}
+                    roundPixels={true}
+                />
+                <pixiText
+                    text={text}
+                    style={titleStyle}
+                    anchor={0.5}
+                    eventMode="none"
+                    roundPixels={true}
+                />
+            </pixiContainer>
         </layoutContainer>
     )
 }

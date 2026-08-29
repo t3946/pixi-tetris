@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTick } from '@pixi/react'
 import { BlurFilter, Container, FillGradient, Graphics, type Ticker } from 'pixi.js'
 import { useTheme } from '@src/ui/ThemeContext'
+import { destroyBlurFilter } from '@src/utils/destroyBlurFilter'
 
 type TProps = {
     width: number
@@ -54,10 +55,12 @@ export function PlayButton({ width, scale, onPress, label = 'НАЧАТЬ' }: TP
         return filter
     }, [])
 
+    const filters = useMemo(() => [blur], [blur])
+
     useEffect(
         () => () => {
             gradient.destroy()
-            blur.destroy()
+            destroyBlurFilter(blur)
         },
         [blur, gradient],
     )
@@ -110,7 +113,7 @@ export function PlayButton({ width, scale, onPress, label = 'НАЧАТЬ' }: TP
             }}
         >
             {/* Пульсирующее свечение */}
-            <pixiContainer ref={glowRef} filters={[blur]} alpha={GLOW_ALPHA_MIN} eventMode="none">
+            <pixiContainer ref={glowRef} filters={filters} alpha={GLOW_ALPHA_MIN} eventMode="none">
                 <pixiGraphics draw={drawGlow} />
             </pixiContainer>
 

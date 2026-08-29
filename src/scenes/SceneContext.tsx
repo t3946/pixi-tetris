@@ -17,7 +17,7 @@ type SceneContextValue = {
 const SceneContext = createContext<SceneContextValue | null>(null)
 
 export function SceneProvider({ children }: { children: ReactNode }) {
-    const [scene, setScene] = useState<SceneId>(SceneId.Collections)
+    const [scene, setScene] = useState<SceneId>(SceneId.MainMenu)
 
     const value = useMemo(() => ({ scene, setScene }), [scene])
 
