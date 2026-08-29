@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useApplication, useTick } from '@pixi/react'
-import {
-    BlurFilter,
-    Container,
-    Graphics,
-    RenderTexture,
-    type Renderer,
-    type Ticker,
-} from 'pixi.js'
+import { useTick } from '@pixi/react'
+import { Container, Texture, type Ticker } from 'pixi.js'
 import { Badge } from '@components/ui/Badge'
 import { BaseButton } from '@components/ui/BaseButton'
 import { useTheme } from '@src/ui/ThemeContext'
@@ -16,57 +9,15 @@ import { GAME_THEME_PIECES_TOTAL, GameThemeMosaic } from '@components/GameThemes
 import type { TThemeConfig } from '@components/GameThemes/GameTheme.ts'
 import { palette } from '@src/ui/palette'
 import type { Color } from '@src/utils/color'
-import { destroyBlurFilter } from '@src/utils/destroyBlurFilter'
+import { CANVAS_GLOW_PADDING, createCanvasGlowTexture } from '@src/utils/createCanvasGlowTexture'
 
 const HEADER_ROW_HEIGHT = 32
 const BADGE_WIDTH = 70
 const MOSAIC_COLS = 8
 const MOSAIC_ROWS = 5
-const MOSAIC_BORDER_RADIUS = 5
 const GLOW_PULSE_PERIOD = 2.4
 const GLOW_ALPHA_MIN = 0.16
 const GLOW_ALPHA_MAX = 0.38
-const GLOW_BLUR_STRENGTH = 6
-const GLOW_PADDING = 22
-
-/** Один pass BlurFilter в собственную RT; на сцене остаётся только Sprite. */
-function bakeMosaicGlowTexture(
-    renderer: Renderer,
-    width: number,
-    height: number,
-    color: number,
-): RenderTexture {
-    const pad = GLOW_PADDING
-    const baked = RenderTexture.create({
-        width: Math.ceil(width + pad * 2),
-        height: Math.ceil(height + pad * 2),
-    })
-
-    const root = new Container()
-    const graphics = new Graphics()
-    graphics.roundRect(pad, pad, width, height, MOSAIC_BORDER_RADIUS).fill({ color })
-    root.addChild(graphics)
-
-    const blur = new BlurFilter({
-        strength: GLOW_BLUR_STRENGTH,
-        quality: 4,
-        padding: pad,
-    })
-    blur.padding = pad
-    root.filters = [blur]
-
-    renderer.render({
-        container: root,
-        target: baked,
-        clear: true,
-    })
-
-    root.filters = []
-    destroyBlurFilter(blur)
-    root.destroy({ children: true })
-
-    return baked
-}
 
 type TProps = {
     theme: TThemeConfig
@@ -282,27 +233,22 @@ function MosaicWithGlow({
     edgeColor,
     frameColor,
 }: MosaicWithGlowProps) {
-    const { app, isInitialised } = useApplication()
     const glowRef = useRef<Container>(null)
     const pulseTimeRef = useRef(0)
     const height = width * MOSAIC_ROWS / MOSAIC_COLS
-    const [glowTexture, setGlowTexture] = useState<RenderTexture | null>(null)
+    const [glowTexture, setGlowTexture] = useState<Texture | null>(null)
 
-    const glowColor = useMemo(() => accent.clone().lighten(0.4).toNumber(), [accent])
+    const glowTint = useMemo(() => accent.clone().lighten(0.4).toNumber(), [accent])
 
     useEffect(() => {
-        if (!isInitialised) {
-            return
-        }
-
-        const baked = bakeMosaicGlowTexture(app.renderer, width, height, glowColor)
-        setGlowTexture(baked)
+        const texture = createCanvasGlowTexture(width, height)
+        setGlowTexture(texture)
 
         return () => {
-            baked.destroy(true)
+            texture.destroy(true)
             setGlowTexture(null)
         }
-    }, [app.renderer, glowColor, height, isInitialised, width])
+    }, [height, width])
 
     useTick(
         useCallback((ticker: Ticker) => {
@@ -328,12 +274,12 @@ function MosaicWithGlow({
             {glowTexture != null && (
                 <pixiContainer
                     ref={glowRef}
-                    x={-GLOW_PADDING}
-                    y={-GLOW_PADDING}
+                    x={-CANVAS_GLOW_PADDING}
+                    y={-CANVAS_GLOW_PADDING}
                     alpha={GLOW_ALPHA_MIN}
                     eventMode="none"
                 >
-                    <pixiSprite texture={glowTexture} eventMode="none" />
+                    <pixiSprite texture={glowTexture} tint={glowTint} eventMode="none" />
                 </pixiContainer>
             )}
             <layoutContainer

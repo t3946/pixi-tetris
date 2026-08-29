@@ -19,7 +19,7 @@ const INACTIVE_ALPHA = 0.4
 
 const TABS: { id: BottomNavTab; icon: IconName; label: string }[] = [
     { id: 'home', icon: 'houseBlank', label: 'Главная' },
-    { id: 'ranking', icon: 'rankingStar', label: 'Турниры' },
+    { id: 'ranking', icon: 'rankingStar', label: 'Турнир' },
     { id: 'achievements', icon: 'medal', label: 'Рекорды' },
     { id: 'settings', icon: 'gear', label: 'Настройки' },
 ]
@@ -68,7 +68,7 @@ export function BottomNav({ active, onChange }: TProps) {
             >
                 {TABS.map((tab) => (
                     <NavButton
-                        key={tab.id}
+                        key={`${tab.id}:${active}`}
                         icon={tab.icon}
                         label={tab.label}
                         active={tab.id === active}
