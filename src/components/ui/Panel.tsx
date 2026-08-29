@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react'
+import { getAccentUiChrome } from '@components/GameThemes/GameTheme.ts'
+import { useGameTheme } from '@src/hooks/useGameTheme'
 import { useTheme } from '@src/ui/ThemeContext'
 
 type TProps = {
@@ -23,14 +25,16 @@ export function Panel({
     borderWidth = DEFAULT_BORDER_WIDTH,
 }: TProps) {
     const theme = useTheme()
+    const { accent } = useGameTheme()
+    const { chrome, panelFill } = getAccentUiChrome(accent)
 
     return (
         <layoutContainer
             layout={{
                 ...layout,
                 flexDirection: 'column',
-                backgroundColor: theme.UI.PANEL_FILL,
-                borderColor: theme.UI.BUTTON_FILL_TOP,
+                backgroundColor: panelFill,
+                borderColor: chrome,
                 borderWidth,
                 borderRadius,
                 overflow: 'hidden',
@@ -40,7 +44,7 @@ export function Panel({
                 layout={{
                     width: '100%',
                     height: TITLE_HEIGHT,
-                    backgroundColor: theme.UI.BUTTON_FILL_TOP,
+                    backgroundColor: chrome,
                     justifyContent: 'center',
                     alignItems: 'center',
                     flexShrink: 0,

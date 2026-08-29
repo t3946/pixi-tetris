@@ -40,3 +40,13 @@ export const GameThemesList: TThemeConfig[] = [
     GameThemes[EGameTheme.WadingCausticBlue],
     GameThemes[EGameTheme.WadingCausticRed],
 ]
+
+/** Цвета UI-хрома (рамка стакана, панели дашборда) из accent темы. */
+export function getAccentUiChrome(accent: Color) {
+    return {
+        /** Рамка, бордер и шапка панелей */
+        chrome: accent.scale(0.55).toHex(),
+        /** Фон тела панели */
+        panelFill: accent.scale(0.15).toHex(),
+    }
+}

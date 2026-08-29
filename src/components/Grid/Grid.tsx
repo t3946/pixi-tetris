@@ -1,6 +1,8 @@
 import { useCallback, type ReactNode } from 'react'
 import { Graphics } from 'pixi.js'
+import { getAccentUiChrome } from '@components/GameThemes/GameTheme.ts'
 import { BOARD_COLS, BOARD_ROWS } from '@src/tetris/constants'
+import { useGameTheme } from '@src/hooks/useGameTheme'
 import { useTheme } from '@src/ui/ThemeContext.tsx'
 
 const GRID_ALPHA = 0.3
@@ -26,6 +28,8 @@ export function Grid({
     children,
 }: TProps) {
     const theme = useTheme()
+    const { accent } = useGameTheme()
+    const { chrome } = getAccentUiChrome(accent)
 
     const cellSize = computeCellSize(width, cols)
     const gridWidth = cellSize * cols
@@ -62,7 +66,7 @@ export function Grid({
                 width: gridWidth + FIELD_BORDER * 2,
                 height: outerHeight,
                 borderWidth: FIELD_BORDER,
-                borderColor: theme.UI.BUTTON_FILL_TOP,
+                borderColor: chrome,
                 borderRadius: FIELD_RADIUS,
                 overflow: 'hidden',
             }}
