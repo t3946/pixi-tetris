@@ -1,13 +1,13 @@
 import { useState, type ReactNode } from 'react'
 import { useTheme } from '@src/ui/ThemeContext'
-import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useAppLayout } from '@src/scenes/useAppLayout'
 import { SceneFrame } from '@src/scenes/SceneFrame'
-import { MenuButton } from '@components/ui/MenuButton'
 import { BottomNav, type BottomNavTab } from '@components/ui/BottomNav'
 import { MenuAtmosphere } from '@components/MainMenu/MenuAtmosphere'
 import { MenuTopBar } from '@components/MainMenu/TopBar/MenuTopBar'
 import { HomeTab } from '@components/MainMenu/HomeTab'
+import { SettingsTab } from '@components/MainMenu/SettingsTab'
+import { SceneId, useScene } from '@src/scenes/SceneContext'
 
 export function MainMenuScene() {
     const { mainSize, ready } = useAppLayout()
@@ -19,14 +19,21 @@ export function MainMenuScene() {
         return null
     }
 
+    const isHome = tab === 'home'
+    const isInnerFrame = tab === 'settings'
+
     return (
         <SceneFrame
             backgroundColor={theme.MENU.BG_MID}
             letterboxColor={theme.MENU.LETTERBOX}
-            layout={{ overflow: 'visible' }}
-            backdrop={<MenuAtmosphere width={mainSize.width} height={mainSize.height} />}
+            layout={isHome ? { overflow: 'visible' } : undefined}
+            backdrop={
+                isHome ? (
+                    <MenuAtmosphere width={mainSize.width} height={mainSize.height} />
+                ) : undefined
+            }
         >
-            <MenuTopBar width={mainSize.width} />
+            {!isInnerFrame && <MenuTopBar width={mainSize.width} />}
 
             {tab === 'home' && (
                 <HomeTab
@@ -39,12 +46,10 @@ export function MainMenuScene() {
             {tab === 'ranking' && <MenuPlaceholder title="Рейтинг" />}
             {tab === 'achievements' && <MenuPlaceholder title="Достижения" />}
             {tab === 'settings' && (
-                <MenuPlaceholder title="Настройки">
-                    <MenuButton label="Разработка" onPress={() => setScene(SceneId.Dev)} />
-                </MenuPlaceholder>
+                <SettingsTab width={mainSize.width} onBack={() => setTab('home')} />
             )}
 
-            <BottomNav active={tab} onChange={setTab} />
+            {tab !== 'settings' && <BottomNav active={tab} onChange={setTab} />}
         </SceneFrame>
     )
 }

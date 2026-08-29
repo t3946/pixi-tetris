@@ -1,10 +1,12 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
 import { DEFAULT_BLOCK_THEME, EBlockTheme, setActiveBlockTheme } from '@src/tetris/blocks/themes'
 import { EGameTheme } from "@components/GameThemes/EGameTheme.ts";
+import { DEFAULT_SETTINGS, type Settings } from '@src/user/settings'
 
 export type UserState = {
     blockTheme: EBlockTheme
     gameTheme: EGameTheme,
+    settings: Settings
     progress: {
         gameTheme: Record<EGameTheme, number>
     }
@@ -14,6 +16,7 @@ type UserContextValue = {
     user: UserState
     setBlockTheme: (theme: EBlockTheme) => void
     setGameTheme: (theme: EGameTheme) => void
+    patchSettings: (patch: Partial<Settings>) => void
 }
 
 const UserContext = createContext<UserContextValue | null>(null)
@@ -21,6 +24,7 @@ const UserContext = createContext<UserContextValue | null>(null)
 export function UserProvider({ children }: { children: ReactNode }) {
     const [blockTheme, setBlockThemeState] = useState<EBlockTheme>(DEFAULT_BLOCK_THEME)
     const [gameTheme, setGameThemeState] = useState<EGameTheme>(EGameTheme.CrystalSquares)
+    const [settings, setSettingsState] = useState<Settings>(DEFAULT_SETTINGS)
 
     const setBlockTheme = useCallback((theme: EBlockTheme) => {
         setActiveBlockTheme(theme)
@@ -31,11 +35,16 @@ export function UserProvider({ children }: { children: ReactNode }) {
         setGameThemeState(theme)
     }, [])
 
+    const patchSettings = useCallback((patch: Partial<Settings>) => {
+        setSettingsState((prev) => ({ ...prev, ...patch }))
+    }, [])
+
     const value = useMemo(
         () => ({
             user: {
                 blockTheme,
                 gameTheme,
+                settings,
                 progress: {
                     gameTheme: {
                         [EGameTheme.CrystalSquares]: 10,
@@ -46,12 +55,15 @@ export function UserProvider({ children }: { children: ReactNode }) {
             },
             setBlockTheme,
             setGameTheme,
+            patchSettings,
         }),
         [
             blockTheme,
+            settings,
             setBlockTheme,
             gameTheme,
             setGameTheme,
+            patchSettings,
         ],
     )
 

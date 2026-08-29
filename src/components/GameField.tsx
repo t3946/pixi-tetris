@@ -2,6 +2,7 @@ import { GhostPiece } from '@components/GhostPiece'
 import { Monomino } from '@components/Monomino'
 import { useTetrisGameState } from '@src/tetris/TetrisGameContext'
 import { getPieceCells } from '@src/tetris/tetrominoes'
+import { useUser } from '@src/user/UserContext'
 import type { ReactNode } from 'react'
 import { Texture } from 'pixi.js'
 
@@ -13,6 +14,7 @@ type TProps = {
 
 export function GameField({ vertica, horizontal, cellSize }: TProps) {
     const { board, piece, gameOver } = useTetrisGameState()
+    const { user } = useUser()
 
     const boardMonominoes: ReactNode[] = []
 
@@ -54,7 +56,12 @@ export function GameField({ vertica, horizontal, cellSize }: TProps) {
         <pixiContainer>
             {boardMonominoes}
             {piece != null && (
-                <GhostPiece piece={piece} board={board} cellSize={cellSize} />
+                <GhostPiece
+                    piece={piece}
+                    board={board}
+                    cellSize={cellSize}
+                    renderMode={user.settings.ghostRenderMode}
+                />
             )}
             {pieceMonominoes}
 
