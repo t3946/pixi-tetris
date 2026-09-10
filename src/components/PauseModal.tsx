@@ -4,7 +4,11 @@ import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useTogglePause, useTetrisGameState } from '@src/tetris/TetrisGameContext'
 import { useTheme } from '@src/ui/ThemeContext'
 
-export function PauseModal() {
+type TProps = {
+    onOpenSettings: () => void
+}
+
+export function PauseModal({ onOpenSettings }: TProps) {
     const theme = useTheme()
     const { paused } = useTetrisGameState()
     const togglePause = useTogglePause()
@@ -32,7 +36,7 @@ export function PauseModal() {
 
             <FlatButton label="Продолжить" variant="primary" onPress={togglePause} />
 
-            <FlatButton label="Настройки" variant="secondary" />
+            <FlatButton label="Настройки" variant="secondary" onPress={onOpenSettings} />
 
             <FlatButton
                 label="Завершить"
