@@ -2,6 +2,7 @@ import type { Filter } from 'pixi.js'
 import { EBackgroundShaderId } from '@shaders/game-backgrounds/EBackgroundShaderId'
 import { filterCrystalSquares } from '@shaders/game-backgrounds/crystal-squares/crystal-squares.filter.js'
 import { filterPurpleTiles } from '@shaders/game-backgrounds/purple-tiles/purple-tiles.filter.js'
+import { filterNeonwaveSunrise } from '@shaders/game-backgrounds/neonwave-sunrise/neonwave-sunrise.filter.js'
 import {
     filterWadingWaterCaustic,
     wadingWaterCausticColors,
@@ -24,6 +25,8 @@ export function createBackgroundFilter(
                 height,
                 shadingOptions?.preset as Parameters<typeof filterWadingWaterCaustic>[2],
             ) as Filter
+        case EBackgroundShaderId.NeonwaveSunrise:
+            return filterNeonwaveSunrise(width, height) as Filter
     }
 }
 
@@ -48,5 +51,8 @@ export function tickBackgroundFilter(
             filter.resources.timeUniforms.uniforms.uTime = time + 0.015 * speed * deltaTime
             break
         }
+        case EBackgroundShaderId.NeonwaveSunrise:
+            filter.resources.timeUniforms.uniforms.uTime = time + 0.02 * deltaTime
+            break
     }
 }

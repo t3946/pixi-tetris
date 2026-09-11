@@ -6,4 +6,5 @@ export enum EBackgroundShaderId {
     CrystalSquares = 'crystalSquares',
     WadingWaterCaustic = 'wadingWaterCaustic',
     PurpleTiles = 'purpleTiles',
+    NeonwaveSunrise = 'neonwaveSunrise',
 }
