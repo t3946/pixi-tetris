@@ -273,7 +273,7 @@ uniform highp vec4 uOutputFrame;
 void main(void) {
     t = mod(uTime, 1000.0);
     vec4 fragColor = vec4(0.0);
-    vec2 fragCoord = vTextureCoord * uInputSize.xy;
+    vec2 fragCoord = vec2(1.0 - vTextureCoord.x, 1.0 - vTextureCoord.y) * uInputSize.xy;
     vec3 resolution = vec3(uOutputFrame.z, uOutputFrame.w, 1.0);
     finalColor = mainImage(fragColor, fragCoord, resolution);
 }

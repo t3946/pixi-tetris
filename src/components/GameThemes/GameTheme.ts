@@ -32,6 +32,12 @@ export const GameThemes: Record<EGameTheme, TThemeConfig> = {
         shader: EBackgroundShaderId.WadingWaterCaustic,
         shadingOptions: { preset: wadingWaterCausticPresets.ember },
     },
+    [EGameTheme.NeonwaveSunrise]: {
+        id: EGameTheme.NeonwaveSunrise,
+        accent: new Color('#ff6b9d'),
+        title: 'Неоновая волна',
+        shader: EBackgroundShaderId.NeonwaveSunrise,
+    },
 }
 
 /** Темы в порядке отображения в коллекциях */
@@ -39,6 +45,7 @@ export const GameThemesList: TThemeConfig[] = [
     GameThemes[EGameTheme.CrystalSquares],
     GameThemes[EGameTheme.WadingCausticBlue],
     GameThemes[EGameTheme.WadingCausticRed],
+    GameThemes[EGameTheme.NeonwaveSunrise],
 ]
 
 /** Цвета UI-хрома (рамка стакана, панели дашборда) из accent темы. */
