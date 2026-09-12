@@ -10,6 +10,8 @@
 #define MAX_ITER 5
 
 uniform float uTime;
+uniform float uIntroFade;
+uniform float uIntroFadeDuration;
 uniform vec3 uDeepBlue;
 uniform vec3 uMidBlue;
 uniform vec3 uHighlight;
@@ -45,6 +47,9 @@ vec4 mainImage(vec4 fragColor, vec2 fragCoord, vec3 iResolution)
 
     // Soft fade to black at the top (uv.y = 0)
     colour *= smoothstep(0.0, uTopFade, uv.y);
+
+    // Intro fade (game only): uIntroFade is 1 in-game, 0 in collections previews
+    colour *= mix(1.0, smoothstep(0.0, uIntroFadeDuration, t - abs(uv.y)), uIntroFade);
 
     return vec4(colour, 1.0);
 }

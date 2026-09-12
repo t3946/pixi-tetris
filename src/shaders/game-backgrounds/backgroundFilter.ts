@@ -8,25 +8,41 @@ import {
     wadingWaterCausticColors,
 } from '@shaders/game-backgrounds/wading-water-caustic/wading-water-caustic.filter.js'
 
+const DEFAULT_INTRO_FADE_DURATION = 4.0
+
+function introFadeOptions(shadingOptions?: Record<string, unknown>) {
+    const duration = shadingOptions?.introFadeDuration
+    return {
+        introFade: Boolean(shadingOptions?.introFade),
+        introFadeDuration:
+            typeof duration === 'number' && Number.isFinite(duration)
+                ? duration
+                : DEFAULT_INTRO_FADE_DURATION,
+    }
+}
+
 export function createBackgroundFilter(
     shader: EBackgroundShaderId,
     width: number,
     height: number,
     shadingOptions?: Record<string, unknown>,
 ): Filter {
+    const introFade = introFadeOptions(shadingOptions)
+
     switch (shader) {
         case EBackgroundShaderId.CrystalSquares:
-            return filterCrystalSquares(width, height) as Filter
+            return filterCrystalSquares(width, height, introFade) as Filter
         case EBackgroundShaderId.PurpleTiles:
-            return filterPurpleTiles(width, height) as Filter
+            return filterPurpleTiles(width, height, introFade) as Filter
         case EBackgroundShaderId.WadingWaterCaustic:
             return filterWadingWaterCaustic(
                 width,
                 height,
                 shadingOptions?.preset as Parameters<typeof filterWadingWaterCaustic>[2],
+                introFade,
             ) as Filter
         case EBackgroundShaderId.NeonwaveSunrise:
-            return filterNeonwaveSunrise(width, height) as Filter
+            return filterNeonwaveSunrise(width, height, introFade) as Filter
     }
 }
 

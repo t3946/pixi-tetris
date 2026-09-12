@@ -23,19 +23,19 @@ export const GameThemes: Record<EGameTheme, TThemeConfig> = {
         accent: new Color('#508dd3'),
         title: 'Каустик синий',
         shader: EBackgroundShaderId.WadingWaterCaustic,
-        shadingOptions: { preset: wadingWaterCausticPresets.deepBlue },
+        shadingOptions: { preset: wadingWaterCausticPresets.deepBlue, introFadeDuration: 1 },
     },
     [EGameTheme.WadingCausticRed]: {
         id: EGameTheme.WadingCausticRed,
         accent: new Color('#ff4800'),
         title: 'Каустик красный',
         shader: EBackgroundShaderId.WadingWaterCaustic,
-        shadingOptions: { preset: wadingWaterCausticPresets.ember },
+        shadingOptions: { preset: wadingWaterCausticPresets.ember, introFadeDuration: 1 },
     },
     [EGameTheme.NeonwaveSunrise]: {
         id: EGameTheme.NeonwaveSunrise,
         accent: new Color('#bc6bff'),
-        title: 'Неоновая волна',
+        title: 'Неоновый Горизонт',
         shader: EBackgroundShaderId.NeonwaveSunrise,
     },
 }

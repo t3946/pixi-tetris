@@ -11,7 +11,11 @@ export function Background({width, height}: {width: number, height: number}) {
     const { user } = useUser()
     const theme = GameThemes[user.gameTheme]
     const bgFilter = useMemo(
-        () => createBackgroundFilter(theme.shader, width, height, theme.shadingOptions) as Filter,
+        () =>
+            createBackgroundFilter(theme.shader, width, height, {
+                ...theme.shadingOptions,
+                introFade: true,
+            }) as Filter,
         [theme.shader, theme.shadingOptions, width, height],
     )
     const timeScaleRef = useGameTimeScale()

@@ -52,7 +52,12 @@ function hexToRgb01(hex) {
     ])
 }
 
-export const filterWadingWaterCaustic = (width, height, preset = wadingWaterCausticColors) => {
+export const filterWadingWaterCaustic = (
+    width,
+    height,
+    preset = wadingWaterCausticColors,
+    { introFade = false, introFadeDuration = 4.0 } = {},
+) => {
     const c = preset
 
     return new Filter({
@@ -60,6 +65,8 @@ export const filterWadingWaterCaustic = (width, height, preset = wadingWaterCaus
         resources: {
             timeUniforms: {
                 uTime: {value: 0.0, type: 'f32'},
+                uIntroFade: {value: introFade ? 1.0 : 0.0, type: 'f32'},
+                uIntroFadeDuration: {value: introFadeDuration, type: 'f32'},
             },
             colorUniforms: {
                 uDeepBlue: {value: hexToRgb01(c.deepBlue), type: 'vec3<f32>'},

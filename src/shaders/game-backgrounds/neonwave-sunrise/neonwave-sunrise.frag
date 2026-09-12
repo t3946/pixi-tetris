@@ -77,6 +77,8 @@ vec2 hash2(vec2 p) {
 }
 
 uniform float uTime;
+uniform float uIntroFade;
+uniform float uIntroFadeDuration;
 float t;
 float hifbm(vec2 p) {
     const float aa = 0.5;
@@ -185,7 +187,7 @@ vec3 skyColor(vec3 ro, vec3 rd) {
     float lf = pow(max(dot(ldir, rd), 0.0), 80.0);
     float li = 0.02*mix(1.0, 10.0, lf)/(abs((rd.y+0.055))+0.025);
     float lz = step(-0.055, rd.y);
-    vec4 mcol = moon(ro, rd);
+    vec4 mcol = vec4(0.0); //moon(ro, rd);
     vec3 col = vec3(0.0);
     col += stars(sp, 0.25)*smoothstep(0.5, 0.0, li)*lz;
     col = mix(col, mcol.xyz, mcol.w);
@@ -256,7 +258,8 @@ vec4 mainImage(vec4 fragColor, vec2 fragCoord, vec3 iResolution) {
     vec2 p = -1. + 2. * q;
     p.x *= iResolution.x/iResolution.y;
     vec3 col = effect(p, q, iResolution);
-    col *= smoothstep(0.0, 8.0, t-abs(q.y));
+    // Intro fade (game only): uIntroFade is 1 in-game, 0 in collections previews
+    col *= mix(1.0, smoothstep(0.0, uIntroFadeDuration, t - abs(q.y)), uIntroFade);
     col = aces_approx(col);
     col = sRGB(col);
     return vec4(col, 1.0);

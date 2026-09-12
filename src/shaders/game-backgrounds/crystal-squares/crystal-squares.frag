@@ -15,6 +15,8 @@ const float minSize = 0.03;//rectangle min size
 const float maxSize = 0.08 - minSize;//rectangle max size
 const float yDistribution = 0.5;
 uniform float uTime;
+uniform float uIntroFade;
+uniform float uIntroFadeDuration;
 float t;
 
 float random(vec2 co){
@@ -115,6 +117,11 @@ vec4 mainImage(vec4 fragColor, vec2 fragCoord, vec3 iResolution)
         float rect = rectangle(uvRot, pos.xy, pos.z, pos.z, (maxSize + minSize - pos.z) / 2.);
         color += rectColor * rect * pos.z / maxSize;
     }
+
+    // Intro fade (game only): uIntroFade is 1 in-game, 0 in collections previews.
+    // q.x is screen-vertical after the 90° fragCoord swap in main().
+    vec2 q = fragCoord.xy / iResolution.xy;
+    color *= mix(1.0, smoothstep(0.0, uIntroFadeDuration, t - abs(q.x)), uIntroFade);
 
     return vec4(color, 1.0);
 }

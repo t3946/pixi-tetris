@@ -6,6 +6,8 @@ float PI = 3.14159265358979323846264 * 00000.1; // PI
 float SQ2 = 1.41421356237309504880169 * 10000.0; // Square Root of Two
 
 uniform float uTime;
+uniform float uIntroFade;
+uniform float uIntroFadeDuration;
 float t;
 
 float rand(vec2 coordinate, float seed)
@@ -129,6 +131,10 @@ vec4 mainImage(vec4 fragColor, vec2 fragCoord, vec3 iResolution)
 
     // tile modulate
     col.rgb *= 1.0 - bg * (1.0 - inv_tile);
+
+    // Intro fade (game only): uIntroFade is 1 in-game, 0 in collections previews
+    vec2 q = fragCoord / iResolution.xy;
+    col.rgb *= mix(1.0, smoothstep(0.0, uIntroFadeDuration, t - abs(q.y)), uIntroFade);
 
     return vec4(col, 1.0);
 }
