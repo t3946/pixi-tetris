@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Container, RenderTexture, Sprite, Texture } from 'pixi.js'
 import { useApplication } from '@pixi/react'
 import type { MosaicFillSource } from '@components/Collections/Mosaic/mosaicFill'
@@ -9,6 +9,11 @@ type BakeResources = {
     container: Container
     filter: ReturnType<typeof createBackgroundFilter>
     fill: MosaicFillSource
+}
+
+export type ShaderStaticBakeResult = {
+    texture: RenderTexture
+    ready: boolean
 }
 
 function createBakeResources(fill: MosaicFillSource): BakeResources {
@@ -32,8 +37,9 @@ function createBakeResources(fill: MosaicFillSource): BakeResources {
 }
 
 /** Однократный bake шейдера в RenderTexture (без анимации). */
-export function useShaderStaticBakeTexture(fill: MosaicFillSource): RenderTexture {
+export function useShaderStaticBakeTexture(fill: MosaicFillSource): ShaderStaticBakeResult {
     const { app, isInitialised } = useApplication()
+    const [bakedResources, setBakedResources] = useState<BakeResources | null>(null)
 
     const resources = useMemo(
         () => createBakeResources(fill),
@@ -57,6 +63,8 @@ export function useShaderStaticBakeTexture(fill: MosaicFillSource): RenderTextur
             target: resources.bakedTexture,
             clear: true,
         })
+
+        setBakedResources(resources)
     }, [app.renderer, isInitialised, resources])
 
     useEffect(() => {
@@ -66,5 +74,8 @@ export function useShaderStaticBakeTexture(fill: MosaicFillSource): RenderTextur
         }
     }, [resources])
 
-    return resources.bakedTexture
+    return {
+        texture: resources.bakedTexture,
+        ready: bakedResources === resources,
+    }
 }

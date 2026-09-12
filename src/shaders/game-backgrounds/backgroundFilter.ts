@@ -45,7 +45,10 @@ export function createBackgroundFilter(
         case EBackgroundShaderId.NeonwaveSunrise:
             return filterNeonwaveSunrise(width, height, introFade) as Filter
         case EBackgroundShaderId.OceanUnder:
-            return filterOceanUnder(width, height, introFade) as Filter
+            return filterOceanUnder(width, height, {
+                ...introFade,
+                quality: shadingOptions?.quality === 'low' ? 'low' : 'high',
+            }) as Filter
     }
 }
 

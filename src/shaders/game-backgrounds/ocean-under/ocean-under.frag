@@ -1,10 +1,13 @@
 #version 300 es
+precision highp float;
 
-// Ocean under — adapted from Shadertoy (iChannel0 replaced with procedural noise)
+// Ocean under — adapted from Shadertoy (iChannel0 → procedural noise)
+// uLowQuality: 0 = full (default), 1 = mobile/min preset (fewer steps/octaves)
 
 uniform float uTime;
 uniform float uIntroFade;
 uniform float uIntroFadeDuration;
+uniform float uLowQuality;
 float t;
 
 float wavedx(vec2 position, vec2 direction, float time, float freq) {
@@ -15,7 +18,11 @@ float wavedx(vec2 position, vec2 direction, float time, float freq) {
 float getwaves(vec2 position) {
     float iter = 0.0, phase = 6.0, speed = 2.0;
     float weight = 1.0, w = 0.0, ws = 0.0;
-    for (int i = 0; i < 5; i++) {
+    // high: 5 octaves, low: 4
+    const int WAVE_MAX = 5;
+    int waveLimit = uLowQuality > 0.5 ? 4 : 5;
+    for (int i = 0; i < WAVE_MAX; i++) {
+        if (i >= waveLimit) break;
         vec2 p = vec2(sin(iter), cos(iter));
         float res = wavedx(position, p, speed * t, phase);
         w += res * weight;
@@ -43,7 +50,6 @@ float noise3D(vec3 p) {
     return mix(h.x, h.y, p.z);
 }
 
-// Stand-in for Shadertoy iChannel0 noise texture
 vec3 channelNoise(vec2 uv) {
     return vec3(
         noise3D(vec3(uv, 0.0)),
@@ -57,8 +63,8 @@ float smaxP(float a, float b, float s) {
     return mix(b, a, h) + h * (1.0 - h) * s;
 }
 
-vec3 Freq = vec3(0.125, 0.31, 0.128);
-vec3 Amp = vec3(1.0, 1.5, 2.5);
+const vec3 Freq = vec3(0.125, 0.31, 0.128);
+const vec3 Amp = vec3(1.0, 1.5, 2.5);
 
 vec2 path(float z) {
     return vec2(
@@ -68,28 +74,34 @@ vec2 path(float z) {
 }
 
 float map(vec3 p) {
-    float n = noise3D(p);
-    float tx = n;
+    float tx = noise3D(p);
     vec3 q = p * 0.35;
     float h = dot(sin(q) * cos(q.yzx), vec3(0.222))
         + dot(sin(q * 1.5) * cos(q.yzx * 1.5), vec3(0.111));
     float d = p.y + h * 3.9;
-    q = sin(p * 0.5 + h);
-    h = q.x * q.y * q.z;
     p.xy -= path(p.z);
     float tnl = 1.5 - length(p.xy * vec2(0.33, 0.66)) + (0.25 - tx * 0.35);
     return smaxP(d, tnl, 2.0) - tx * 0.25 + tnl * 0.8;
 }
 
-#define STEP 36
-#define FAR 35.0
+// high: 36 / 35, low: 24 / 32
+const int STEP_MAX = 36;
+
+float sceneFar() {
+    return uLowQuality > 0.5 ? 32.0 : 35.0;
+}
 
 float logBisectTrace(vec3 ro, vec3 rd) {
+    float far = sceneFar();
+    int stepLimit = uLowQuality > 0.5 ? 24 : 36;
+    int bisectLimit = uLowQuality > 0.5 ? 3 : 5;
+
     float dist = 0.0, told = 0.0, mid, dn;
     float d = map(ro);
     float sgn = sign(d);
-    for (int i = 0; i < STEP; i++) {
-        if (sign(d) != sgn || d < 0.001 || dist > FAR) break;
+    for (int i = 0; i < STEP_MAX; i++) {
+        if (i >= stepLimit) break;
+        if (sign(d) != sgn || d < 0.001 || dist > far) break;
         told = dist;
         dist += step(d, 1.0) * (log(abs(d) + 1.1) - d) + d;
         d = map(rd * dist + ro);
@@ -98,6 +110,7 @@ float logBisectTrace(vec3 ro, vec3 rd) {
         dn = sign(map(rd * told + ro));
         vec2 iv = vec2(told, dist);
         for (int ii = 0; ii < 5; ii++) {
+            if (ii >= bisectLimit) break;
             mid = dot(iv, vec2(0.5));
             float d2 = map(rd * mid + ro);
             if (abs(d2) < 0.001) break;
@@ -105,7 +118,7 @@ float logBisectTrace(vec3 ro, vec3 rd) {
         }
         dist = mid;
     }
-    return min(dist, FAR);
+    return min(dist, far);
 }
 
 vec3 normalAt(vec3 p, float eps) {
@@ -129,6 +142,7 @@ vec4 mainImage(vec4 fragColor, vec2 fragCoord, vec3 iResolution) {
     uv.x *= iResolution.x / iResolution.y;
 
     float time = t * 0.2;
+    float far = sceneFar();
 
     vec3 pos = (sin(time * 0.14) * 2.0 + 4.5) * vec3(sin(time * 0.5), 0.0, cos(time * 0.5));
     pos.z -= time;
@@ -155,9 +169,9 @@ vec4 mainImage(vec4 fragColor, vec2 fragCoord, vec3 iResolution) {
 
         float hit = logBisectTrace(ro, dir);
         vec3 rock = vec3(0.0);
-        if (hit < FAR) {
+        if (hit < far) {
             pos = ro + dir * hit;
-            hit /= FAR;
+            hit /= far;
             vec3 sn = normalAt(pos, 0.1 / (1.0 + hit));
             float fre = clamp(1.0 + dot(sun, sn), 0.0, 1.0);
             float Schlick = pow(1.0 - max(dot(dir, normalize(dir + sun)), 0.0), 5.0);
@@ -190,7 +204,6 @@ void main(void) {
     t = mod(uTime, 1000.0);
     vec4 fragColor = vec4(0.0);
     vec2 fragCoord = vTextureCoord * uInputSize.xy;
-    // 180° in output space (keeps center; fixes upside-down vs Shadertoy)
     fragCoord = uOutputFrame.zw - fragCoord;
     vec3 resolution = vec3(uOutputFrame.z, uOutputFrame.w, 1.0);
     finalColor = mainImage(fragColor, fragCoord, resolution);

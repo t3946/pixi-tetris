@@ -10,7 +10,7 @@ type TProps = {
 
 export function ShaderStaticPreview({ theme, width, height }: TProps) {
     const fill = getMosaicFillSource(theme.shader, width, height, theme.shadingOptions)
-    const texture = useShaderStaticBakeTexture(fill)
+    const { texture, ready } = useShaderStaticBakeTexture(fill)
 
     return (
         <layoutContainer
@@ -18,14 +18,17 @@ export function ShaderStaticPreview({ theme, width, height }: TProps) {
                 width,
                 height,
                 overflow: 'hidden',
+                ...(ready ? {} : { backgroundColor: theme.accent.scale(0.45).toHex() }),
             }}
         >
-            <pixiSprite
-                texture={texture}
-                width={width}
-                height={height}
-                eventMode="none"
-            />
+            {ready ? (
+                <pixiSprite
+                    texture={texture}
+                    width={width}
+                    height={height}
+                    eventMode="none"
+                />
+            ) : null}
         </layoutContainer>
     )
 }
