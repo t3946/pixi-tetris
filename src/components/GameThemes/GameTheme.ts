@@ -38,6 +38,12 @@ export const GameThemes: Record<EGameTheme, TThemeConfig> = {
         title: 'Неоновый Горизонт',
         shader: EBackgroundShaderId.NeonwaveSunrise,
     },
+    [EGameTheme.OceanUnder]: {
+        id: EGameTheme.OceanUnder,
+        accent: new Color('#1a8fbf'),
+        title: 'Океанская бездна',
+        shader: EBackgroundShaderId.OceanUnder,
+    },
 }
 
 /** Темы в порядке отображения в коллекциях */
@@ -46,6 +52,7 @@ export const GameThemesList: TThemeConfig[] = [
     GameThemes[EGameTheme.WadingCausticBlue],
     GameThemes[EGameTheme.WadingCausticRed],
     GameThemes[EGameTheme.NeonwaveSunrise],
+    GameThemes[EGameTheme.OceanUnder],
 ]
 
 /** Цвета UI-хрома (рамка стакана, панели дашборда) из accent темы. */

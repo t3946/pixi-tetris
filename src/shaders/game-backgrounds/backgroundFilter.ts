@@ -3,6 +3,7 @@ import { EBackgroundShaderId } from '@shaders/game-backgrounds/EBackgroundShader
 import { filterCrystalSquares } from '@shaders/game-backgrounds/crystal-squares/crystal-squares.filter.js'
 import { filterPurpleTiles } from '@shaders/game-backgrounds/purple-tiles/purple-tiles.filter.js'
 import { filterNeonwaveSunrise } from '@shaders/game-backgrounds/neonwave-sunrise/neonwave-sunrise.filter.js'
+import { filterOceanUnder } from '@shaders/game-backgrounds/ocean-under/ocean-under.filter.js'
 import {
     filterWadingWaterCaustic,
     wadingWaterCausticColors,
@@ -43,6 +44,8 @@ export function createBackgroundFilter(
             ) as Filter
         case EBackgroundShaderId.NeonwaveSunrise:
             return filterNeonwaveSunrise(width, height, introFade) as Filter
+        case EBackgroundShaderId.OceanUnder:
+            return filterOceanUnder(width, height, introFade) as Filter
     }
 }
 
@@ -68,6 +71,9 @@ export function tickBackgroundFilter(
             break
         }
         case EBackgroundShaderId.NeonwaveSunrise:
+            filter.resources.timeUniforms.uniforms.uTime = time + 0.02 * deltaTime
+            break
+        case EBackgroundShaderId.OceanUnder:
             filter.resources.timeUniforms.uniforms.uTime = time + 0.02 * deltaTime
             break
     }

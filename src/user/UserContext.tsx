@@ -51,6 +51,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                         [EGameTheme.WadingCausticBlue]: 10,
                         [EGameTheme.WadingCausticRed]: 10,
                         [EGameTheme.NeonwaveSunrise]: 10,
+                        [EGameTheme.OceanUnder]: 10,
                     }
                 }
             },
