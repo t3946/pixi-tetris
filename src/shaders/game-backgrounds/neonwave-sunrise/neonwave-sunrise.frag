@@ -77,8 +77,10 @@ vec2 hash2(vec2 p) {
 }
 
 uniform float uTime;
+uniform float uTravel;
 uniform float uIntroFade;
 uniform float uIntroFadeDuration;
+uniform float uPulse;
 float t;
 float hifbm(vec2 p) {
     const float aa = 0.5;
@@ -149,8 +151,9 @@ vec3 stars(vec2 sp, float hh) {
         float h2 = fract(hh2.x*1887.0);
         float h3 = fract(hh2.x*2997.0);
         vec3 scol = mix(8.0*h2, 0.25*h2*h2, s)*mix(scol0, scol1, h1*h1);
+        scol *= 1.0 + uPulse * 1.8;
         vec3 ccol = col + exp(-(mix(6000.0, 2000.0, hh)/mix(2.0, 0.25, s))*max(l-0.001, 0.0))*scol;
-        ccol *= mix(0.125, 1.0, smoothstep(1.0, 0.99, sin(0.25*t+TAU*hh2.y)));
+        ccol *= mix(0.125 + 0.35 * uPulse, 1.0, smoothstep(1.0, 0.99, sin(0.25*t+TAU*hh2.y)));
         col = h3 < y ? ccol : col;
     }
     return col;
@@ -230,7 +233,8 @@ vec3 color(vec3 ww, vec3 uu, vec3 vv, vec3 ro, vec2 p, vec3 iResolution) {
 }
 
 vec3 effect(vec2 p, vec2 q, vec3 iResolution) {
-    float tm = t*0.25;
+    // uTravel — только полёт над ландшафтом (бустится импульсом очистки ряда)
+    float tm = uTravel * 0.25;
     vec3 ro = vec3(0.0, 0.0, tm);
     vec3 dro = normalize(vec3(0.0, 0.09, 1.0));
     vec3 ww = normalize(dro);

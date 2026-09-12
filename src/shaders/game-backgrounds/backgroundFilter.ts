@@ -4,7 +4,6 @@ import { filterCrystalSquares } from '@shaders/game-backgrounds/crystal-squares/
 import { filterPurpleTiles } from '@shaders/game-backgrounds/purple-tiles/purple-tiles.filter.js'
 import { filterNeonwaveSunrise } from '@shaders/game-backgrounds/neonwave-sunrise/neonwave-sunrise.filter.js'
 import { filterOceanUnder } from '@shaders/game-backgrounds/ocean-under/ocean-under.filter.js'
-import { filterGalaxy } from '@shaders/game-backgrounds/galaxy/galaxy.filter.js'
 import { filterShine } from '@shaders/game-backgrounds/shine/shine.filter.js'
 import {
     filterWadingWaterCaustic,
@@ -51,11 +50,6 @@ export function createBackgroundFilter(
                 ...introFade,
                 quality: shadingOptions?.quality === 'low' ? 'low' : 'high',
             }) as Filter
-        case EBackgroundShaderId.Galaxy:
-            return filterGalaxy(width, height, {
-                ...introFade,
-                quality: shadingOptions?.quality === 'low' ? 'low' : 'high',
-            }) as Filter
         case EBackgroundShaderId.Shine:
             return filterShine(width, height, introFade) as Filter
     }
@@ -82,13 +76,16 @@ export function tickBackgroundFilter(
             filter.resources.timeUniforms.uniforms.uTime = time + 0.015 * speed * deltaTime
             break
         }
-        case EBackgroundShaderId.NeonwaveSunrise:
-            filter.resources.timeUniforms.uniforms.uTime = time + 0.02 * deltaTime
+        case EBackgroundShaderId.NeonwaveSunrise: {
+            const uniforms = filter.resources.timeUniforms.uniforms
+            const pulse = Number(uniforms.uPulse) || 0
+            // Полёт над горами: буст ≈ 1/3 от прежних ×50
+            const flightMul = 1.0 + pulse * (50.0 / 3.0)
+            uniforms.uTime = time + 0.02 * deltaTime
+            uniforms.uTravel = (Number(uniforms.uTravel) || 0) + 0.02 * deltaTime * flightMul
             break
+        }
         case EBackgroundShaderId.OceanUnder:
-            filter.resources.timeUniforms.uniforms.uTime = time + 0.02 * deltaTime
-            break
-        case EBackgroundShaderId.Galaxy:
             filter.resources.timeUniforms.uniforms.uTime = time + 0.02 * deltaTime
             break
         case EBackgroundShaderId.Shine:
