@@ -34,6 +34,7 @@ import {
     getMonominoView,
     type ClearApi,
 } from '@src/tetris/clear'
+import { triggerBackgroundLineClearPulse } from '@shaders/game-backgrounds/backgroundInteraction'
 
 /** Обычная скорость падения: фигура смещается вниз раз в 600 мс */
 const DROP_INTERVAL_MS = 600
@@ -203,6 +204,8 @@ export function useTetrisGame(
             if (validLines.length === 0) {
                 return
             }
+
+            triggerBackgroundLineClearPulse()
 
             const activeIterator = iterator ?? new SparkleClearIterator()
             const activeEffect = effect ?? new SparkleClearEffect()

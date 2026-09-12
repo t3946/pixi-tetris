@@ -4,11 +4,12 @@ precision highp float;
 // Shine — adapted from Shadertoy for PixiJS
 
 #define MOD3 vec3(0.1031, 0.11369, 0.13787)
-#define BLACK_COL vec3(16.0, 21.0, 25.0) / 255.0
+#define BLACK_COL vec3(4.0, 5.0, 6.0) / 255.0
 
 uniform float uTime;
 uniform float uIntroFade;
 uniform float uIntroFadeDuration;
+uniform float uPulse;
 float t;
 
 vec3 hash33(vec3 p3) {
@@ -68,8 +69,13 @@ vec4 mainImage(vec4 fragColor, vec2 fragCoord, vec3 iResolution) {
     float sh = smoothstep(0.15, 0.35, l);
 
     float m = m1 * m1 * m2 * ((s1 * s2 * s3) * (1.0 - l)) * sh;
+    float pulse = uPulse * 0.3;
+    m *= 1.0 + pulse * 1.35;
 
-    vec3 col = mix(BLACK_COL, (0.5 + 0.5 * cos(t + uv.xyx * 3.0 + vec3(0.0, 2.0, 4.0))), m);
+    vec3 glow = 0.5 + 0.5 * cos(t + uv.xyx * 3.0 + vec3(0.0, 2.0, 4.0));
+    vec3 col = mix(BLACK_COL, glow, clamp(m, 0.0, 1.0));
+    col += glow * clamp(m, 0.0, 1.0) * pulse * 0.55;
+    col *= 1.0 + pulse * 0.45;
 
     col *= mix(1.0, smoothstep(0.0, uIntroFadeDuration, t - abs(q.y)), uIntroFade);
 
