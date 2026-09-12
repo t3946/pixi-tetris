@@ -2,13 +2,22 @@ import { EBlockTheme } from './EBlockTheme'
 import { BlockThemes } from './BlockThemes'
 import { CrystalTheme } from './crystal/CrystalTheme'
 import { FlatSmoothTheme } from './flat/FlatSmoothTheme'
+import { FlatRoundedTheme } from './flat/FlatRoundedTheme'
+import { FlatSolidTheme } from './flat/FlatSolidTheme'
 
 const THEMES: Record<EBlockTheme, BlockThemes> = {
     [EBlockTheme.Crystal]: new CrystalTheme(),
     [EBlockTheme.FlatSmooth]: new FlatSmoothTheme(),
+    [EBlockTheme.FlatRounded]: new FlatRoundedTheme(),
+    [EBlockTheme.FlatSolid]: new FlatSolidTheme(),
 }
 
-export const BLOCK_THEME_ORDER: EBlockTheme[] = [EBlockTheme.Crystal, EBlockTheme.FlatSmooth]
+export const BLOCK_THEME_ORDER: EBlockTheme[] = [
+    EBlockTheme.Crystal,
+    EBlockTheme.FlatSmooth,
+    EBlockTheme.FlatRounded,
+    EBlockTheme.FlatSolid,
+]
 
 export const DEFAULT_BLOCK_THEME = EBlockTheme.Crystal
 

@@ -12,3 +12,5 @@ export {
 } from './registry'
 export { CrystalTheme } from './crystal/CrystalTheme'
 export { FlatSmoothTheme } from './flat/FlatSmoothTheme'
+export { FlatRoundedTheme } from './flat/FlatRoundedTheme'
+export { FlatSolidTheme } from './flat/FlatSolidTheme'

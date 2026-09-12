@@ -1,3 +1,7 @@
+import {
+    ACTIVE_THEME_LAMP_GREEN,
+    ActiveThemeLampIndicator,
+} from '@components/Collections/ActiveThemeLampIndicator'
 import { ShaderStaticPreview } from '@components/GameThemes/ShaderStaticPreview.tsx'
 import type { TThemeConfig } from '@components/GameThemes/GameTheme.ts'
 import type { EGameTheme } from '@components/GameThemes/EGameTheme.ts'
@@ -10,10 +14,6 @@ const TILE_ASPECT_HEIGHT = 4
 const TILE_ASPECT_WIDTH = 5
 const TILE_BORDER_RADIUS = 6
 const TILE_BORDER_WIDTH = 1
-const LAMP_GREEN = '#4ade80'
-const LAMP_GLOW = 'rgba(74, 222, 128, 0.4)'
-const LAMP_BORDER = 'rgba(134, 239, 172, 0.95)'
-const LAMP_OFFSET = 3
 
 export function computeThemeNavTileSize(containerWidth: number, columns = NAV_COLUMNS) {
     const totalGaps = Math.max(0, columns - 1) * TILE_GAP
@@ -96,7 +96,7 @@ function GameThemeNavTile({
 }) {
     const { accent } = theme
     const borderColor = isActiveTheme
-        ? LAMP_GREEN
+        ? ACTIVE_THEME_LAMP_GREEN
         : navSelected
           ? accent.toHex()
           : accent.rgba(0.35)
@@ -126,48 +126,6 @@ function GameThemeNavTile({
             </layoutContainer>
 
             {isActiveTheme ? <ActiveThemeLampIndicator tileWidth={width} /> : null}
-        </layoutContainer>
-    )
-}
-
-function ActiveThemeLampIndicator({ tileWidth }: { tileWidth: number }) {
-    const size = Math.max(4, Math.round(tileWidth * 0.09))
-    const glowSize = Math.round(size * 1.85)
-    const inset = Math.max(2, Math.round(size * 0.35))
-    return (
-        <layoutContainer
-            eventMode="none"
-            layout={{
-                position: 'absolute',
-                top: inset + LAMP_OFFSET,
-                right: inset + LAMP_OFFSET,
-                width: glowSize,
-                height: glowSize,
-                justifyContent: 'center',
-                alignItems: 'center',
-            }}
-        >
-            <layoutContainer
-                eventMode="none"
-                layout={{
-                    position: 'absolute',
-                    width: glowSize,
-                    height: glowSize,
-                    borderRadius: glowSize / 2,
-                    backgroundColor: LAMP_GLOW,
-                }}
-            />
-            <layoutContainer
-                eventMode="none"
-                layout={{
-                    width: size,
-                    height: size,
-                    borderRadius: size / 2,
-                    backgroundColor: LAMP_GREEN,
-                    borderWidth: 1,
-                    borderColor: LAMP_BORDER,
-                }}
-            />
         </layoutContainer>
     )
 }

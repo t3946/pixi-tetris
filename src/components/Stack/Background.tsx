@@ -3,7 +3,7 @@ import { Filter, Texture, Ticker } from 'pixi.js'
 import { useTick } from '@pixi/react'
 import { filterShadingInOut } from '@shaders/linear-black-in-out/filter-shading-in-out'
 import { createBackgroundFilter, tickBackgroundFilter } from '@shaders/game-backgrounds/backgroundFilter'
-import { tickLineClearPulse } from '@shaders/game-backgrounds/backgroundInteraction'
+import { tickLineClearPulse, type LineClearPulseEasing } from '@shaders/game-backgrounds/backgroundInteraction'
 import { GameThemes } from '@components/GameThemes/GameTheme.ts'
 import { useUser } from '@src/user/UserContext'
 import { useGameTimeScale } from '@src/tetris/TetrisGameContext'
@@ -29,14 +29,25 @@ export function Background({width, height}: {width: number, height: number}) {
             const dt = ticker.deltaTime * scale
 
             filterShadingInOut.resources.timeUniforms.uniforms.uTime += 0.04 * dt
-            tickBackgroundFilter(theme.shader, bgFilter, dt, theme.shadingOptions)
 
             const uniforms = bgFilter.resources.timeUniforms?.uniforms as
                 | { uPulse?: number }
                 | undefined
             if (uniforms && 'uPulse' in uniforms) {
-                uniforms.uPulse = tickLineClearPulse(ticker.deltaMS * scale)
+                const pulseMs = theme.shadingOptions?.lineClearPulseMs
+                const durationMs =
+                    typeof pulseMs === 'number' && Number.isFinite(pulseMs) ? pulseMs : undefined
+                const easingOpt = theme.shadingOptions?.lineClearPulseEasing
+                const easingName: LineClearPulseEasing =
+                    easingOpt === 'easeInOut' ? 'easeInOut' : 'easeIn'
+                uniforms.uPulse = tickLineClearPulse(
+                    ticker.deltaMS * scale,
+                    durationMs,
+                    easingName,
+                )
             }
+
+            tickBackgroundFilter(theme.shader, bgFilter, dt, theme.shadingOptions)
         },
         [bgFilter, theme.shader, theme.shadingOptions, timeScaleRef],
     )

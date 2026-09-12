@@ -37,18 +37,13 @@ export const GameThemes: Record<EGameTheme, TThemeConfig> = {
         accent: new Color('#bc6bff'),
         title: 'Неоновый Горизонт',
         shader: EBackgroundShaderId.NeonwaveSunrise,
+        shadingOptions: { lineClearPulseMs: 2500, lineClearPulseEasing: 'easeInOut' },
     },
     [EGameTheme.OceanUnder]: {
         id: EGameTheme.OceanUnder,
         accent: new Color('#1a8fbf'),
         title: 'Океанская бездна',
         shader: EBackgroundShaderId.OceanUnder,
-    },
-    [EGameTheme.Galaxy]: {
-        id: EGameTheme.Galaxy,
-        accent: new Color('#d4a05a'),
-        title: 'Галактика',
-        shader: EBackgroundShaderId.Galaxy,
     },
     [EGameTheme.Shine]: {
         id: EGameTheme.Shine,
@@ -66,7 +61,6 @@ export const GameThemesList: TThemeConfig[] = [
     GameThemes[EGameTheme.WadingCausticRed],
     GameThemes[EGameTheme.NeonwaveSunrise],
     GameThemes[EGameTheme.OceanUnder],
-    GameThemes[EGameTheme.Galaxy],
     GameThemes[EGameTheme.Shine],
 ]
 

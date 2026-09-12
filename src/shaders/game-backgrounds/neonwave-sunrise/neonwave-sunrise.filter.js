@@ -12,8 +12,10 @@ export const filterNeonwaveSunrise = (
         resources: {
             timeUniforms: {
                 uTime: {value: 0.0, type: 'f32'},
+                uTravel: {value: 0.0, type: 'f32'},
                 uIntroFade: {value: introFade ? 1.0 : 0.0, type: 'f32'},
                 uIntroFadeDuration: {value: introFadeDuration, type: 'f32'},
+                uPulse: {value: 0.0, type: 'f32'},
             },
         },
     });
