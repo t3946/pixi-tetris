@@ -44,6 +44,19 @@ export const GameThemes: Record<EGameTheme, TThemeConfig> = {
         title: 'Океанская бездна',
         shader: EBackgroundShaderId.OceanUnder,
     },
+    [EGameTheme.Galaxy]: {
+        id: EGameTheme.Galaxy,
+        accent: new Color('#d4a05a'),
+        title: 'Галактика',
+        shader: EBackgroundShaderId.Galaxy,
+    },
+    [EGameTheme.Shine]: {
+        id: EGameTheme.Shine,
+        accent: new Color('#7b3897'),
+        title: 'Сияние',
+        shader: EBackgroundShaderId.Shine,
+        shadingOptions: { introFadeDuration: 1, mosaicFillAlign: 'center' },
+    },
 }
 
 /** Темы в порядке отображения в коллекциях */
@@ -53,6 +66,8 @@ export const GameThemesList: TThemeConfig[] = [
     GameThemes[EGameTheme.WadingCausticRed],
     GameThemes[EGameTheme.NeonwaveSunrise],
     GameThemes[EGameTheme.OceanUnder],
+    GameThemes[EGameTheme.Galaxy],
+    GameThemes[EGameTheme.Shine],
 ]
 
 /** Цвета UI-хрома (рамка стакана, панели дашборда) из accent темы. */

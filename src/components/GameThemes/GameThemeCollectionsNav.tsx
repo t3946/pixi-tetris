@@ -2,8 +2,10 @@ import { ShaderStaticPreview } from '@components/GameThemes/ShaderStaticPreview.
 import type { TThemeConfig } from '@components/GameThemes/GameTheme.ts'
 import type { EGameTheme } from '@components/GameThemes/EGameTheme.ts'
 import { useUser } from '@src/user/UserContext'
+
 const TILE_GAP = 8
-const TILE_WIDTH_RATIO = 0.2
+const NAV_COLUMNS = 5
+const TILE_WIDTH_RATIO = 1 / NAV_COLUMNS
 const TILE_ASPECT_HEIGHT = 4
 const TILE_ASPECT_WIDTH = 5
 const TILE_BORDER_RADIUS = 6
@@ -13,12 +15,20 @@ const LAMP_GLOW = 'rgba(74, 222, 128, 0.4)'
 const LAMP_BORDER = 'rgba(134, 239, 172, 0.95)'
 const LAMP_OFFSET = 3
 
-export function computeThemeNavTileSize(containerWidth: number, tileCount: number) {
-    const totalGaps = Math.max(0, tileCount - 1) * TILE_GAP
+export function computeThemeNavTileSize(containerWidth: number, columns = NAV_COLUMNS) {
+    const totalGaps = Math.max(0, columns - 1) * TILE_GAP
     const tileWidth = Math.round((containerWidth - totalGaps) * TILE_WIDTH_RATIO)
-    const tileHeight = Math.round(tileWidth * TILE_ASPECT_HEIGHT / TILE_ASPECT_WIDTH)
+    const tileHeight = Math.round((tileWidth * TILE_ASPECT_HEIGHT) / TILE_ASPECT_WIDTH)
 
-    return { tileWidth, tileHeight, gap: TILE_GAP }
+    return { tileWidth, tileHeight, gap: TILE_GAP, columns: NAV_COLUMNS }
+}
+
+function chunkThemes<T>(items: T[], columns: number): T[][] {
+    const rows: T[][] = []
+    for (let i = 0; i < items.length; i += columns) {
+        rows.push(items.slice(i, i + columns))
+    }
+    return rows
 }
 
 type TProps = {
@@ -30,27 +40,40 @@ type TProps = {
 
 export function GameThemeCollectionsNav({ themes, selectedId, onSelect, width }: TProps) {
     const { user } = useUser()
-    const { tileWidth, tileHeight, gap } = computeThemeNavTileSize(width, themes.length)
+    const { tileWidth, tileHeight, gap, columns } = computeThemeNavTileSize(width)
+    const rows = chunkThemes(themes, columns)
 
     return (
         <layoutContainer
             layout={{
                 width,
-                flexDirection: 'row',
+                flexDirection: 'column',
                 gap,
                 flexShrink: 0,
             }}
         >
-            {themes.map((theme) => (
-                <GameThemeNavTile
-                    key={theme.id}
-                    theme={theme}
-                    width={tileWidth}
-                    height={tileHeight}
-                    navSelected={theme.id === selectedId}
-                    isActiveTheme={theme.id === user.gameTheme}
-                    onPress={() => onSelect(theme.id)}
-                />
+            {rows.map((row, rowIndex) => (
+                <layoutContainer
+                    key={rowIndex}
+                    layout={{
+                        width,
+                        flexDirection: 'row',
+                        gap,
+                        flexShrink: 0,
+                    }}
+                >
+                    {row.map((theme) => (
+                        <GameThemeNavTile
+                            key={theme.id}
+                            theme={theme}
+                            width={tileWidth}
+                            height={tileHeight}
+                            navSelected={theme.id === selectedId}
+                            isActiveTheme={theme.id === user.gameTheme}
+                            onPress={() => onSelect(theme.id)}
+                        />
+                    ))}
+                </layoutContainer>
             ))}
         </layoutContainer>
     )

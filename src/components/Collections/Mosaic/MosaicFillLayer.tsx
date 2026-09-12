@@ -59,8 +59,8 @@ export function MosaicFillLayer({ fill, width, height, unit, pieces }: TProps) {
                 <pixiSprite
                     texture={bakedTexture}
                     x={0}
-                    y={height}
-                    anchor={{ x: 0, y: 1 }}
+                    y={fill.align === 'center' ? height / 2 : height}
+                    anchor={{ x: 0, y: fill.align === 'center' ? 0.5 : 1 }}
                     scale={{ x: fillScale, y: fillScale }}
                     eventMode="none"
                 />

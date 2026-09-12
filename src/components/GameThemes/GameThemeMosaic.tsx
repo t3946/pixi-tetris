@@ -4,7 +4,7 @@ import { MosaicPiecesPatterns } from '@components/Collections/Mosaic/MosaicPiece
 import type { TThemeConfig } from '@components/GameThemes/GameTheme.ts'
 import type { Color } from '@src/utils/color'
 
-/** Портретное разрешение bake-текстуры шейдера (альбомная мозаика показывает нижний фрагмент). */
+/** Портретное разрешение bake-текстуры шейдера (альбомная мозаика: низ или центр — `mosaicFillAlign`). */
 const MOSAIC_FILL_BAKE_WIDTH = 500
 const MOSAIC_FILL_BAKE_HEIGHT = 800
 

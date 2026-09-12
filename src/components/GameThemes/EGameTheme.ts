@@ -4,4 +4,6 @@ export enum EGameTheme {
     WadingCausticRed = 'WadingCausticRed',
     NeonwaveSunrise = 'NeonwaveSunrise',
     OceanUnder = 'OceanUnder',
+    Galaxy = 'Galaxy',
+    Shine = 'Shine',
 }

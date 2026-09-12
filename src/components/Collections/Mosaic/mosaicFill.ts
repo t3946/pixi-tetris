@@ -1,10 +1,14 @@
 import { EBackgroundShaderId } from '@shaders/game-backgrounds/EBackgroundShaderId'
 
+export type MosaicFillAlign = 'bottom' | 'center'
+
 export type MosaicFillSource = {
     shader: EBackgroundShaderId
     bakeWidth: number
     bakeHeight: number
     shadingOptions?: Record<string, unknown>
+    /** Какой фрагмент портретной bake-текстуры виден в альбомной мозаике */
+    align?: MosaicFillAlign
 }
 
 const DEFAULT_BAKE_WIDTH = 500
@@ -16,5 +20,8 @@ export function getMosaicFillSource(
     bakeHeight = DEFAULT_BAKE_HEIGHT,
     shadingOptions?: Record<string, unknown>,
 ): MosaicFillSource {
-    return { shader, bakeWidth, bakeHeight, shadingOptions }
+    const align: MosaicFillAlign =
+        shadingOptions?.mosaicFillAlign === 'center' ? 'center' : 'bottom'
+
+    return { shader, bakeWidth, bakeHeight, shadingOptions, align }
 }
