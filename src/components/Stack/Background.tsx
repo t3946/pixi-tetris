@@ -10,13 +10,15 @@ import { useGameTimeScale } from '@src/tetris/TetrisGameContext'
 export function Background({width, height}: {width: number, height: number}) {
     const { user } = useUser()
     const theme = GameThemes[user.gameTheme]
+    const { shaderQuality } = user.settings
     const bgFilter = useMemo(
         () =>
             createBackgroundFilter(theme.shader, width, height, {
                 ...theme.shadingOptions,
                 introFade: true,
+                quality: shaderQuality,
             }) as Filter,
-        [theme.shader, theme.shadingOptions, width, height],
+        [theme.shader, theme.shadingOptions, width, height, shaderQuality],
     )
     const timeScaleRef = useGameTimeScale()
 

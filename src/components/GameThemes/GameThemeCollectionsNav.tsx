@@ -72,7 +72,11 @@ function GameThemeNavTile({
     onPress: () => void
 }) {
     const { accent } = theme
-    const borderColor = navSelected ? accent.toHex() : accent.rgba(0.35)
+    const borderColor = isActiveTheme
+        ? LAMP_GREEN
+        : navSelected
+          ? accent.toHex()
+          : accent.rgba(0.35)
     return (
         <layoutContainer
             eventMode="static"

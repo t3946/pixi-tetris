@@ -4,6 +4,7 @@ import { useTheme } from '@src/ui/ThemeContext'
 const CONTENT_INDENT = 14
 const TITLE_SIZE = 24
 const TITLE_MARGIN_BOTTOM = 24
+const SECTION_MARGIN_BOTTOM = 32
 
 type TProps = {
     title: string
@@ -19,6 +20,7 @@ export function Division({ title, children }: TProps) {
                 width: '100%',
                 flexDirection: 'column',
                 alignItems: 'flex-start',
+                marginBottom: SECTION_MARGIN_BOTTOM,
             }}
         >
             <layoutText
