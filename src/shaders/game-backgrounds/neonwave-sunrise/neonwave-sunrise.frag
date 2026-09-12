@@ -273,7 +273,13 @@ uniform highp vec4 uOutputFrame;
 void main(void) {
     t = mod(uTime, 1000.0);
     vec4 fragColor = vec4(0.0);
-    vec2 fragCoord = vec2(1.0 - vTextureCoord.x, 1.0 - vTextureCoord.y) * uInputSize.xy;
+    // Same mapping as other backgrounds: vTextureCoord * uInputSize cancels to
+    // output-pixel coords (see flat.vert). Do not use (1.0 - v) * uInputSize —
+    // that shifts the center whenever the filter input texture is larger than
+    // the output frame (common with Pixi padding / NPOT rounding).
+    // Flip Y in output space (Shadertoy bottom-left vs Pixi top-left).
+    vec2 fragCoord = vTextureCoord * uInputSize.xy;
+    fragCoord.y = uOutputFrame.w - fragCoord.y;
     vec3 resolution = vec3(uOutputFrame.z, uOutputFrame.w, 1.0);
     finalColor = mainImage(fragColor, fragCoord, resolution);
 }

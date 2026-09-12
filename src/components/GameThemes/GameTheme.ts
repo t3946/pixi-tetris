@@ -34,7 +34,7 @@ export const GameThemes: Record<EGameTheme, TThemeConfig> = {
     },
     [EGameTheme.NeonwaveSunrise]: {
         id: EGameTheme.NeonwaveSunrise,
-        accent: new Color('#ff6b9d'),
+        accent: new Color('#bc6bff'),
         title: 'Неоновая волна',
         shader: EBackgroundShaderId.NeonwaveSunrise,
     },
