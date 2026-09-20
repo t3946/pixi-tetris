@@ -59,6 +59,7 @@ export const theme = {
         PLAY_HOVER: palette.violet_600,
         ACCENT: palette.violet_300,
         GOLD: palette.gold_400,
+        RUBY: palette.ruby_400,
         FONT_DISPLAY,
     },
 } as const

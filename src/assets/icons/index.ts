@@ -10,6 +10,8 @@ import layers from './layers.svg'
 import palette from './palette.svg'
 import leftArrow from './left-arrow.svg'
 import chevronLeft from './chevron-left.svg'
+import coins from './coins.svg'
+import gem from './gem.svg'
 
 export const icons = {
     pause,
@@ -24,6 +26,8 @@ export const icons = {
     palette,
     leftArrow,
     chevronLeft,
+    coins,
+    gem,
 } as const
 
 export type IconName = keyof typeof icons

@@ -1,15 +1,18 @@
 import { MENU_DESIGN_WIDTH } from '../gameModes'
 import { SoundButton } from './SoundButton'
-import { StarCounter } from './StarCounter'
+import { CurrencyCounter } from './CurrencyCounter'
+import { useUser } from '@src/user/UserContext'
+import { useTheme } from '@src/ui/ThemeContext'
 
 type TProps = {
     width: number
-    score?: number
 }
 
-export function MenuTopBar({ width, score = 0 }: TProps) {
+export function MenuTopBar({ width }: TProps) {
     const scale = width / MENU_DESIGN_WIDTH
     const pad = Math.round(20 * scale)
+    const theme = useTheme()
+    const { user } = useUser()
 
     return (
         <layoutContainer
@@ -25,15 +28,39 @@ export function MenuTopBar({ width, score = 0 }: TProps) {
         >
             <SoundButton scale={scale} />
 
-            <layoutContainer layout={{
+            <layoutContainer
+                layout={{
                     flexGrow: 1,
                     flexShrink: 1,
-                    width: 0,      // база 0px, не auto
-                    height: 1,     // чтобы узел не схлопнулся в 0×0
+                    width: 0,
+                    height: 1,
                 }}
             />
 
-            <StarCounter scale={scale} score={score} />
+            <layoutContainer
+                layout={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: Math.round(8 * scale),
+                }}
+            >
+                <CurrencyCounter
+                    scale={scale}
+                    icon="coins"
+                    value={user.wallet.coin}
+                    tint={theme.MENU.GOLD}
+                    backgroundColor="rgba(255, 214, 0, 0.15)"
+                    borderColor="rgba(255, 214, 0, 0.3)"
+                />
+                <CurrencyCounter
+                    scale={scale}
+                    icon="gem"
+                    value={user.wallet.jem}
+                    tint={theme.MENU.RUBY}
+                    backgroundColor="rgba(224, 17, 95, 0.15)"
+                    borderColor="rgba(224, 17, 95, 0.3)"
+                />
+            </layoutContainer>
         </layoutContainer>
     )
 }

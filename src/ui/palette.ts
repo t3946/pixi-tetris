@@ -35,6 +35,7 @@ export const palette = {
     cyan_700: '#007ea3',
     yellow_500: '#f0f000',
     gold_400: '#ffd600',
+    ruby_400: '#e0115f',
     purple_500: '#a000f0',
     green_500: '#00f000',
     red_500: '#f00000',

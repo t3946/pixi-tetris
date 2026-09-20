@@ -6,9 +6,15 @@ import type { GameModeId } from '@components/MainMenu/gameModes'
 import {
     BLITZ_MISSIONS_TOTAL,
     INITIAL_BLITZ_MISSIONS_COMPLETED,
+    MISSION_REWARD,
     createBlitzMission,
     type Mission,
 } from '@src/user/missions'
+
+export type UserWallet = {
+    coin: number
+    jem: number
+}
 
 export type UserState = {
     blockTheme: EBlockTheme
@@ -18,6 +24,7 @@ export type UserState = {
     selectedMode: GameModeId
     /** Активная миссия текущей игровой сессии (null — без цели) */
     activeMission: Mission | null
+    wallet: UserWallet
     progress: {
         gameTheme: Record<EGameTheme, number>
         /** Сколько миссий Блица уже пройдено в этой сессии */
@@ -33,13 +40,16 @@ type UserContextValue = {
     patchSettings: (patch: Partial<Settings>) => void
     /** Сгенерировать миссию под выбранный режим при старте партии */
     startActiveMission: () => void
-    /** Засчитать выполнение миссии Блица (идемпотентно) */
+    /** Засчитать выполнение миссии и выдать награду (идемпотентно) */
     completeActiveMission: () => void
 }
 
 type MissionSession = {
     activeMission: Mission | null
     blitzMissionsCompleted: number
+    /** Текущая миссия уже засчитана (бар оставляем заполненным) */
+    activeMissionResolved: boolean
+    wallet: UserWallet
 }
 
 type MissionAction =
@@ -50,23 +60,32 @@ function missionSessionReducer(state: MissionSession, action: MissionAction): Mi
     switch (action.type) {
         case 'start':
             if (action.mode === 'blitz') {
-                return { ...state, activeMission: createBlitzMission() }
+                return {
+                    ...state,
+                    activeMission: createBlitzMission(state.blitzMissionsCompleted),
+                    activeMissionResolved: false,
+                }
             }
-            return { ...state, activeMission: null }
+            return { ...state, activeMission: null, activeMissionResolved: false }
         case 'complete':
-            if (state.activeMission == null) {
+            if (state.activeMission == null || state.activeMissionResolved) {
                 return state
             }
             if (action.mode === 'blitz') {
                 return {
-                    activeMission: null,
+                    activeMission: state.activeMission,
+                    activeMissionResolved: true,
                     blitzMissionsCompleted: Math.min(
                         BLITZ_MISSIONS_TOTAL,
                         state.blitzMissionsCompleted + 1,
                     ),
+                    wallet: {
+                        coin: state.wallet.coin + MISSION_REWARD.coin,
+                        jem: state.wallet.jem + MISSION_REWARD.jem,
+                    },
                 }
             }
-            return { ...state, activeMission: null }
+            return { ...state, activeMissionResolved: true }
         default:
             return state
     }
@@ -82,6 +101,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const [missionSession, dispatchMission] = useReducer(missionSessionReducer, {
         activeMission: null,
         blitzMissionsCompleted: INITIAL_BLITZ_MISSIONS_COMPLETED,
+        activeMissionResolved: false,
+        wallet: { coin: 0, jem: 0 },
     })
 
     const setBlockTheme = useCallback((theme: EBlockTheme) => {
@@ -117,6 +138,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                 settings,
                 selectedMode,
                 activeMission: missionSession.activeMission,
+                wallet: missionSession.wallet,
                 progress: {
                     gameTheme: {
                         [EGameTheme.CrystalSquares]: 10,

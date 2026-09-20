@@ -54,7 +54,7 @@ export const Score = () => {
                 }}
                 roundPixels={true}
             />
-            <CounterProgressBar progress={progress} />
+            {progress != null && <CounterProgressBar progress={progress} />}
         </layoutContainer>
     )
 }
