@@ -1,18 +1,59 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Stack } from '@components/Stack/Stack.tsx'
 import { GameDashboard } from '@components/GameDashboard/GameDashboard.tsx'
 import { PauseModal } from '@components/PauseModal'
+import { MissionCompleteModal } from '@components/MissionCompleteModal'
 import { SettingsTab } from '@components/MainMenu/SettingsTab'
-import { TetrisGameProvider } from '@src/tetris/TetrisGameContext'
+import {
+    TetrisGameProvider,
+    useEndGame,
+    useTetrisGameState,
+} from '@src/tetris/TetrisGameContext'
 import { Background } from '@components/Stack/Background.tsx'
 import { useAppLayout } from '@src/scenes/useAppLayout'
 import { SceneFrame } from '@src/scenes/SceneFrame'
 import { useTheme } from '@src/ui/ThemeContext'
+import { useUser } from '@src/user/UserContext'
+import { isMissionComplete } from '@src/user/missions'
+
+function useBlitzMissionSession() {
+    const { score, linesCleared, gameOver } = useTetrisGameState()
+    const endGame = useEndGame()
+    const { user, startActiveMission, completeActiveMission } = useUser()
+    const [missionWon, setMissionWon] = useState(false)
+
+    useEffect(() => {
+        startActiveMission()
+    }, [startActiveMission])
+
+    useEffect(() => {
+        if (gameOver || user.activeMission == null || missionWon) {
+            return
+        }
+
+        if (isMissionComplete(user.activeMission, score, linesCleared)) {
+            endGame()
+            completeActiveMission()
+            setMissionWon(true)
+        }
+    }, [
+        user.activeMission,
+        score,
+        linesCleared,
+        gameOver,
+        missionWon,
+        endGame,
+        completeActiveMission,
+    ])
+
+    return missionWon
+}
 
 function GameSceneContent() {
     const { mainSize } = useAppLayout()
     const theme = useTheme()
     const [settingsOpen, setSettingsOpen] = useState(false)
+    const missionWon = useBlitzMissionSession()
 
     return (
         <>
@@ -38,7 +79,10 @@ function GameSceneContent() {
             </layoutContainer>
 
             {!settingsOpen && (
-                <PauseModal onOpenSettings={() => setSettingsOpen(true)} />
+                <>
+                    <PauseModal onOpenSettings={() => setSettingsOpen(true)} />
+                    <MissionCompleteModal open={missionWon} />
+                </>
             )}
 
             {settingsOpen && (

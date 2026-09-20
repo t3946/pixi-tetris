@@ -1,4 +1,5 @@
 import { NextTetrominoes } from '@components/GameDashboard/NextTetrominoes.tsx'
+import { LinesCleared } from '@components/GameDashboard/LinesCleared.tsx'
 import { Score } from '@components/GameDashboard/Score.tsx'
 import { useGameColumnLayout } from '@components/gameColumnLayout.ts'
 import { Panel } from '@components/ui/Panel.tsx'
@@ -16,7 +17,9 @@ export const GameDashboard = function () {
                 height: '80',
             }}
         >
-            <Panel title="Рядов" layout={{ width: '25%', height: '100%' }} />
+            <Panel title="Рядов" layout={{ width: '25%', height: '100%' }}>
+                <LinesCleared />
+            </Panel>
 
             <Panel title="Счёт" layout={{ width: '50%', height: '100%' }}>
                 <Score />

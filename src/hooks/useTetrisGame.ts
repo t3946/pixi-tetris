@@ -23,6 +23,7 @@ import {
     rotate,
     tick,
     togglePause,
+    endGame,
     type Board,
     type GameState,
 } from '@src/tetris/engine'
@@ -54,6 +55,7 @@ const SOFT_DROP_INTERVAL_MS = 50
  * - Restart — перезапуск игры (R)
  * - SetBoard — прямая подмена поля (клетки во время эффекта очистки)
  * - CompleteClear — гравитация, очки и спавн после визуальной очистки
+ * - EndGame — принудительное завершение партии
  */
 enum EAction {
     Tick = 'TICK',
@@ -65,6 +67,7 @@ enum EAction {
     Restart = 'RESTART',
     SetBoard = 'SET_BOARD',
     CompleteClear = 'COMPLETE_CLEAR',
+    EndGame = 'END_GAME',
 }
 
 /**
@@ -86,6 +89,7 @@ type Action =
     | { type: EAction.Restart; rows: number; cols: number }
     | { type: EAction.SetBoard; board: Board }
     | { type: EAction.CompleteClear }
+    | { type: EAction.EndGame }
 
 /**
  * Reducer — чистая функция (state + action) → newState.
@@ -119,6 +123,8 @@ function gameReducer(state: GameState, action: Action, cols: number): GameState 
             return { ...state, board: action.board }
         case EAction.CompleteClear:
             return completeLineClear(state, cols)
+        case EAction.EndGame:
+            return endGame(state)
         default:
             return state
     }
@@ -410,5 +416,12 @@ export function useTetrisGame(
         softDropRef.current = false
     }, [dispatch])
 
-    return { state, togglePause: togglePauseGame, clearLine, clearLines, setBoard }
+    const endGameSession = useCallback(() => {
+        clearingRef.current = false
+        dropAccumulatorRef.current = 0
+        softDropRef.current = false
+        dispatch({ type: EAction.EndGame })
+    }, [dispatch])
+
+    return { state, togglePause: togglePauseGame, endGame: endGameSession, clearLine, clearLines, setBoard }
 }

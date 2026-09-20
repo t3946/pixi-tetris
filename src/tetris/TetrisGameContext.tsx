@@ -11,13 +11,14 @@ const PLAYING_TIME_SCALE: RefObject<number> = { current: 1 }
 type TetrisGameContextValue = {
     state: GameState
     togglePause: () => void
+    endGame: () => void
     timeScaleRef: RefObject<number>
 }
 
 const TetrisGameContext = createContext<TetrisGameContextValue | null>(null)
 
 export function TetrisGameProvider({ children }: { children: ReactNode }) {
-    const { state, togglePause } = useTetrisGame(BOARD_ROWS, BOARD_COLS)
+    const { state, togglePause, endGame } = useTetrisGame(BOARD_ROWS, BOARD_COLS)
     const timeScaleRef = useRef(1)
     const pausedRef = useRef(state.paused)
     pausedRef.current = state.paused
@@ -40,8 +41,8 @@ export function TetrisGameProvider({ children }: { children: ReactNode }) {
     useTick(onTimeScaleTick)
 
     const value = useMemo(
-        () => ({ state, togglePause, timeScaleRef }),
-        [state, togglePause],
+        () => ({ state, togglePause, endGame, timeScaleRef }),
+        [state, togglePause, endGame],
     )
 
     return (
@@ -67,6 +68,10 @@ export function useTetrisGameState(): GameState {
 
 export function useTogglePause(): () => void {
     return useTetrisGameContext().togglePause
+}
+
+export function useEndGame(): () => void {
+    return useTetrisGameContext().endGame
 }
 
 /** Множитель игрового времени [0, 1]. Вне провайдера всегда 1. */

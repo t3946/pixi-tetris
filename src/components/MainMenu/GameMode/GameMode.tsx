@@ -3,13 +3,23 @@ import { GAME_MODES, MENU_DESIGN_WIDTH } from '../gameModes'
 import { ArrowButton } from './ArrowButton'
 import { ModeItem } from './ModeItem'
 import type { SlideDir } from './types'
+import { useUser } from '@src/user/UserContext'
 
 export function GameMode({ width }: { width: number }) {
-    const [modeIndex, setModeIndex] = useState(0)
+    const { user, setSelectedMode } = useUser()
+    const initialIndex = Math.max(
+        0,
+        GAME_MODES.findIndex((item) => item.id === user.selectedMode),
+    )
+    const [modeIndex, setModeIndex] = useState(initialIndex)
     const [slideDir, setSlideDir] = useState<SlideDir>(null)
     const slideTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
     const mode = GAME_MODES[modeIndex]
     const u = width / MENU_DESIGN_WIDTH
+
+    useEffect(() => {
+        setSelectedMode(mode.id)
+    }, [mode.id, setSelectedMode])
 
     useEffect(
         () => () => {

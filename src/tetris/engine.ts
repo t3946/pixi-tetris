@@ -341,6 +341,20 @@ export function hardDrop(state: GameState, cols: number): GameState {
     return settlePiece({ ...state, piece: getGhostPiece(state.piece, state.board) }, cols)
 }
 
+/** Принудительно завершает партию (цель миссии и т.п.). */
+export function endGame(state: GameState): GameState {
+    if (state.gameOver) {
+        return state
+    }
+
+    return {
+        ...state,
+        gameOver: true,
+        paused: false,
+        pendingClearLines: [],
+    }
+}
+
 /** Переключает паузу (повторное нажатие снимает паузу) */
 export function togglePause(state: GameState): GameState {
     if (state.gameOver || isSettling(state)) {

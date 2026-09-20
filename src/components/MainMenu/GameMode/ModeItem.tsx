@@ -4,6 +4,7 @@ import { GAME_MODES, type GameModeId } from '../gameModes'
 import { MiniBoard } from './MiniBoard'
 import { ModeGlyph } from './ModeGlyph'
 import type { SlideDir } from './types'
+import { useUser } from '@src/user/UserContext'
 
 type TProps = {
     modeId: GameModeId
@@ -14,14 +15,21 @@ type TProps = {
 
 export function ModeItem({ modeId, accent, sliding, scale }: TProps) {
     const theme = useTheme()
+    const { user } = useUser()
     const mode = GAME_MODES.find((item) => item.id === modeId)!
     const missions = mode.missions
+    /** Для Блица — число пройденных миссий из сессии (старт: 0) */
+    const completedCount =
+        modeId === 'blitz'
+            ? user.progress.blitzMissionsCompleted
+            : missions != null
+              ? missions.total - missions.available
+              : 0
     const showHours = missions != null && missions.resetHours <= 2
     const radius = Math.round(18 * scale)
     const titleContainerHeight = Math.round(26 * scale)
     const sideContainerSize = Math.round(26 * scale)
     const titleFontSize = Math.round(14 * scale)
-    const titleGap = Math.round(8 * scale)
 
     const borderColor = new Color(accent).rgba(0.333)
 
@@ -124,7 +132,7 @@ export function ModeItem({ modeId, accent, sliding, scale }: TProps) {
                 </layoutContainer>
             </layoutContainer>
 
-            {/* Индикаторы доступных миссий */}
+            {/* Индикаторы пройденных миссий */}
             <layoutContainer
                 alpha={missions ? 1 : 0}
                 layout={{
@@ -134,7 +142,7 @@ export function ModeItem({ modeId, accent, sliding, scale }: TProps) {
                 }}
             >
                 {Array.from({ length: missions ? missions.total : 3 }).map((_, index) => {
-                    const filled = missions != null && index < missions.available
+                    const filled = index < completedCount
                     return (
                         <layoutContainer
                             key={index}
