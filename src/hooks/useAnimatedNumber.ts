@@ -7,6 +7,8 @@ type DurationOption = number | ((from: number, to: number) => number)
 type Options = {
     /** Длительность анимации в мс или функция от текущего и целевого значения */
     duration?: DurationOption
+    /** Пауза перед стартом анимации, мс */
+    delay?: number
     /** Easing по прогрессу [0, 1] → [0, 1] */
     easing?: (t: number) => number
     /** Округлять до целого (для счётчиков) */
@@ -21,7 +23,7 @@ function resolveDuration(duration: DurationOption, from: number, to: number): nu
  * Плавно дотягивает отображаемое число до `target` по кривой easing.
  */
 export function useAnimatedNumber(target: number, options: Options = {}): number {
-    const { duration = 500, easing = Easing.easeOut, round = true } = options
+    const { duration = 500, delay = 0, easing = Easing.easeOut, round = true } = options
 
     const [value, setValue] = useState(target)
     const valueRef = useRef(target)
@@ -30,16 +32,19 @@ export function useAnimatedNumber(target: number, options: Options = {}): number
     const durationMsRef = useRef(500)
     const startTimeRef = useRef<number | null>(null)
     const rafRef = useRef(0)
+    const delayTimerRef = useRef(0)
 
     const durationRef = useRef(duration)
+    const delayRef = useRef(delay)
     const easingRef = useRef(easing)
     const roundRef = useRef(round)
     durationRef.current = duration
+    delayRef.current = delay
     easingRef.current = easing
     roundRef.current = round
 
     useEffect(() => {
-        if (target === toRef.current && startTimeRef.current === null) {
+        if (target === toRef.current && startTimeRef.current === null && delayTimerRef.current === 0) {
             return
         }
 
@@ -72,9 +77,25 @@ export function useAnimatedNumber(target: number, options: Options = {}): number
         }
 
         cancelAnimationFrame(rafRef.current)
-        rafRef.current = requestAnimationFrame(tick)
+        window.clearTimeout(delayTimerRef.current)
+        delayTimerRef.current = 0
 
-        return () => cancelAnimationFrame(rafRef.current)
+        const startChase = () => {
+            delayTimerRef.current = 0
+            rafRef.current = requestAnimationFrame(tick)
+        }
+
+        if (delayRef.current > 0) {
+            delayTimerRef.current = window.setTimeout(startChase, delayRef.current)
+        } else {
+            startChase()
+        }
+
+        return () => {
+            cancelAnimationFrame(rafRef.current)
+            window.clearTimeout(delayTimerRef.current)
+            delayTimerRef.current = 0
+        }
     }, [target])
 
     return value
