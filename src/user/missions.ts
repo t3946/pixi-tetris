@@ -28,3 +28,16 @@ export function isMissionComplete(
 
     return linesCleared >= mission.target
 }
+
+/** Прогресс 0…1 для панели счётчика; чужой тип миссии даёт 0. */
+export function getMissionProgress(
+    mission: Mission | null,
+    kind: Mission['kind'],
+    value: number,
+): number {
+    if (mission == null || mission.kind !== kind || mission.target <= 0) {
+        return 0
+    }
+
+    return Math.min(1, Math.max(0, value / mission.target))
+}

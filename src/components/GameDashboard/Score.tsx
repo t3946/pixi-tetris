@@ -2,6 +2,9 @@ import { useTheme } from '@src/ui/ThemeContext'
 import { useTetrisGameState } from '@src/tetris/TetrisGameContext'
 import { useAnimatedNumber } from '@src/hooks/useAnimatedNumber'
 import { Easing } from '@src/utils/bezier'
+import { useUser } from '@src/user/UserContext'
+import { getMissionProgress } from '@src/user/missions'
+import { CounterProgressBar } from '@components/GameDashboard/CounterProgressBar'
 
 const SCORE_FONT_SIZE = 28
 
@@ -19,27 +22,39 @@ function scoreAnimMs(from: number, to: number): number {
 
 export const Score = () => {
     const { score } = useTetrisGameState()
+    const { user } = useUser()
     const theme = useTheme()
     const displayScore = useAnimatedNumber(score, {
         duration: scoreAnimMs,
         easing: Easing.easeOut,
     })
+    const progress = getMissionProgress(user.activeMission, 'score', score)
 
     return (
-        <pixiText
-            text={String(displayScore)}
-            style={{
-                fontFamily: theme.UI.FONT_FAMILY,
-                fontSize: SCORE_FONT_SIZE,
-                fill: theme.TEXT_COLOR,
-                fontWeight: 'bold',
-                align: 'center',
-            }}
+        <layoutContainer
             layout={{
-                objectFit: 'none',
-                objectPosition: 'center',
+                width: '100%',
+                height: '100%',
+                justifyContent: 'center',
+                alignItems: 'center',
             }}
-            roundPixels={true}
-        />
+        >
+            <pixiText
+                text={String(displayScore)}
+                style={{
+                    fontFamily: theme.UI.FONT_FAMILY,
+                    fontSize: SCORE_FONT_SIZE,
+                    fill: theme.TEXT_COLOR,
+                    fontWeight: 'bold',
+                    align: 'center',
+                }}
+                layout={{
+                    objectFit: 'none',
+                    objectPosition: 'center',
+                }}
+                roundPixels={true}
+            />
+            <CounterProgressBar progress={progress} />
+        </layoutContainer>
     )
 }
