@@ -32,6 +32,7 @@ export function RewardModal({ open, preview = false }: TProps) {
             browGradient={BROW_GRADIENT}
             browWidth={CONTENT_WIDTH + MODAL_PAD_X * 2}
             browHeight={5}
+            contentPaddingTop={23}
         >
             <layoutContainer
                 layout={{

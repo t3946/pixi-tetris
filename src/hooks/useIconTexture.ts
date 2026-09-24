@@ -50,7 +50,7 @@ export async function loadIconTexture(name: IconName): Promise<Texture> {
     const { width, height } = await getIconRasterSize(src)
 
     return Assets.load<Texture>({
-        alias: `icon@${ICON_MAX_PX}:${name}`,
+        alias: `icon@${ICON_MAX_PX}v4:${name}`,
         src,
         data: {
             width,

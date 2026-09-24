@@ -15,11 +15,14 @@ type TProps = {
     /** Ширина брови при градиенте (обычно ширина панели) */
     browWidth?: number
     browHeight?: number
+    contentPaddingTop?: number
+    contentPaddingBottom?: number
 }
 
 const DEFAULT_RADIUS = 8
 const DEFAULT_BORDER_WIDTH = 2
 const DEFAULT_BROW_HEIGHT = 3
+const DEFAULT_CONTENT_PAD_Y = 28
 
 function ModalBrow({
     width,
@@ -83,6 +86,8 @@ export function Modal({
     browGradient,
     browWidth,
     browHeight = DEFAULT_BROW_HEIGHT,
+    contentPaddingTop = DEFAULT_CONTENT_PAD_Y,
+    contentPaddingBottom = DEFAULT_CONTENT_PAD_Y,
 }: TProps) {
     const theme = useTheme()
 
@@ -159,8 +164,8 @@ export function Modal({
                         alignItems: 'center',
                         flexShrink: 0,
                         gap: 16,
-                        paddingTop: 28,
-                        paddingBottom: 28,
+                        paddingTop: contentPaddingTop,
+                        paddingBottom: contentPaddingBottom,
                         paddingLeft: 32,
                         paddingRight: 32,
                         width: '100%',

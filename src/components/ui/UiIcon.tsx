@@ -4,14 +4,23 @@ import type { IconName } from '@src/assets/icons'
 
 type TProps = {
     name: IconName
-    /** Размер наибольшей стороны; вторая сторона считается по aspect ratio */
-    size: number
     tint: ColorSource
     alpha?: number
     rotation?: number
-}
+} & (
+    | {
+          /** Размер наибольшей стороны; вторая сторона считается по aspect ratio */
+          size: number
+          height?: never
+      }
+    | {
+          /** Фиксированная высота; ширина по aspect ratio */
+          height: number
+          size?: never
+      }
+)
 
-export function UiIcon({ name, size, tint, alpha = 1, rotation = 0 }: TProps) {
+export function UiIcon({ name, size, height: fixedHeight, tint, alpha = 1, rotation = 0 }: TProps) {
     const texture = useIconTexture(name)
 
     if (!texture) {
@@ -19,8 +28,18 @@ export function UiIcon({ name, size, tint, alpha = 1, rotation = 0 }: TProps) {
     }
 
     const aspect = texture.frame.width / texture.frame.height
-    const width = aspect >= 1 ? size : size * aspect
-    const height = aspect >= 1 ? size / aspect : size
+    const width =
+        fixedHeight != null
+            ? fixedHeight * aspect
+            : aspect >= 1
+              ? size
+              : size * aspect
+    const height =
+        fixedHeight != null
+            ? fixedHeight
+            : aspect >= 1
+              ? size / aspect
+              : size
 
     return (
         <layoutContainer layout={{ width, height }} eventMode="none">

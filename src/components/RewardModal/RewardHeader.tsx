@@ -66,7 +66,7 @@ export function RewardHeader() {
                 width: metrics.width,
                 height: metrics.height,
                 flexShrink: 0,
-                marginBottom: 18,
+                marginBottom: 23,
             }}
         >
             <pixiText
