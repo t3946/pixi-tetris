@@ -1,5 +1,5 @@
 import { Modal } from '@components/ui/Modal'
-import { CONTENT_WIDTH } from './constants'
+import { BROW_GRADIENT, CONTENT_WIDTH, MODAL_PAD_X } from './constants'
 import { CollectRewardButton } from './CollectRewardButton'
 import { RewardCardsRow } from './RewardCardsRow'
 import { RewardHeader } from './RewardHeader'
@@ -25,7 +25,14 @@ export function RewardModal({ open, preview = false }: TProps) {
     } = useRewardModal({ open, preview })
 
     return (
-        <Modal open={open}>
+        <Modal
+            open={open}
+            borderRadius={20}
+            borderWidth={1}
+            browGradient={BROW_GRADIENT}
+            browWidth={CONTENT_WIDTH + MODAL_PAD_X * 2}
+            browHeight={5}
+        >
             <layoutContainer
                 layout={{
                     flexDirection: 'column',
@@ -34,7 +41,7 @@ export function RewardModal({ open, preview = false }: TProps) {
                     gap: 0,
                 }}
             >
-                <RewardHeader adBonus={adBonus} />
+                <RewardHeader />
                 <RewardCardsRow reward={reward} adBonus={adBonus} />
 
                 {adState !== 'done' && (
