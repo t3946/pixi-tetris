@@ -17,9 +17,9 @@ export function MenuTopBar({ width }: TProps) {
     return (
         <layoutContainer
             layout={{
+                width: '100%',
                 flexShrink: 0,
                 flexDirection: 'row',
-                justifyContent: 'space-between',
                 alignItems: 'center',
                 paddingTop: pad,
                 paddingLeft: pad,
@@ -30,15 +30,9 @@ export function MenuTopBar({ width }: TProps) {
 
             <layoutContainer
                 layout={{
-                    flexGrow: 1,
-                    flexShrink: 1,
-                    width: 0,
-                    height: 1,
-                }}
-            />
-
-            <layoutContainer
-                layout={{
+                    marginLeft: 'auto',
+                    flexGrow: 0,
+                    flexShrink: 0,
                     flexDirection: 'row',
                     alignItems: 'center',
                     gap: Math.round(8 * scale),
@@ -46,6 +40,7 @@ export function MenuTopBar({ width }: TProps) {
             >
                 <CurrencyCounter
                     scale={scale}
+                    iconSize={24}
                     icon="coins"
                     value={user.wallet.coin}
                     tint={theme.MENU.GOLD}
@@ -54,6 +49,7 @@ export function MenuTopBar({ width }: TProps) {
                 />
                 <CurrencyCounter
                     scale={scale}
+                    iconSize={20}
                     icon="gem"
                     value={user.wallet.jem}
                     tint={theme.MENU.RUBY}

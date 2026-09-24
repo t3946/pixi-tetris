@@ -5,6 +5,7 @@ import { useTheme } from '@src/ui/ThemeContext'
 type TProps = {
     scale: number
     icon: IconName
+    iconSize: number
     value: number
     tint: string
     backgroundColor: string
@@ -18,6 +19,7 @@ function formatValue(value: number) {
 export function CurrencyCounter({
     scale,
     icon,
+    iconSize,
     value,
     tint,
     backgroundColor,
@@ -28,12 +30,11 @@ export function CurrencyCounter({
     return (
         <layoutContainer
             layout={{
-                flexShrink: 1,
+                flexGrow: 0,
+                flexShrink: 0,
                 flexDirection: 'row',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                flexGrow: 0,
-                gap: Math.round(6 * scale),
+                gap: Math.round(8 * scale),
                 paddingTop: Math.round(6 * scale),
                 paddingBottom: Math.round(6 * scale),
                 paddingLeft: Math.round(10 * scale),
@@ -42,21 +43,20 @@ export function CurrencyCounter({
                 backgroundColor,
                 borderWidth: 1,
                 borderColor,
+                height: Math.round(32 * scale),
             }}
         >
-            <UiIcon name={icon} size={Math.round(14 * scale)} tint={tint} />
+            <UiIcon name={icon} size={Math.round(iconSize * scale)} tint={tint} />
 
-            <layoutText
+            <pixiText
                 text={formatValue(value)}
                 style={{
                     fontFamily: theme.UI.FONT_FAMILY,
-                    fontSize: Math.round(14 * scale),
+                    fontSize: Math.round(16 * scale),
                     fill: tint,
                     fontWeight: 'bold',
                 }}
-                layout={{
-                    objectFit: 'none',
-                }}
+                layout={{ objectFit: 'none', marginTop: -2 }}
                 roundPixels={true}
             />
         </layoutContainer>
