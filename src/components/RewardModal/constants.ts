@@ -9,6 +9,10 @@ export const AMOUNT_PULSE_SCALE = 0.15
 export const AMOUNT_PULSE_LIGHTEN = 0.20
 export const COLLECT_FEEDBACK_MS = 450
 export const MODAL_PAD_X = 32
+/** Drop-in карточек награды (как coin-drop / gem-drop в notes/RewardModalForGame-main) */
+export const CARD_DROP_MS = 450
+export const CARD_DROP_COIN_DELAY_MS = 250
+export const CARD_DROP_GEM_DELAY_MS = 350
 /** Градиент брови из макета Figma: violet → gold → violet */
 export const BROW_GRADIENT = ['#8b5cf6', '#fbbf24', '#8b5cf6'] as const
 /** Одна волна контраста: золото → яркий блик → золото */

@@ -13,22 +13,34 @@ import {
     AMOUNT_PULSE_MS,
     AMOUNT_PULSE_SCALE,
 } from './constants'
+import { useCardDropIn } from './useCardDropIn'
 
 type TProps = {
     icon: IconName
     accent: string
     amount: number
     immediate?: boolean
+    /** Вариант drop-in: gem ещё и поворачивается */
+    dropVariant: 'coin' | 'gem'
+    dropDelayMs: number
 }
 
 const ICON_HEIGHT = 36
 const AMOUNT_FONT_SIZE = 26
 
-export function RewardCard({ icon, accent, amount, immediate = false }: TProps) {
+export function RewardCard({
+    icon,
+    accent,
+    amount,
+    immediate = false,
+    dropVariant,
+    dropDelayMs,
+}: TProps) {
     const theme = useTheme()
     const color = new Color(accent)
     const [pulseGen, setPulseGen] = useState(0)
     const pulse = usePulse(pulseGen, AMOUNT_PULSE_MS)
+    const drop = useCardDropIn(dropVariant, dropDelayMs)
 
     const displayAmount = useAnimatedNumber(amount, {
         duration: AD_TRANSFER_MS,
@@ -57,6 +69,10 @@ export function RewardCard({ icon, accent, amount, immediate = false }: TProps) 
 
     return (
         <layoutContainer
+            alpha={drop.opacity}
+            scale={drop.scale}
+            rotation={drop.rotation}
+            y={drop.y}
             layout={{
                 flex: 1,
                 flexDirection: 'column',
@@ -70,6 +86,7 @@ export function RewardCard({ icon, accent, amount, immediate = false }: TProps) 
                 borderWidth: 1.5,
                 borderColor: color.rgba(0.4),
                 backgroundColor: color.rgba(0.12),
+                transformOrigin: 'center',
             }}
         >
             <UiIcon name={icon} height={ICON_HEIGHT} tint={accent} />

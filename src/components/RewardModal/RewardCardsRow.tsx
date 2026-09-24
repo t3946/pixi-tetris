@@ -1,4 +1,8 @@
 import { useTheme } from '@src/ui/ThemeContext'
+import {
+    CARD_DROP_COIN_DELAY_MS,
+    CARD_DROP_GEM_DELAY_MS,
+} from './constants'
 import { RewardCard } from './RewardCard'
 import type { MissionRewardAmounts } from './types'
 
@@ -24,12 +28,16 @@ export function RewardCardsRow({ reward, immediate = false }: TProps) {
                 accent={theme.MENU.GOLD}
                 amount={reward.coin}
                 immediate={immediate}
+                dropVariant="coin"
+                dropDelayMs={CARD_DROP_COIN_DELAY_MS}
             />
             <RewardCard
                 icon="gem"
                 accent={theme.MENU.RUBY}
                 amount={reward.jem}
                 immediate={immediate}
+                dropVariant="gem"
+                dropDelayMs={CARD_DROP_GEM_DELAY_MS}
             />
         </layoutContainer>
     )
