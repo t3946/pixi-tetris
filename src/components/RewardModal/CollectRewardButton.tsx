@@ -1,26 +1,40 @@
 import { BaseButton } from '@components/ui/BaseButton'
+import { useAnimatedNumber } from '@src/hooks/useAnimatedNumber'
 import { useTheme } from '@src/ui/ThemeContext'
 import { palette } from '@src/ui/palette'
+import { Color } from '@src/utils/color'
+import { Easing } from '@src/utils/bezier'
 import { CONTENT_WIDTH } from './constants'
-import type { AdState } from './types'
 
 type TProps = {
     collected: boolean
-    adState: AdState
     onPress: () => void
 }
 
-export function CollectRewardButton({ collected, adState, onPress }: TProps) {
+const COLLECT_TRANSITION_MS = 500
+
+export function CollectRewardButton({ collected, onPress }: TProps) {
     const theme = useTheme()
+    const progress = useAnimatedNumber(collected ? 1 : 0, {
+        duration: COLLECT_TRANSITION_MS,
+        easing: Easing.easeOut,
+        round: false,
+    })
+
+    const accent = Color.lerp(theme.MENU.GOLD, palette.green_500, progress)
+    const textFill = collected ? palette.white : palette.navy_990
 
     return (
         <BaseButton
-            label={collected ? 'Получено!' : 'Забрать награду'}
+            label={collected ? 'Получено' : 'Забрать'}
             onPress={onPress}
             disabled={collected}
-            accent={collected ? palette.green_500 : theme.MENU.GOLD}
-            textFill={palette.navy_990}
-            textFillHover={palette.navy_990}
+            disabledAlpha={1}
+            accent={accent}
+            textFill={textFill}
+            textFillHover={textFill}
+            iconLeft={progress > 0.01 ? 'thumbUp' : undefined}
+            iconSize={18}
             fontSize={18}
             appearance={{
                 width: CONTENT_WIDTH,
@@ -30,7 +44,7 @@ export function CollectRewardButton({ collected, adState, onPress }: TProps) {
                 alignItems: 'center',
             }}
             layout={{
-                marginTop: adState === 'done' ? 0 : 12,
+                marginTop: 12,
             }}
         />
     )

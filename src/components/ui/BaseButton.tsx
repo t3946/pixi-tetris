@@ -2,6 +2,8 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { FillGradient, Graphics, type ColorSource, type FederatedPointerEvent } from 'pixi.js'
 import type { LayoutStyles } from '@pixi/layout'
 import type { LayoutContainer as LayoutContainerInstance } from '@pixi/layout/components'
+import { UiIcon } from '@components/ui/UiIcon'
+import type { IconName } from '@src/assets/icons'
 import { useTheme } from '@src/ui/ThemeContext'
 import { useAnimatedNumber } from '@src/hooks/useAnimatedNumber'
 import { Color, type ColorInput } from '@src/utils/color'
@@ -17,6 +19,9 @@ type TBaseButtonCommon = {
     appearance: LayoutStyles
     fontSize?: number
     layout?: LayoutStyles
+    /** Иконка слева от подписи */
+    iconLeft?: IconName
+    iconSize?: number
 }
 
 export type TBaseButtonProps = TBaseButtonCommon &
@@ -56,6 +61,8 @@ export function BaseButton({
     appearance,
     fontSize = 22,
     layout = {},
+    iconLeft,
+    iconSize = 18,
 }: TBaseButtonProps) {
     const theme = useTheme()
     const [hovered, setHovered] = useState(false)
@@ -113,7 +120,7 @@ export function BaseButton({
 
         setRoundPixels(rootRef.current)
         setRoundPixels(labelWrapRef.current)
-    }, [useGradient, label, labelFill, fontSize])
+    }, [useGradient, label, labelFill, fontSize, iconLeft])
 
     const handlePress = (event: FederatedPointerEvent) => {
         event.stopPropagation()
@@ -139,24 +146,39 @@ export function BaseButton({
         [borderRadius, disabled, gradient, graphicHeight, graphicWidth, hovered],
     )
 
-    const labelNode = (
-        <layoutText
-            key={`${label}:${String(labelFill)}`}
-            text={label}
-            style={{
-                fontFamily: theme.UI.FONT_FAMILY,
-                fontSize: useGradient ? Math.round(fontSize) : fontSize,
-                fill: labelFill,
-                fontWeight: 'bold',
-                align: 'center',
-            }}
-            layout={{
-                objectFit: 'none',
-                objectPosition: 'center',
-            }}
+    const contentNode = (
+        <layoutContainer
             eventMode="none"
-            roundPixels={true}
-        />
+            layout={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: iconLeft ? 8 : 0,
+                flexGrow: 0,
+                flexShrink: 0,
+            }}
+        >
+            {iconLeft && (
+                <UiIcon name={iconLeft} size={iconSize} tint={labelFill} />
+            )}
+            <pixiText
+                key={`${label}:${String(labelFill)}`}
+                text={label}
+                style={{
+                    fontFamily: theme.UI.FONT_FAMILY,
+                    fontSize: useGradient ? Math.round(fontSize) : fontSize,
+                    fill: labelFill,
+                    fontWeight: 'bold',
+                    align: 'center',
+                }}
+                layout={{
+                    objectFit: 'none',
+                    objectPosition: 'center',
+                }}
+                eventMode="none"
+                roundPixels={true}
+            />
+        </layoutContainer>
     )
 
     return (
@@ -199,10 +221,10 @@ export function BaseButton({
                         alignItems: 'center',
                     }}
                 >
-                    {labelNode}
+                    {contentNode}
                 </layoutContainer>
             ) : (
-                labelNode
+                contentNode
             )}
         </layoutContainer>
     )

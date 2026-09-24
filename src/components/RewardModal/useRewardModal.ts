@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useUser } from '@src/user/UserContext'
-import { getMissionReward } from '@src/user/missions'
-import { AD_DURATION_MS, COLLECT_FEEDBACK_MS } from './constants'
+import { getMissionAdBonus, getMissionReward } from '@src/user/missions'
+import { showRewardedAd } from '@src/platform/yandexAds'
+import { AD_TRANSFER_MS, COLLECT_FEEDBACK_MS } from './constants'
 import type { AdState } from './types'
 
 type TOptions = {
@@ -15,23 +16,25 @@ export function useRewardModal({ open, preview }: TOptions) {
     const { claimActiveMissionReward } = useUser()
 
     const [adState, setAdState] = useState<AdState>('idle')
-    const [adProgress, setAdProgress] = useState(0)
     const [collected, setCollected] = useState(false)
-    const adTimerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+    /** Принудительно довести счётчики до цели (прерывание «Забрать») */
+    const [numbersInstant, setNumbersInstant] = useState(false)
+    const transferTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
     const collectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const adRequestIdRef = useRef(0)
 
-    const adBonus = adState === 'done'
+    const adBonus = adState === 'transferring' || adState === 'done'
     const reward = getMissionReward(adBonus)
-    const bonusPreview = getMissionReward(true)
+    const bonusPreview = getMissionAdBonus()
 
-    const resetLocalState = () => {
-        setAdState('idle')
-        setAdProgress(0)
-        setCollected(false)
-        if (adTimerRef.current) {
-            clearInterval(adTimerRef.current)
-            adTimerRef.current = null
+    const clearTransferTimer = () => {
+        if (transferTimerRef.current) {
+            clearTimeout(transferTimerRef.current)
+            transferTimerRef.current = null
         }
+    }
+
+    const clearCollectTimer = () => {
         if (collectTimerRef.current) {
             clearTimeout(collectTimerRef.current)
             collectTimerRef.current = null
@@ -40,65 +43,68 @@ export function useRewardModal({ open, preview }: TOptions) {
 
     useEffect(() => {
         if (!open) {
+            adRequestIdRef.current += 1
             setAdState('idle')
-            setAdProgress(0)
             setCollected(false)
-            if (adTimerRef.current) {
-                clearInterval(adTimerRef.current)
-                adTimerRef.current = null
-            }
-            if (collectTimerRef.current) {
-                clearTimeout(collectTimerRef.current)
-                collectTimerRef.current = null
-            }
+            setNumbersInstant(false)
+            clearTransferTimer()
+            clearCollectTimer()
         }
     }, [open])
 
     useEffect(
         () => () => {
-            if (adTimerRef.current) {
-                clearInterval(adTimerRef.current)
-            }
-            if (collectTimerRef.current) {
-                clearTimeout(collectTimerRef.current)
-            }
+            adRequestIdRef.current += 1
+            clearTransferTimer()
+            clearCollectTimer()
         },
         [],
     )
 
-    const handleWatchAd = () => {
-        if (adState !== 'idle') {
+    const handleWatchAd = async () => {
+        if (adState !== 'idle' || collected) {
             return
         }
 
+        const requestId = ++adRequestIdRef.current
+        setNumbersInstant(false)
         setAdState('watching')
-        setAdProgress(0)
-        const start = Date.now()
 
-        adTimerRef.current = setInterval(() => {
-            const elapsed = Date.now() - start
-            const pct = Math.min((elapsed / AD_DURATION_MS) * 100, 100)
-            setAdProgress(pct)
+        const result = await showRewardedAd()
+        if (requestId !== adRequestIdRef.current) {
+            return
+        }
 
-            if (pct >= 100) {
-                if (adTimerRef.current) {
-                    clearInterval(adTimerRef.current)
-                    adTimerRef.current = null
-                }
-                setAdState('done')
+        if (result !== 'rewarded') {
+            setAdState('idle')
+            return
+        }
+
+        setAdState('transferring')
+        transferTimerRef.current = setTimeout(() => {
+            transferTimerRef.current = null
+            if (requestId !== adRequestIdRef.current) {
+                return
             }
-        }, 50)
+            setAdState('done')
+        }, AD_TRANSFER_MS)
     }
 
     const handleCollect = () => {
-        if (collected) {
+        if (collected || adState === 'watching') {
             return
+        }
+
+        // Прервать перетекание: сразу финальные цифры и дальше — скрипт «Забрать»
+        if (adState === 'transferring') {
+            clearTransferTimer()
+            setNumbersInstant(true)
+            setAdState('done')
         }
 
         setCollected(true)
 
         if (preview) {
-            collectTimerRef.current = setTimeout(resetLocalState, COLLECT_FEEDBACK_MS)
             return
         }
 
@@ -111,11 +117,11 @@ export function useRewardModal({ open, preview }: TOptions) {
 
     return {
         adState,
-        adProgress,
         collected,
         adBonus,
         reward,
         bonusPreview,
+        numbersInstant,
         handleWatchAd,
         handleCollect,
     }

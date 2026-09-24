@@ -1,14 +1,13 @@
 import { useTheme } from '@src/ui/ThemeContext'
-import { MISSION_REWARD } from '@src/user/missions'
 import { RewardCard } from './RewardCard'
 import type { MissionRewardAmounts } from './types'
 
 type TProps = {
     reward: MissionRewardAmounts
-    adBonus: boolean
+    immediate?: boolean
 }
 
-export function RewardCardsRow({ reward, adBonus }: TProps) {
+export function RewardCardsRow({ reward, immediate = false }: TProps) {
     const theme = useTheme()
 
     return (
@@ -24,15 +23,13 @@ export function RewardCardsRow({ reward, adBonus }: TProps) {
                 icon="coins"
                 accent={theme.MENU.GOLD}
                 amount={reward.coin}
-                baseAmount={MISSION_REWARD.coin}
-                showBaseStrike={adBonus}
+                immediate={immediate}
             />
             <RewardCard
                 icon="gem"
                 accent={theme.MENU.RUBY}
                 amount={reward.jem}
-                baseAmount={MISSION_REWARD.jem}
-                showBaseStrike={adBonus}
+                immediate={immediate}
             />
         </layoutContainer>
     )

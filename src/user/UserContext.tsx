@@ -42,7 +42,7 @@ type UserContextValue = {
     startActiveMission: () => void
     /** Засчитать факт миссии (идемпотентно); кошелёк не трогает */
     completeActiveMission: () => void
-    /** Забрать награду миссии; `adBonus` — множители после рекламы */
+    /** Забрать награду миссии; `adBonus` — с бонусом после рекламы */
     claimActiveMissionReward: (adBonus?: boolean) => void
 }
 

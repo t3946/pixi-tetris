@@ -2,30 +2,31 @@ import { useMemo } from 'react'
 import { CanvasTextMetrics, TextStyle } from 'pixi.js'
 import { UiIcon } from '@components/ui/UiIcon'
 import type { IconName } from '@src/assets/icons'
+import { useAnimatedNumber } from '@src/hooks/useAnimatedNumber'
 import { useTheme } from '@src/ui/ThemeContext'
 import { Color } from '@src/utils/color'
+import { Easing } from '@src/utils/bezier'
+import { AD_TRANSFER_MS } from './constants'
 
 type TProps = {
     icon: IconName
     accent: string
     amount: number
-    baseAmount: number
-    showBaseStrike: boolean
+    immediate?: boolean
 }
 
 const ICON_HEIGHT = 36
 const AMOUNT_FONT_SIZE = 26
 
-export function RewardCard({
-    icon,
-    accent,
-    amount,
-    baseAmount,
-    showBaseStrike,
-}: TProps) {
+export function RewardCard({ icon, accent, amount, immediate = false }: TProps) {
     const theme = useTheme()
     const color = new Color(accent)
-    const muted = color.darken(0.55).toHex()
+
+    const displayAmount = useAnimatedNumber(amount, {
+        duration: AD_TRANSFER_MS,
+        easing: Easing.easeOut,
+        immediate,
+    })
 
     const amountMetrics = useMemo(() => {
         const measureStyle = new TextStyle({
@@ -33,11 +34,11 @@ export function RewardCard({
             fontSize: AMOUNT_FONT_SIZE,
             fontWeight: 'bold',
         })
+        // Ширину берём по целевому значению, чтобы бокс не прыгал во время анимации
         const measured = CanvasTextMetrics.measureText(`${amount}`, measureStyle)
         measureStyle.destroy()
         return {
             width: Math.ceil(measured.width),
-            // lineHeight ближе к реальному боксу глифов, чем height у display-шрифтов
             height: Math.ceil(Math.max(measured.height, measured.lineHeight)),
         }
     }, [amount, theme.MENU.FONT_DISPLAY])
@@ -63,48 +64,25 @@ export function RewardCard({
 
             <layoutContainer
                 layout={{
-                    flexDirection: 'row',
-                    alignItems: 'flex-end',
-                    gap: 4,
+                    width: amountMetrics.width,
                     height: amountMetrics.height,
                     flexShrink: 0,
                 }}
             >
-                <layoutContainer
-                    layout={{
-                        width: amountMetrics.width,
-                        height: amountMetrics.height,
-                        flexShrink: 0,
+                <pixiText
+                    text={`${displayAmount}`}
+                    style={{
+                        fontFamily: theme.MENU.FONT_DISPLAY,
+                        fontSize: AMOUNT_FONT_SIZE,
+                        fill: accent,
+                        fontWeight: 'bold',
                     }}
-                >
-                    <pixiText
-                        text={`${amount}`}
-                        style={{
-                            fontFamily: theme.MENU.FONT_DISPLAY,
-                            fontSize: AMOUNT_FONT_SIZE,
-                            fill: accent,
-                            fontWeight: 'bold',
-                        }}
-                        anchor={0.5}
-                        x={amountMetrics.width / 2}
-                        y={amountMetrics.height / 2}
-                        eventMode="none"
-                        roundPixels={true}
-                    />
-                </layoutContainer>
-                {showBaseStrike && (
-                    <layoutText
-                        text={`${baseAmount}`}
-                        style={{
-                            fontFamily: theme.UI.FONT_FAMILY,
-                            fontSize: 12,
-                            fill: muted,
-                            fontWeight: 'bold',
-                        }}
-                        layout={{ objectFit: 'none', marginBottom: 4 }}
-                        roundPixels={true}
-                    />
-                )}
+                    anchor={0.5}
+                    x={amountMetrics.width / 2}
+                    y={amountMetrics.height / 2}
+                    eventMode="none"
+                    roundPixels={true}
+                />
             </layoutContainer>
         </layoutContainer>
     )

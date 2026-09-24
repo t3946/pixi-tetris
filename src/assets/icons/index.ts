@@ -12,6 +12,8 @@ import leftArrow from './left-arrow.svg'
 import chevronLeft from './chevron-left.svg'
 import coins from './coins.svg'
 import gem from './gem.svg'
+import clapperboardPlay from './clapperboard-play.svg'
+import thumbUp from './thumb-up.svg'
 
 export const icons = {
     pause,
@@ -28,6 +30,8 @@ export const icons = {
     chevronLeft,
     coins,
     gem,
+    clapperboardPlay,
+    thumbUp,
 } as const
 
 export type IconName = keyof typeof icons

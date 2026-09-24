@@ -13,6 +13,8 @@ type Options = {
     easing?: (t: number) => number
     /** Округлять до целого (для счётчиков) */
     round?: boolean
+    /** Сразу установить target без анимации (прерывание) */
+    immediate?: boolean
 }
 
 function resolveDuration(duration: DurationOption, from: number, to: number): number {
@@ -23,7 +25,13 @@ function resolveDuration(duration: DurationOption, from: number, to: number): nu
  * Плавно дотягивает отображаемое число до `target` по кривой easing.
  */
 export function useAnimatedNumber(target: number, options: Options = {}): number {
-    const { duration = 500, delay = 0, easing = Easing.easeOut, round = true } = options
+    const {
+        duration = 500,
+        delay = 0,
+        easing = Easing.easeOut,
+        round = true,
+        immediate = false,
+    } = options
 
     const [value, setValue] = useState(target)
     const valueRef = useRef(target)
@@ -44,6 +52,22 @@ export function useAnimatedNumber(target: number, options: Options = {}): number
     roundRef.current = round
 
     useEffect(() => {
+        const stopChase = () => {
+            cancelAnimationFrame(rafRef.current)
+            window.clearTimeout(delayTimerRef.current)
+            delayTimerRef.current = 0
+            startTimeRef.current = null
+        }
+
+        if (immediate) {
+            stopChase()
+            fromRef.current = target
+            toRef.current = target
+            valueRef.current = target
+            setValue(target)
+            return
+        }
+
         if (target === toRef.current && startTimeRef.current === null && delayTimerRef.current === 0) {
             return
         }
@@ -76,9 +100,7 @@ export function useAnimatedNumber(target: number, options: Options = {}): number
             }
         }
 
-        cancelAnimationFrame(rafRef.current)
-        window.clearTimeout(delayTimerRef.current)
-        delayTimerRef.current = 0
+        stopChase()
 
         const startChase = () => {
             delayTimerRef.current = 0
@@ -92,11 +114,9 @@ export function useAnimatedNumber(target: number, options: Options = {}): number
         }
 
         return () => {
-            cancelAnimationFrame(rafRef.current)
-            window.clearTimeout(delayTimerRef.current)
-            delayTimerRef.current = 0
+            stopChase()
         }
-    }, [target])
+    }, [target, immediate])
 
     return value
 }

@@ -1,154 +1,162 @@
 import { useState } from 'react'
 import type { FederatedPointerEvent } from 'pixi.js'
+import { UiIcon } from '@components/ui/UiIcon'
+import type { IconName } from '@src/assets/icons'
+import { useAnimatedNumber } from '@src/hooks/useAnimatedNumber'
 import { useTheme } from '@src/ui/ThemeContext'
 import { Color } from '@src/utils/color'
-import {
-    MISSION_AD_COIN_MULTIPLIER,
-    MISSION_AD_JEM_MULTIPLIER,
-} from '@src/user/missions'
-import { AdBonusHint } from './AdBonusHint'
-import { CONTENT_WIDTH } from './constants'
+import { Easing } from '@src/utils/bezier'
+import { AD_MUTE_MS, AD_TRANSFER_MS, CONTENT_WIDTH } from './constants'
 import type { AdState, MissionRewardAmounts } from './types'
 
 type TProps = {
-    adState: Exclude<AdState, 'done'>
-    adProgress: number
+    adState: AdState
     bonusPreview: MissionRewardAmounts
+    /** «Забрать» без просмотра рекламы — награды в кнопке сереют */
+    muted: boolean
+    /** Довести счётчики до цели без анимации */
+    immediate?: boolean
     onPress: () => void
+}
+
+const BUTTON_HEIGHT = 52
+const ICON_SIZE = 22
+const LABEL_FONT_SIZE = 16
+const REWARD_ICON_SIZE = 18
+const COINS_ICON_SIZE = Math.round(REWARD_ICON_SIZE * 1.2)
+const REWARD_FONT_SIZE = 18
+
+function RewardAmount({
+    amount,
+    icon,
+    tint,
+}: {
+    amount: number
+    icon: IconName
+    tint: string
+}) {
+    const theme = useTheme()
+    const iconSize = icon === 'coins' ? COINS_ICON_SIZE : REWARD_ICON_SIZE
+
+    return (
+        <layoutContainer
+            eventMode="none"
+            layout={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                flexGrow: 0,
+                flexShrink: 0,
+            }}
+        >
+            <pixiText
+                text={`${amount}`}
+                style={{
+                    fontFamily: theme.UI.FONT_FAMILY,
+                    fontSize: REWARD_FONT_SIZE,
+                    fill: tint,
+                    fontWeight: 'bold',
+                }}
+                layout={{ objectFit: 'none' }}
+                roundPixels={true}
+            />
+            <UiIcon name={icon} size={iconSize} tint={tint} />
+        </layoutContainer>
+    )
 }
 
 export function WatchAdButton({
     adState,
-    adProgress,
     bonusPreview,
+    muted,
+    immediate = false,
     onPress,
 }: TProps) {
     const theme = useTheme()
-    const watching = adState === 'watching'
+    const busy = adState !== 'idle'
+    const locked = busy || muted
     const [hovered, setHovered] = useState(false)
+
+    const draining = adState === 'transferring' || adState === 'done'
+    const coin = useAnimatedNumber(draining ? 0 : bonusPreview.coin, {
+        duration: AD_TRANSFER_MS,
+        easing: Easing.easeOut,
+        immediate,
+    })
+    const jem = useAnimatedNumber(draining ? 0 : bonusPreview.jem, {
+        duration: AD_TRANSFER_MS,
+        easing: Easing.easeOut,
+        immediate,
+    })
+
+    const muteProgress = useAnimatedNumber(muted ? 1 : 0, {
+        duration: AD_MUTE_MS,
+        easing: Easing.easeOut,
+        round: false,
+    })
+    const coinTint = Color.lerp(theme.MENU.GOLD, theme.TEXT_MUTED, muteProgress).toHex()
+    const jemTint = Color.lerp(theme.MENU.RUBY, theme.TEXT_MUTED, muteProgress).toHex()
 
     const handlePress = (event: FederatedPointerEvent) => {
         event.stopPropagation()
-        if (!watching) {
+        if (!locked) {
             onPress()
         }
     }
 
     return (
         <layoutContainer
-            eventMode={watching ? 'none' : 'static'}
-            cursor={watching ? 'default' : 'pointer'}
-            onPointerTap={watching ? undefined : handlePress}
+            eventMode={locked ? 'none' : 'static'}
+            cursor={locked ? 'default' : 'pointer'}
+            onPointerTap={locked ? undefined : handlePress}
             onPointerOver={() => {
-                if (!watching) {
+                if (!locked) {
                     setHovered(true)
                 }
             }}
             onPointerOut={() => setHovered(false)}
             layout={{
                 width: CONTENT_WIDTH,
+                height: BUTTON_HEIGHT,
                 flexDirection: 'row',
                 alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 10,
-                paddingTop: 10,
-                paddingBottom: 10,
-                paddingLeft: 12,
-                paddingRight: 12,
+                paddingLeft: 14,
+                paddingRight: 14,
                 borderRadius: 12,
                 borderWidth: 1.5,
                 borderColor: new Color(theme.MENU.ACCENT).rgba(0.5),
                 backgroundColor:
-                    hovered && !watching
+                    hovered && !locked
                         ? new Color(theme.UI.BUTTON_FILL_TOP).rgba(0.55)
                         : new Color(theme.MENU.PANEL).rgba(0.85),
-                overflow: 'hidden',
             }}
         >
-            {watching && (
-                <layoutContainer
-                    eventMode="none"
-                    layout={{
-                        position: 'absolute',
-                        left: 0,
-                        top: 0,
-                        width: `${adProgress}%`,
-                        height: '100%',
-                        backgroundColor: new Color(theme.MENU.GLOW).rgba(0.22),
-                    }}
-                />
-            )}
-
             <layoutContainer
                 eventMode="none"
                 layout={{
                     flexDirection: 'row',
                     alignItems: 'center',
                     gap: 10,
-                    flex: 1,
+                    flexGrow: 1,
+                    flexShrink: 1,
                 }}
             >
-                <layoutContainer
-                    eventMode="none"
-                    layout={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 10,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        backgroundColor: theme.MENU.PLAY,
-                        flexShrink: 0,
+                <UiIcon
+                    name="clapperboardPlay"
+                    size={ICON_SIZE}
+                    tint={theme.MENU.ACCENT}
+                />
+                <pixiText
+                    text="Реклама"
+                    style={{
+                        fontFamily: theme.UI.FONT_FAMILY,
+                        fontSize: LABEL_FONT_SIZE,
+                        fill: theme.TEXT_COLOR,
+                        fontWeight: 'bold',
                     }}
-                >
-                    <layoutText
-                        text={watching ? '❚❚' : '▶'}
-                        style={{
-                            fontFamily: theme.UI.FONT_FAMILY,
-                            fontSize: watching ? 12 : 14,
-                            fill: theme.TEXT_COLOR,
-                            fontWeight: 'bold',
-                            align: 'center',
-                        }}
-                        layout={{ objectFit: 'none' }}
-                        roundPixels={true}
-                    />
-                </layoutContainer>
-
-                <layoutContainer
-                    eventMode="none"
-                    layout={{
-                        flexDirection: 'column',
-                        gap: 2,
-                        flex: 1,
-                    }}
-                >
-                    <layoutText
-                        text={watching ? 'Просмотр...' : 'Смотреть рекламу'}
-                        style={{
-                            fontFamily: theme.UI.FONT_FAMILY,
-                            fontSize: 14,
-                            fill: theme.TEXT_COLOR,
-                            fontWeight: 'bold',
-                        }}
-                        layout={{ objectFit: 'none' }}
-                        roundPixels={true}
-                    />
-                    <layoutText
-                        text={
-                            watching
-                                ? `${Math.round(adProgress)}% готово`
-                                : `×${MISSION_AD_COIN_MULTIPLIER} монеты + ×${MISSION_AD_JEM_MULTIPLIER} кристаллы`
-                        }
-                        style={{
-                            fontFamily: theme.UI.FONT_FAMILY,
-                            fontSize: 11,
-                            fill: theme.MENU.ACCENT,
-                            fontWeight: 'normal',
-                        }}
-                        layout={{ objectFit: 'none' }}
-                        roundPixels={true}
-                    />
-                </layoutContainer>
+                    layout={{ objectFit: 'none' }}
+                    roundPixels={true}
+                />
             </layoutContainer>
 
             <layoutContainer
@@ -156,31 +164,13 @@ export function WatchAdButton({
                 layout={{
                     flexDirection: 'row',
                     alignItems: 'center',
-                    gap: 6,
+                    gap: 10,
+                    flexGrow: 0,
                     flexShrink: 0,
                 }}
             >
-                <AdBonusHint
-                    amount={bonusPreview.coin}
-                    label="монеты"
-                    tint={theme.MENU.GOLD}
-                />
-                <layoutText
-                    text="+"
-                    style={{
-                        fontFamily: theme.UI.FONT_FAMILY,
-                        fontSize: 11,
-                        fill: theme.TEXT_MUTED,
-                        fontWeight: 'bold',
-                    }}
-                    layout={{ objectFit: 'none' }}
-                    roundPixels={true}
-                />
-                <AdBonusHint
-                    amount={bonusPreview.jem}
-                    label="крист."
-                    tint={theme.MENU.RUBY}
-                />
+                <RewardAmount amount={coin} icon="coins" tint={coinTint} />
+                <RewardAmount amount={jem} icon="gem" tint={jemTint} />
             </layoutContainer>
         </layoutContainer>
     )

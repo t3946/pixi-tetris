@@ -8,18 +8,18 @@ import { WatchAdButton } from './WatchAdButton'
 
 type TProps = {
     open: boolean
-    /** Превью на главном экране: после «Забрать» сбрасывает состояние, не уходит со сцены */
+    /** Превью на главном экране: не забирает награду и не уходит со сцены */
     preview?: boolean
 }
 
 export function RewardModal({ open, preview = false }: TProps) {
     const {
         adState,
-        adProgress,
         collected,
         adBonus,
         reward,
         bonusPreview,
+        numbersInstant,
         handleWatchAd,
         handleCollect,
     } = useRewardModal({ open, preview })
@@ -43,20 +43,18 @@ export function RewardModal({ open, preview = false }: TProps) {
                 }}
             >
                 <RewardHeader />
-                <RewardCardsRow reward={reward} adBonus={adBonus} />
+                <RewardCardsRow reward={reward} immediate={numbersInstant} />
 
-                {adState !== 'done' && (
-                    <WatchAdButton
-                        adState={adState}
-                        adProgress={adProgress}
-                        bonusPreview={bonusPreview}
-                        onPress={handleWatchAd}
-                    />
-                )}
+                <WatchAdButton
+                    adState={adState}
+                    bonusPreview={bonusPreview}
+                    muted={collected && !adBonus}
+                    immediate={numbersInstant}
+                    onPress={handleWatchAd}
+                />
 
                 <CollectRewardButton
                     collected={collected}
-                    adState={adState}
                     onPress={handleCollect}
                 />
             </layoutContainer>
