@@ -15,6 +15,8 @@ type Options = {
     round?: boolean
     /** Сразу установить target без анимации (прерывание) */
     immediate?: boolean
+    /** Вызов, когда значение дошло до target (после анимации или immediate-snap) */
+    onComplete?: () => void
 }
 
 function resolveDuration(duration: DurationOption, from: number, to: number): number {
@@ -31,6 +33,7 @@ export function useAnimatedNumber(target: number, options: Options = {}): number
         easing = Easing.easeOut,
         round = true,
         immediate = false,
+        onComplete,
     } = options
 
     const [value, setValue] = useState(target)
@@ -46,10 +49,12 @@ export function useAnimatedNumber(target: number, options: Options = {}): number
     const delayRef = useRef(delay)
     const easingRef = useRef(easing)
     const roundRef = useRef(round)
+    const onCompleteRef = useRef(onComplete)
     durationRef.current = duration
     delayRef.current = delay
     easingRef.current = easing
     roundRef.current = round
+    onCompleteRef.current = onComplete
 
     useEffect(() => {
         const stopChase = () => {
@@ -60,11 +65,18 @@ export function useAnimatedNumber(target: number, options: Options = {}): number
         }
 
         if (immediate) {
+            const shouldNotify =
+                valueRef.current !== target ||
+                startTimeRef.current !== null ||
+                delayTimerRef.current !== 0
             stopChase()
             fromRef.current = target
             toRef.current = target
             valueRef.current = target
             setValue(target)
+            if (shouldNotify) {
+                onCompleteRef.current?.()
+            }
             return
         }
 
@@ -76,6 +88,7 @@ export function useAnimatedNumber(target: number, options: Options = {}): number
         toRef.current = target
         durationMsRef.current = resolveDuration(durationRef.current, fromRef.current, target)
         startTimeRef.current = null
+        const hadDelta = fromRef.current !== toRef.current
 
         const tick = (now: number) => {
             if (startTimeRef.current === null) {
@@ -97,6 +110,9 @@ export function useAnimatedNumber(target: number, options: Options = {}): number
                 startTimeRef.current = null
                 valueRef.current = toRef.current
                 setValue(toRef.current)
+                if (hadDelta) {
+                    onCompleteRef.current?.()
+                }
             }
         }
 

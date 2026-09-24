@@ -3,10 +3,18 @@ import type { FederatedPointerEvent } from 'pixi.js'
 import { UiIcon } from '@components/ui/UiIcon'
 import type { IconName } from '@src/assets/icons'
 import { useAnimatedNumber } from '@src/hooks/useAnimatedNumber'
+import { usePulse } from '@src/hooks/usePulse'
 import { useTheme } from '@src/ui/ThemeContext'
 import { Color } from '@src/utils/color'
 import { Easing } from '@src/utils/bezier'
-import { AD_MUTE_MS, AD_TRANSFER_MS, CONTENT_WIDTH } from './constants'
+import {
+    AD_MUTE_MS,
+    AD_TRANSFER_MS,
+    AMOUNT_PULSE_LIGHTEN,
+    AMOUNT_PULSE_MS,
+    AMOUNT_PULSE_SCALE,
+    CONTENT_WIDTH,
+} from './constants'
 import type { AdState, MissionRewardAmounts } from './types'
 
 type TProps = {
@@ -27,16 +35,30 @@ const COINS_ICON_SIZE = Math.round(REWARD_ICON_SIZE * 1.2)
 const REWARD_FONT_SIZE = 18
 
 function RewardAmount({
-    amount,
+    target,
     icon,
     tint,
+    immediate,
 }: {
-    amount: number
+    target: number
     icon: IconName
     tint: string
+    immediate: boolean
 }) {
     const theme = useTheme()
     const iconSize = icon === 'coins' ? COINS_ICON_SIZE : REWARD_ICON_SIZE
+    const [pulseGen, setPulseGen] = useState(0)
+    const pulse = usePulse(pulseGen, AMOUNT_PULSE_MS)
+
+    const amount = useAnimatedNumber(target, {
+        duration: AD_TRANSFER_MS,
+        easing: Easing.easeOut,
+        immediate,
+        onComplete: () => setPulseGen((generation) => generation + 1),
+    })
+
+    const fontSize = REWARD_FONT_SIZE * (1 + AMOUNT_PULSE_SCALE * pulse)
+    const fill = new Color(tint).lighten(AMOUNT_PULSE_LIGHTEN * pulse).toHex()
 
     return (
         <layoutContainer
@@ -53,8 +75,8 @@ function RewardAmount({
                 text={`${amount}`}
                 style={{
                     fontFamily: theme.UI.FONT_FAMILY,
-                    fontSize: REWARD_FONT_SIZE,
-                    fill: tint,
+                    fontSize,
+                    fill,
                     fontWeight: 'bold',
                 }}
                 layout={{ objectFit: 'none' }}
@@ -78,16 +100,6 @@ export function WatchAdButton({
     const [hovered, setHovered] = useState(false)
 
     const draining = adState === 'transferring' || adState === 'done'
-    const coin = useAnimatedNumber(draining ? 0 : bonusPreview.coin, {
-        duration: AD_TRANSFER_MS,
-        easing: Easing.easeOut,
-        immediate,
-    })
-    const jem = useAnimatedNumber(draining ? 0 : bonusPreview.jem, {
-        duration: AD_TRANSFER_MS,
-        easing: Easing.easeOut,
-        immediate,
-    })
 
     const muteProgress = useAnimatedNumber(muted ? 1 : 0, {
         duration: AD_MUTE_MS,
@@ -96,6 +108,8 @@ export function WatchAdButton({
     })
     const coinTint = Color.lerp(theme.MENU.GOLD, theme.TEXT_MUTED, muteProgress).toHex()
     const jemTint = Color.lerp(theme.MENU.RUBY, theme.TEXT_MUTED, muteProgress).toHex()
+    const labelTint = Color.lerp(theme.TEXT_COLOR, theme.TEXT_MUTED, muteProgress).toHex()
+    const iconTint = Color.lerp(theme.MENU.ACCENT, theme.TEXT_MUTED, muteProgress).toHex()
 
     const handlePress = (event: FederatedPointerEvent) => {
         event.stopPropagation()
@@ -144,14 +158,14 @@ export function WatchAdButton({
                 <UiIcon
                     name="clapperboardPlay"
                     size={ICON_SIZE}
-                    tint={theme.MENU.ACCENT}
+                    tint={iconTint}
                 />
                 <pixiText
                     text="Реклама"
                     style={{
                         fontFamily: theme.UI.FONT_FAMILY,
                         fontSize: LABEL_FONT_SIZE,
-                        fill: theme.TEXT_COLOR,
+                        fill: labelTint,
                         fontWeight: 'bold',
                     }}
                     layout={{ objectFit: 'none' }}
@@ -169,8 +183,18 @@ export function WatchAdButton({
                     flexShrink: 0,
                 }}
             >
-                <RewardAmount amount={coin} icon="coins" tint={coinTint} />
-                <RewardAmount amount={jem} icon="gem" tint={jemTint} />
+                <RewardAmount
+                    target={draining ? 0 : bonusPreview.coin}
+                    icon="coins"
+                    tint={coinTint}
+                    immediate={immediate}
+                />
+                <RewardAmount
+                    target={draining ? 0 : bonusPreview.jem}
+                    icon="gem"
+                    tint={jemTint}
+                    immediate={immediate}
+                />
             </layoutContainer>
         </layoutContainer>
     )

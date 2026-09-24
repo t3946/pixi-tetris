@@ -3,6 +3,10 @@ export const CONTENT_WIDTH = 300
 export const AD_TRANSFER_MS = 2000
 /** Плавное посерение наград в кнопке рекламы при «Забрать» без просмотра */
 export const AD_MUTE_MS = 300
+/** Пульс числа после окончания анимации счётчика */
+export const AMOUNT_PULSE_MS = 320
+export const AMOUNT_PULSE_SCALE = 0.15
+export const AMOUNT_PULSE_LIGHTEN = 0.20
 export const COLLECT_FEEDBACK_MS = 450
 export const MODAL_PAD_X = 32
 /** Градиент брови из макета Figma: violet → gold → violet */
