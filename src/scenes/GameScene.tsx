@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Stack } from '@components/Stack/Stack.tsx'
 import { GameDashboard } from '@components/GameDashboard/GameDashboard.tsx'
 import { PauseModal } from '@components/PauseModal'
-import { MissionCompleteModal } from '@components/MissionCompleteModal'
+import { RewardModal } from '@components/RewardModal'
 import { SettingsTab } from '@components/MainMenu/SettingsTab'
 import {
     TetrisGameProvider,
@@ -81,7 +81,7 @@ function GameSceneContent() {
             {!settingsOpen && (
                 <>
                     <PauseModal onOpenSettings={() => setSettingsOpen(true)} />
-                    <MissionCompleteModal open={missionWon} />
+                    <RewardModal open={missionWon} />
                 </>
             )}
 
