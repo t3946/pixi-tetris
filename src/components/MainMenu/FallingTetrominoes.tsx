@@ -19,6 +19,11 @@ type FallingPiece = {
     height: number
 }
 
+/** Половина диагонали — максимальный вылет фигуры от центра при любом угле поворота. */
+function rotatedHalfExtent(pieceW: number, pieceH: number, scale: number): number {
+    return scale * Math.hypot(pieceW / 2, pieceH / 2)
+}
+
 function createPieces(width: number, height: number): FallingPiece[] {
     return Array.from({ length: 18 }, (_, i) => {
         const tetro = FALLING_TETROMINOES[i % FALLING_TETROMINOES.length]
@@ -31,15 +36,21 @@ function createPieces(width: number, height: number): FallingPiece[] {
         const pieceW = (maxX + 1) * (cell + gap) - gap
         const pieceH = (maxY + 1) * (cell + gap) - gap
         const travel = height + 160
+        const scale = (0.4 + (i % 3) * 0.15) * 1.2
+        // Запас на сглаживание краёв, чтобы угол не касался границы колонки.
+        const inset = rotatedHalfExtent(pieceW, pieceH, scale) + 2
+        const minX = Math.min(inset, width / 2)
+        const maxXPos = Math.max(width - inset, width / 2)
+        const rawX = width * ((5 + ((i * 97) / 18) % 92) / 100)
 
         return {
             id: i,
             cells: tetro.cells,
             color: tetro.color,
-            x: width * ((5 + ((i * 97) / 18) % 92) / 100),
+            x: Math.min(maxXPos, Math.max(minX, rawX)),
             y: -80 - (delay / duration) * travel,
             speed: travel / duration,
-            scale: 0.4 + (i % 3) * 0.15,
+            scale,
             rotation: ((i * 47) % 360) * (Math.PI / 180),
             spin: ((i % 2 === 0 ? 1 : -1) * Math.PI * 2) / duration,
             cell,
