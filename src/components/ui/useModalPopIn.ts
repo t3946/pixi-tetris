@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 
-/** Как .animate-pop-in в notes/RewardModalForGame-main */
-const POP_IN_MS = 550
-const BACKDROP_FADE_MS = 300
+/** Как .animate-pop-in в notes/RewardModalForGame-main, на 40% быстрее (длительность / 1.4) */
+const POP_IN_MS = 393
+const BACKDROP_FADE_MS = 214
 export const MODAL_BACKDROP_ALPHA = 0.55
 
 type PanelPose = {

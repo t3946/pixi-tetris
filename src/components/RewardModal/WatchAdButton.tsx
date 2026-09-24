@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import type { FederatedPointerEvent } from 'pixi.js'
+import { BaseButton } from '@components/ui/BaseButton'
 import { UiIcon } from '@components/ui/UiIcon'
 import type { IconName } from '@src/assets/icons'
 import { useAnimatedNumber } from '@src/hooks/useAnimatedNumber'
 import { usePulse } from '@src/hooks/usePulse'
 import { useTheme } from '@src/ui/ThemeContext'
+import { palette } from '@src/ui/palette'
 import { Color } from '@src/utils/color'
 import { Easing } from '@src/utils/bezier'
 import {
@@ -27,9 +28,11 @@ type TProps = {
     onPress: () => void
 }
 
-const BUTTON_HEIGHT = 52
-const ICON_SIZE = 22
-const LABEL_FONT_SIZE = 16
+const ROW_HEIGHT = 52
+const ROW_GAP = 10
+const HALF_WIDTH = (CONTENT_WIDTH - ROW_GAP) / 2
+const ICON_SIZE = 18
+const LABEL_FONT_SIZE = 18
 const REWARD_ICON_SIZE = 18
 const COINS_ICON_SIZE = Math.round(REWARD_ICON_SIZE * 1.2)
 const REWARD_FONT_SIZE = 18
@@ -97,7 +100,6 @@ export function WatchAdButton({
     const theme = useTheme()
     const busy = adState !== 'idle'
     const locked = busy || muted
-    const [hovered, setHovered] = useState(false)
 
     const draining = adState === 'transferring' || adState === 'done'
 
@@ -108,77 +110,53 @@ export function WatchAdButton({
     })
     const coinTint = Color.lerp(theme.MENU.GOLD, theme.TEXT_MUTED, muteProgress).toHex()
     const jemTint = Color.lerp(theme.MENU.RUBY, theme.TEXT_MUTED, muteProgress).toHex()
-    const labelTint = Color.lerp(theme.TEXT_COLOR, theme.TEXT_MUTED, muteProgress).toHex()
-    const iconTint = Color.lerp(theme.MENU.ACCENT, theme.TEXT_MUTED, muteProgress).toHex()
-
-    const handlePress = (event: FederatedPointerEvent) => {
-        event.stopPropagation()
-        if (!locked) {
-            onPress()
-        }
-    }
 
     return (
         <layoutContainer
-            eventMode={locked ? 'none' : 'static'}
-            cursor={locked ? 'default' : 'pointer'}
-            onPointerTap={locked ? undefined : handlePress}
-            onPointerOver={() => {
-                if (!locked) {
-                    setHovered(true)
-                }
-            }}
-            onPointerOut={() => setHovered(false)}
+            eventMode="passive"
             layout={{
                 width: CONTENT_WIDTH,
-                height: BUTTON_HEIGHT,
+                height: ROW_HEIGHT,
                 flexDirection: 'row',
                 alignItems: 'center',
-                paddingLeft: 14,
-                paddingRight: 14,
-                borderRadius: 12,
-                borderWidth: 1.5,
-                borderColor: new Color(theme.MENU.ACCENT).rgba(0.5),
-                backgroundColor:
-                    hovered && !locked
-                        ? new Color(theme.UI.BUTTON_FILL_TOP).rgba(0.55)
-                        : new Color(theme.MENU.PANEL).rgba(0.85),
+                gap: ROW_GAP,
             }}
         >
-            <layoutContainer
-                eventMode="none"
-                layout={{
-                    flexDirection: 'row',
+            <BaseButton
+                label="Реклама"
+                onPress={onPress}
+                disabled={locked}
+                disabledAlpha={0.55}
+                accent={theme.MENU.ACCENT}
+                textFill={palette.white}
+                textFillHover={palette.white}
+                iconLeft="clapperboardPlay"
+                iconSize={ICON_SIZE}
+                fontSize={LABEL_FONT_SIZE}
+                appearance={{
+                    width: HALF_WIDTH,
+                    height: ROW_HEIGHT,
+                    borderRadius: 12,
+                    justifyContent: 'center',
                     alignItems: 'center',
-                    gap: 10,
-                    flexGrow: 1,
-                    flexShrink: 1,
                 }}
-            >
-                <UiIcon
-                    name="clapperboardPlay"
-                    size={ICON_SIZE}
-                    tint={iconTint}
-                />
-                <pixiText
-                    text="Реклама"
-                    style={{
-                        fontFamily: theme.UI.FONT_FAMILY,
-                        fontSize: LABEL_FONT_SIZE,
-                        fill: labelTint,
-                        fontWeight: 'bold',
-                    }}
-                    layout={{ objectFit: 'none' }}
-                    roundPixels={true}
-                />
-            </layoutContainer>
+            />
 
             <layoutContainer
                 eventMode="none"
                 layout={{
+                    width: HALF_WIDTH,
+                    height: ROW_HEIGHT,
                     flexDirection: 'row',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: 10,
+                    paddingLeft: 14,
+                    paddingRight: 14,
+                    borderRadius: 12,
+                    borderWidth: 1.5,
+                    borderColor: new Color(theme.MENU.ACCENT).rgba(0.5),
+                    backgroundColor: new Color(theme.MENU.PANEL).rgba(0.85),
                     flexGrow: 0,
                     flexShrink: 0,
                 }}

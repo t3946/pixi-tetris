@@ -70,7 +70,8 @@ export function useRewardModal({ open, preview }: TOptions) {
         setNumbersInstant(false)
         setAdState('watching')
 
-        const result = await showRewardedAd()
+        // В превью на главном экране не ждём рекламу — сразу drain
+        const result = preview ? 'rewarded' : await showRewardedAd()
         if (requestId !== adRequestIdRef.current) {
             return
         }
