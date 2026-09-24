@@ -6,8 +6,8 @@ import type { GameModeId } from '@components/MainMenu/gameModes'
 import {
     BLITZ_MISSIONS_TOTAL,
     INITIAL_BLITZ_MISSIONS_COMPLETED,
-    MISSION_REWARD,
     createBlitzMission,
+    getMissionReward,
     type Mission,
 } from '@src/user/missions'
 
@@ -40,8 +40,10 @@ type UserContextValue = {
     patchSettings: (patch: Partial<Settings>) => void
     /** Сгенерировать миссию под выбранный режим при старте партии */
     startActiveMission: () => void
-    /** Засчитать выполнение миссии и выдать награду (идемпотентно) */
+    /** Засчитать факт миссии (идемпотентно); кошелёк не трогает */
     completeActiveMission: () => void
+    /** Забрать награду миссии; `adBonus` — множители после рекламы */
+    claimActiveMissionReward: (adBonus?: boolean) => void
 }
 
 type MissionSession = {
@@ -49,12 +51,15 @@ type MissionSession = {
     blitzMissionsCompleted: number
     /** Текущая миссия уже засчитана (бар оставляем заполненным) */
     activeMissionResolved: boolean
+    /** Награда уже зачислена в кошелёк */
+    activeMissionRewardClaimed: boolean
     wallet: UserWallet
 }
 
 type MissionAction =
     | { type: 'start'; mode: GameModeId }
     | { type: 'complete'; mode: GameModeId }
+    | { type: 'claim'; adBonus: boolean }
 
 function missionSessionReducer(state: MissionSession, action: MissionAction): MissionSession {
     switch (action.type) {
@@ -64,28 +69,44 @@ function missionSessionReducer(state: MissionSession, action: MissionAction): Mi
                     ...state,
                     activeMission: createBlitzMission(state.blitzMissionsCompleted),
                     activeMissionResolved: false,
+                    activeMissionRewardClaimed: false,
                 }
             }
-            return { ...state, activeMission: null, activeMissionResolved: false }
+            return {
+                ...state,
+                activeMission: null,
+                activeMissionResolved: false,
+                activeMissionRewardClaimed: false,
+            }
         case 'complete':
             if (state.activeMission == null || state.activeMissionResolved) {
                 return state
             }
             if (action.mode === 'blitz') {
                 return {
-                    activeMission: state.activeMission,
+                    ...state,
                     activeMissionResolved: true,
                     blitzMissionsCompleted: Math.min(
                         BLITZ_MISSIONS_TOTAL,
                         state.blitzMissionsCompleted + 1,
                     ),
-                    wallet: {
-                        coin: state.wallet.coin + MISSION_REWARD.coin,
-                        jem: state.wallet.jem + MISSION_REWARD.jem,
-                    },
                 }
             }
             return { ...state, activeMissionResolved: true }
+        case 'claim': {
+            if (!state.activeMissionResolved || state.activeMissionRewardClaimed) {
+                return state
+            }
+            const reward = getMissionReward(action.adBonus)
+            return {
+                ...state,
+                activeMissionRewardClaimed: true,
+                wallet: {
+                    coin: state.wallet.coin + reward.coin,
+                    jem: state.wallet.jem + reward.jem,
+                },
+            }
+        }
         default:
             return state
     }
@@ -102,6 +123,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
         activeMission: null,
         blitzMissionsCompleted: INITIAL_BLITZ_MISSIONS_COMPLETED,
         activeMissionResolved: false,
+        activeMissionRewardClaimed: false,
         wallet: { coin: 0, jem: 0 },
     })
 
@@ -130,6 +152,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
         dispatchMission({ type: 'complete', mode: selectedMode })
     }, [selectedMode])
 
+    const claimActiveMissionReward = useCallback((adBonus = false) => {
+        dispatchMission({ type: 'claim', adBonus })
+    }, [])
+
     const value = useMemo(
         () => ({
             user: {
@@ -157,6 +183,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
             patchSettings,
             startActiveMission,
             completeActiveMission,
+            claimActiveMissionReward,
         }),
         [
             blockTheme,
@@ -170,6 +197,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
             patchSettings,
             startActiveMission,
             completeActiveMission,
+            claimActiveMissionReward,
         ],
     )
 

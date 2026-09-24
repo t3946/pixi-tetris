@@ -8,6 +8,7 @@ import { MenuTopBar } from '@components/MainMenu/TopBar/MenuTopBar'
 import { HomeTab } from '@components/MainMenu/HomeTab'
 import { SettingsTab } from '@components/MainMenu/SettingsTab'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
+import { MissionCompleteModal } from '@components/MissionCompleteModal'
 
 export function MainMenuScene() {
     const { mainSize, ready } = useAppLayout()
@@ -50,6 +51,9 @@ export function MainMenuScene() {
             )}
 
             {tab !== 'settings' && <BottomNav active={tab} onChange={setTab} />}
+
+            {/* TODO: убрать превью после проверки UI */}
+            <MissionCompleteModal open preview />
         </SceneFrame>
     )
 }

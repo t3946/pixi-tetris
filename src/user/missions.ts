@@ -14,6 +14,10 @@ export const INITIAL_BLITZ_MISSIONS_COMPLETED = 0
 export const MISSION_REWARD_COIN = 100
 export const MISSION_REWARD_JEM = 1
 
+/** Множители после просмотра рекламы */
+export const MISSION_AD_COIN_MULTIPLIER = 2
+export const MISSION_AD_JEM_MULTIPLIER = 3
+
 export type MissionReward = {
     coin: number
     jem: number
@@ -22,6 +26,14 @@ export type MissionReward = {
 export const MISSION_REWARD: MissionReward = {
     coin: MISSION_REWARD_COIN,
     jem: MISSION_REWARD_JEM,
+}
+
+/** Базовая награда или увеличенная после рекламы. */
+export function getMissionReward(withAdBonus = false): MissionReward {
+    return {
+        coin: MISSION_REWARD_COIN * (withAdBonus ? MISSION_AD_COIN_MULTIPLIER : 1),
+        jem: MISSION_REWARD_JEM * (withAdBonus ? MISSION_AD_JEM_MULTIPLIER : 1),
+    }
 }
 
 /** Фиксированная последовательность миссий Блица. */
