@@ -21,10 +21,13 @@ export function TetrisGameProvider({ children }: { children: ReactNode }) {
     const { state, togglePause, endGame } = useTetrisGame(BOARD_ROWS, BOARD_COLS)
     const timeScaleRef = useRef(1)
     const pausedRef = useRef(state.paused)
+    const gameOverRef = useRef(state.gameOver)
     pausedRef.current = state.paused
+    gameOverRef.current = state.gameOver
 
     const onTimeScaleTick = useCallback((ticker: Ticker) => {
-        const target = pausedRef.current ? 0 : 1
+        // Пауза и конец игры (модалка награды) — замораживаем шейдер фона
+        const target = pausedRef.current || gameOverRef.current ? 0 : 1
         const current = timeScaleRef.current
 
         if (current === target) {

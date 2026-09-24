@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, type ReactNode } from 'react'
 import { FillGradient, Graphics } from 'pixi.js'
 import { useTheme } from '@src/ui/ThemeContext'
+import { useModalPopIn } from './useModalPopIn'
 
 type TProps = {
     children: ReactNode
@@ -72,14 +73,10 @@ function ModalBrow({
     )
 }
 
-/**
- * Модальное окно: затемняет родителя и показывает содержимое по центру.
- * Подложка перехватывает клики, но ничего не делает — закрыть можно только из содержимого.
- * Размер задаёт родитель: положите Modal внутрь контейнера, который нужно перекрыть.
- */
-export function Modal({
+type TViewProps = Omit<TProps, 'open'>
+
+function ModalView({
     children,
-    open = true,
     borderRadius = DEFAULT_RADIUS,
     borderWidth = DEFAULT_BORDER_WIDTH,
     browColor,
@@ -88,12 +85,9 @@ export function Modal({
     browHeight = DEFAULT_BROW_HEIGHT,
     contentPaddingTop = DEFAULT_CONTENT_PAD_Y,
     contentPaddingBottom = DEFAULT_CONTENT_PAD_Y,
-}: TProps) {
+}: TViewProps) {
     const theme = useTheme()
-
-    if (!open) {
-        return null
-    }
+    const { panel, backdropAlpha } = useModalPopIn()
 
     const showGradientBrow = browGradient != null && browGradient.length > 0 && browWidth != null
     const showSolidBrow = !showGradientBrow && browColor != null
@@ -115,6 +109,7 @@ export function Modal({
         >
             <layoutContainer
                 eventMode="static"
+                alpha={backdropAlpha}
                 layout={{
                     position: 'absolute',
                     top: 0,
@@ -124,11 +119,13 @@ export function Modal({
                     flexShrink: 0,
                     backgroundColor: 0x000000,
                 }}
-                alpha={0.55}
             />
 
             <layoutContainer
                 eventMode="static"
+                alpha={panel.opacity}
+                scale={panel.scale}
+                y={panel.y}
                 layout={{
                     flexDirection: 'column',
                     justifyContent: 'center',
@@ -140,6 +137,7 @@ export function Modal({
                     borderWidth,
                     borderRadius,
                     overflow: 'hidden',
+                    transformOrigin: 'center',
                 }}
             >
                 {showGradientBrow && (
@@ -176,4 +174,18 @@ export function Modal({
             </layoutContainer>
         </layoutContainer>
     )
+}
+
+/**
+ * Модальное окно: затемняет родителя и показывает содержимое по центру.
+ * Подложка перехватывает клики, но ничего не делает — закрыть можно только из содержимого.
+ * Размер задаёт родитель: положите Modal внутрь контейнера, который нужно перекрыть.
+ * При открытии панель всплывает снизу (pop-in), подложка плавно затемняется.
+ */
+export function Modal({ open = true, ...props }: TProps) {
+    if (!open) {
+        return null
+    }
+
+    return <ModalView {...props} />
 }

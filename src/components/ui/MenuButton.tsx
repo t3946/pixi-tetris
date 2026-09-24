@@ -30,6 +30,7 @@ export function MenuButton({
             fillHover={theme.UI.BUTTON_FILL_TOP}
             fontSize={compact ? 18 : 22}
             appearance={{
+                alignSelf: 'stretch',
                 paddingTop: compact ? 10 : 14,
                 paddingBottom: compact ? 10 : 14,
                 paddingLeft: compact ? 18 : 40,

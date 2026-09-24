@@ -54,6 +54,7 @@ export function FlatButton({
             textFillHover={looks.textFillHover}
             fontSize={20}
             appearance={{
+                alignSelf: 'stretch',
                 paddingTop: 0,
                 paddingBottom: 0,
                 paddingLeft: 40,
