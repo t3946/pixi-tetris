@@ -1,4 +1,12 @@
-export const CONTENT_WIDTH = 300
+import {
+    MODAL_CONTENT_WIDTH,
+    MODAL_PAD_X,
+} from '@components/ui/modalLayout'
+
+/** Алиас стандартной ширины контента модалки */
+export const CONTENT_WIDTH = MODAL_CONTENT_WIDTH
+export { MODAL_PAD_X }
+
 /** Длительность «перетекания» награды из кнопки рекламы в карточки */
 export const AD_TRANSFER_MS = 2000
 /** Плавное посерение наград в кнопке рекламы при «Забрать» без просмотра */
@@ -8,7 +16,6 @@ export const AMOUNT_PULSE_MS = 320
 export const AMOUNT_PULSE_SCALE = 0.15
 export const AMOUNT_PULSE_LIGHTEN = 0.20
 export const COLLECT_FEEDBACK_MS = 450
-export const MODAL_PAD_X = 32
 /** Drop-in карточек награды (как coin-drop / gem-drop в notes/RewardModalForGame-main) */
 export const CARD_DROP_MS = 450
 export const CARD_DROP_COIN_DELAY_MS = 250
