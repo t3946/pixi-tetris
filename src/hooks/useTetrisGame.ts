@@ -516,10 +516,19 @@ export function useTetrisGame(
         dispatch({ type: EAction.EndGame })
     }, [dispatch])
 
+    const restartGame = useCallback(() => {
+        clearingRef.current = false
+        dropAccumulatorRef.current = 0
+        softDropRef.current = false
+        hardDropAnimationRef.current = null
+        dispatch({ type: EAction.Restart, rows, cols })
+    }, [cols, dispatch, rows])
+
     return {
         state,
         togglePause: togglePauseGame,
         endGame: endGameSession,
+        restart: restartGame,
         clearLine,
         clearLines,
         setBoard,

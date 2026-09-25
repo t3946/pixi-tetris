@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Stack } from '@components/Stack/Stack.tsx'
 import { GameDashboard } from '@components/GameDashboard/GameDashboard.tsx'
 import { PauseModal } from '@components/PauseModal'
+import { ModalLose } from '@components/ModalLose'
 import { RewardModal } from '@components/RewardModal'
 import { SettingsTab } from '@components/MainMenu/SettingsTab'
 import {
@@ -81,6 +82,7 @@ function useBlitzMissionSession() {
 function GameSceneContent() {
     const { mainSize } = useAppLayout()
     const theme = useTheme()
+    const { gameOver } = useTetrisGameState()
     const [settingsOpen, setSettingsOpen] = useState(false)
     const missionWon = useBlitzMissionSession()
 
@@ -110,6 +112,7 @@ function GameSceneContent() {
             {!settingsOpen && (
                 <>
                     <PauseModal onOpenSettings={() => setSettingsOpen(true)} />
+                    <ModalLose open={gameOver && !missionWon} />
                     <RewardModal open={missionWon} />
                 </>
             )}
