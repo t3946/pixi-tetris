@@ -46,6 +46,35 @@ function useBlitzMissionSession() {
         completeActiveMission,
     ])
 
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            if (event.code !== 'KeyW' && event.code !== 'KeyL') {
+                return
+            }
+
+            if (gameOver || missionWon) {
+                return
+            }
+
+            event.preventDefault()
+
+            if (event.code === 'KeyW') {
+                endGame()
+                completeActiveMission()
+                setMissionWon(true)
+                return
+            }
+
+            endGame()
+        }
+
+        window.addEventListener('keydown', handleKeyDown)
+
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown)
+        }
+    }, [gameOver, missionWon, endGame, completeActiveMission])
+
     return missionWon
 }
 

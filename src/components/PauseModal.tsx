@@ -50,7 +50,7 @@ export function PauseModal({ onOpenSettings }: TProps) {
                     objectFit: 'none',
                     objectPosition: 'center',
                     marginTop: 10,
-                    marginBottom: 24,
+                    marginBottom: 40,
                 }}
                 roundPixels={true}
             />
