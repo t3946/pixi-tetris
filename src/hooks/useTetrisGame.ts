@@ -46,7 +46,7 @@ const DROP_INTERVAL_MS = 600
 const SOFT_DROP_INTERVAL_MS = 50
 
 /** Плавный hard drop по Space: фигура доезжает до упора за это время, затем фиксируется */
-export const HARD_DROP_MS = 200
+export const HARD_DROP_MS = 150
 
 export type HardDropAnimation = {
     piece: ActivePiece

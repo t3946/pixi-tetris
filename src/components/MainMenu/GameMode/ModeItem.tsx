@@ -25,7 +25,6 @@ export function ModeItem({ modeId, accent, sliding, scale }: TProps) {
             : missions != null
               ? missions.total - missions.available
               : 0
-    const showHours = missions != null && missions.resetHours <= 2
     const radius = Math.round(18 * scale)
     const titleContainerHeight = Math.round(26 * scale)
     const sideContainerSize = Math.round(26 * scale)
@@ -64,7 +63,7 @@ export function ModeItem({ modeId, accent, sliding, scale }: TProps) {
                 }}
             />
 
-            {/* Шапка: название по центру, иконка слева от текста, таймер справа */}
+            {/* Шапка: название по центру, иконка слева от текста */}
             <layoutContainer
                 layout={{
                     width: '100%',
@@ -104,31 +103,6 @@ export function ModeItem({ modeId, accent, sliding, scale }: TProps) {
                         layout={{ objectFit: 'none' }}
                         roundPixels={true}
                     />
-
-                    {/* Таймер до сброса миссий — справа, вне потока */}
-                    <layoutContainer
-                        layout={{
-                            position: 'absolute',
-                            right: 0,
-                            top: 0,
-                            width: sideContainerSize,
-                            height: sideContainerSize,
-                        }}
-                    >
-                        {showHours && missions && (
-                            <layoutText
-                                text={`${missions.resetHours}ч`}
-                                style={{
-                                    fontFamily: theme.UI.FONT_FAMILY,
-                                    fontSize: Math.round(12 * scale),
-                                    fill: '#f87171',
-                                    fontWeight: 'bold',
-                                }}
-                                layout={{ objectFit: 'none' }}
-                                roundPixels={true}
-                            />
-                        )}
-                    </layoutContainer>
                 </layoutContainer>
             </layoutContainer>
 
