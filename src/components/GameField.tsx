@@ -1,10 +1,12 @@
 import { GhostPiece } from '@components/GhostPiece'
 import { Monomino } from '@components/Monomino'
-import { useTetrisGameState } from '@src/tetris/TetrisGameContext'
-import { getPieceCells } from '@src/tetris/tetrominoes'
+import { useHardDropAnimation, useTetrisGameState } from '@src/tetris/TetrisGameContext'
+import { hardDropOffsetY } from '@src/hooks/useTetrisGame'
+import { getPieceCells, type ActivePiece } from '@src/tetris/tetrominoes'
 import { useUser } from '@src/user/UserContext'
-import type { ReactNode } from 'react'
-import { Texture } from 'pixi.js'
+import { useTick } from '@pixi/react'
+import { useLayoutEffect, useRef, type ReactNode } from 'react'
+import { Container, Texture } from 'pixi.js'
 
 type TProps = {
     vertica: number
@@ -63,7 +65,11 @@ export function GameField({ vertica, horizontal, cellSize }: TProps) {
                     renderMode={user.settings.ghostRenderMode}
                 />
             )}
-            {pieceMonominoes}
+            {piece != null && (
+                <DroppingPiece piece={piece} cellSize={cellSize}>
+                    {pieceMonominoes}
+                </DroppingPiece>
+            )}
 
             {gameOver && (
                 <pixiSprite
@@ -76,4 +82,41 @@ export function GameField({ vertica, horizontal, cellSize }: TProps) {
             )}
         </pixiContainer>
     )
+}
+
+/**
+ * Сдвигает активную фигуру вниз на время hard drop, не меняя клетку в состоянии игры.
+ * Смещение пишется в y контейнера каждый кадр, чтобы не пересоздавать мономино.
+ */
+function DroppingPiece({
+    piece,
+    cellSize,
+    children,
+}: {
+    piece: ActivePiece
+    cellSize: number
+    children: ReactNode
+}) {
+    const hardDropAnimationRef = useHardDropAnimation()
+    const containerRef = useRef<Container>(null)
+
+    const applyOffset = () => {
+        const node = containerRef.current
+        if (!node) {
+            return
+        }
+
+        const anim = hardDropAnimationRef.current
+        node.y = anim && anim.piece === piece ? hardDropOffsetY(anim, piece.y, cellSize) : 0
+    }
+
+    useLayoutEffect(() => {
+        applyOffset()
+    })
+
+    useTick(() => {
+        applyOffset()
+    })
+
+    return <pixiContainer ref={containerRef}>{children}</pixiContainer>
 }

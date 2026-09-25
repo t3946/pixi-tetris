@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useRef, type ReactNode, type RefObject } from 'react'
 import { useTick } from '@pixi/react'
 import type { Ticker } from 'pixi.js'
-import { useTetrisGame } from '../hooks/useTetrisGame'
+import { useTetrisGame, type HardDropAnimation } from '../hooks/useTetrisGame'
 import type { GameState } from '@src/tetris/engine'
 import { BOARD_COLS, BOARD_ROWS } from '@src/tetris/constants'
 
@@ -13,12 +13,13 @@ type TetrisGameContextValue = {
     togglePause: () => void
     endGame: () => void
     timeScaleRef: RefObject<number>
+    hardDropAnimationRef: RefObject<HardDropAnimation | null>
 }
 
 const TetrisGameContext = createContext<TetrisGameContextValue | null>(null)
 
 export function TetrisGameProvider({ children }: { children: ReactNode }) {
-    const { state, togglePause, endGame } = useTetrisGame(BOARD_ROWS, BOARD_COLS)
+    const { state, togglePause, endGame, hardDropAnimationRef } = useTetrisGame(BOARD_ROWS, BOARD_COLS)
     const timeScaleRef = useRef(1)
     const pausedRef = useRef(state.paused)
     const gameOverRef = useRef(state.gameOver)
@@ -44,8 +45,8 @@ export function TetrisGameProvider({ children }: { children: ReactNode }) {
     useTick(onTimeScaleTick)
 
     const value = useMemo(
-        () => ({ state, togglePause, endGame, timeScaleRef }),
-        [state, togglePause, endGame],
+        () => ({ state, togglePause, endGame, timeScaleRef, hardDropAnimationRef }),
+        [state, togglePause, endGame, hardDropAnimationRef],
     )
 
     return (
@@ -67,6 +68,10 @@ function useTetrisGameContext(): TetrisGameContextValue {
 
 export function useTetrisGameState(): GameState {
     return useTetrisGameContext().state
+}
+
+export function useHardDropAnimation(): RefObject<HardDropAnimation | null> {
+    return useTetrisGameContext().hardDropAnimationRef
 }
 
 export function useTogglePause(): () => void {

@@ -16,6 +16,7 @@ import {
     completeLineClear,
     createInitialState,
     createSandboxState,
+    getGhostPiece,
     hardDrop,
     moveDown,
     moveHorizontal,
@@ -27,6 +28,7 @@ import {
     type Board,
     type GameState,
 } from '@src/tetris/engine'
+import type { ActivePiece } from '@src/tetris/tetrominoes'
 import {
     SparkleClearIterator,
     ClearIterator,
@@ -43,13 +45,34 @@ const DROP_INTERVAL_MS = 600
 /** Ускоренное падение при зажатой стрелке ↓: раз в 50 мс */
 const SOFT_DROP_INTERVAL_MS = 50
 
+/** Плавный hard drop по Space: фигура доезжает до упора за это время, затем фиксируется */
+export const HARD_DROP_MS = 200
+
+export type HardDropAnimation = {
+    piece: ActivePiece
+    fromY: number
+    toY: number
+    elapsed: number
+    /** true — таймер дошёл до конца и hard drop уже отправлен в engine */
+    committed: boolean
+}
+
+/** Смещение контейнера фигуры в пикселях на время анимации hard drop. */
+export function hardDropOffsetY(anim: HardDropAnimation, pieceY: number, cellSize: number): number {
+    const t = Math.min(1, anim.elapsed / HARD_DROP_MS)
+    const eased = 1 - (1 - t) ** 3
+    const visualY = anim.fromY + (anim.toY - anim.fromY) * eased
+
+    return (visualY - pieceY) * Math.round(cellSize)
+}
+
 /**
  * EAction — типы игровых событий.
  *
  * - Tick — автоматический шаг падения по таймеру
  * - Move — сдвиг фигуры влево (−1) или вправо (+1)
  * - SoftDrop — ускоренное падение на одну клетку (зажата ↓)
- * - HardDrop — мгновенное опускание до упора и фиксация (Пробел)
+ * - HardDrop — опускание до упора и фиксация (Пробел), после анимации 200 мс
  * - Rotate — поворот фигуры (↑)
  * - Pause — пауза / снятие паузы (P)
  * - Restart — перезапуск игры (R)
@@ -111,7 +134,7 @@ function gameReducer(state: GameState, action: Action, cols: number): GameState 
             // Ускоренное падение: тот же шаг вниз, но чаще
             return moveDown(state, cols)
         case EAction.HardDrop:
-            // Мгновенное опускание до упора и фиксация фигуры
+            // Опускание до упора и фиксация — после анимации в useTick
             return hardDrop(state, cols)
         case EAction.Rotate:
             return rotate(state)
@@ -186,6 +209,8 @@ export function useTetrisGame(
      */
     const dropAccumulatorRef = useRef(0) // сколько миллисекунд прошло с последнего падения
     const softDropRef = useRef(false) // true, пока зажата стрелка ↓
+    /** Визуальный hard drop: логика фиксирует фигуру только когда elapsed доходит до HARD_DROP_MS */
+    const hardDropAnimationRef = useRef<HardDropAnimation | null>(null)
     /** Актуальный state для clearLines (без устаревшего замыкания). */
     const stateRef = useRef(state)
     stateRef.current = state
@@ -283,6 +308,7 @@ export function useTetrisGame(
         clearingRef.current = true
         dropAccumulatorRef.current = 0
         softDropRef.current = false
+        hardDropAnimationRef.current = null
 
         void (async () => {
             try {
@@ -302,8 +328,33 @@ export function useTetrisGame(
      * ticker.deltaMS — сколько миллисекунд прошло с прошлого кадра.
      * Мы копим их в dropAccumulatorRef и, когда набирается interval, делаем TICK.
      */
+    useEffect(() => {
+        const anim = hardDropAnimationRef.current
+        if (anim?.committed && anim.piece !== state.piece) {
+            hardDropAnimationRef.current = null
+        }
+    }, [state.piece])
+
     useTick((ticker) => {
-        if (state.gameOver || state.paused || clearingRef.current || state.pendingClearLines.length > 0) {
+        if (state.gameOver || clearingRef.current || state.pendingClearLines.length > 0) {
+            hardDropAnimationRef.current = null
+            return
+        }
+
+        if (state.paused) {
+            return
+        }
+
+        const anim = hardDropAnimationRef.current
+        if (anim) {
+            if (!anim.committed) {
+                anim.elapsed += ticker.deltaMS
+                if (anim.elapsed >= HARD_DROP_MS) {
+                    anim.elapsed = HARD_DROP_MS
+                    anim.committed = true
+                    dispatch({ type: EAction.HardDrop })
+                }
+            }
             return
         }
 
@@ -332,6 +383,35 @@ export function useTetrisGame(
      * Зависимости [cols, dispatch, rows]:
      * effect перезапустится, если изменится размер поля или ссылка на dispatch.
      */
+    const beginHardDrop = useCallback(() => {
+        const current = stateRef.current
+        if (
+            current.gameOver ||
+            current.paused ||
+            current.pendingClearLines.length > 0 ||
+            !current.piece ||
+            hardDropAnimationRef.current
+        ) {
+            return
+        }
+
+        const ghost = getGhostPiece(current.piece, current.board)
+        dropAccumulatorRef.current = 0
+
+        if (ghost.y === current.piece.y) {
+            dispatch({ type: EAction.HardDrop })
+            return
+        }
+
+        hardDropAnimationRef.current = {
+            piece: current.piece,
+            fromY: current.piece.y,
+            toY: ghost.y,
+            elapsed: 0,
+            committed: false,
+        }
+    }, [dispatch])
+
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (clearingRef.current || stateRef.current.pendingClearLines.length > 0) {
@@ -349,29 +429,40 @@ export function useTetrisGame(
                 return
             }
 
+            const dropping = hardDropAnimationRef.current != null
+
             switch (event.code) {
                 case 'ArrowLeft':
                     event.preventDefault() // не скроллить страницу стрелками
-                    dispatch({ type: EAction.Move, direction: -1 })
+                    if (!dropping) {
+                        dispatch({ type: EAction.Move, direction: -1 })
+                    }
                     break
                 case 'ArrowRight':
                     event.preventDefault()
-                    dispatch({ type: EAction.Move, direction: 1 })
+                    if (!dropping) {
+                        dispatch({ type: EAction.Move, direction: 1 })
+                    }
                     break
                 case 'ArrowDown':
                     event.preventDefault()
-                    softDropRef.current = true
-                    dropAccumulatorRef.current = SOFT_DROP_INTERVAL_MS
-                    dispatch({ type: EAction.SoftDrop })
+                    if (!dropping) {
+                        softDropRef.current = true
+                        dropAccumulatorRef.current = SOFT_DROP_INTERVAL_MS
+                        dispatch({ type: EAction.SoftDrop })
+                    }
                     break
                 case 'ArrowUp':
                     event.preventDefault()
-                    dispatch({ type: EAction.Rotate })
+                    if (!dropping) {
+                        dispatch({ type: EAction.Rotate })
+                    }
                     break
                 case 'Space':
                     event.preventDefault()
-                    dispatch({ type: EAction.HardDrop })
-                    dropAccumulatorRef.current = 0
+                    if (!dropping) {
+                        beginHardDrop()
+                    }
                     break
                 case 'KeyP':
                     event.preventDefault()
@@ -382,6 +473,7 @@ export function useTetrisGame(
                 case 'KeyR':
                     dispatch({ type: EAction.Restart, rows, cols })
                     dropAccumulatorRef.current = 0
+                    hardDropAnimationRef.current = null
                     break
                 default:
                     break
@@ -403,7 +495,7 @@ export function useTetrisGame(
             window.removeEventListener('keydown', handleKeyDown)
             window.removeEventListener('keyup', handleKeyUp)
         }
-    }, [cols, dispatch, rows])
+    }, [beginHardDrop, cols, dispatch, rows])
 
     // Компонент GameField получает state и перерисовывает поле при каждом изменении
     const togglePauseGame = useCallback(() => {
@@ -420,8 +512,17 @@ export function useTetrisGame(
         clearingRef.current = false
         dropAccumulatorRef.current = 0
         softDropRef.current = false
+        hardDropAnimationRef.current = null
         dispatch({ type: EAction.EndGame })
     }, [dispatch])
 
-    return { state, togglePause: togglePauseGame, endGame: endGameSession, clearLine, clearLines, setBoard }
+    return {
+        state,
+        togglePause: togglePauseGame,
+        endGame: endGameSession,
+        clearLine,
+        clearLines,
+        setBoard,
+        hardDropAnimationRef,
+    }
 }
