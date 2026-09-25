@@ -127,7 +127,8 @@ export function WatchAdButton({
                 onPress={onPress}
                 disabled={locked}
                 disabledAlpha={0.55}
-                accent={theme.MENU.ACCENT}
+                accent={theme.MENU.SECONDARY}
+                accentTo={theme.MENU.SECONDARY_TO}
                 textFill={palette.white}
                 textFillHover={palette.white}
                 iconLeft="clapperboardPlay"

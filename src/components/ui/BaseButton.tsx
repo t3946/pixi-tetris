@@ -26,8 +26,14 @@ type TBaseButtonCommon = {
 
 export type TBaseButtonProps = TBaseButtonCommon &
     (
-        | { accent: ColorInput; fill?: never; fillHover?: never }
-        | { accent?: undefined; fill: ColorSource; fillHover: ColorSource }
+        | {
+              accent: ColorInput
+              /** Нижний цвет вертикального градиента; без него — диагональ из accent */
+              accentTo?: ColorInput
+              fill?: never
+              fillHover?: never
+          }
+        | { accent?: undefined; accentTo?: undefined; fill: ColorSource; fillHover: ColorSource }
     )
 
 function getAccentGradientColors(accent: Color) {
@@ -55,6 +61,7 @@ export function BaseButton({
     fill,
     fillHover,
     accent,
+    accentTo,
     textFill,
     textFillHover,
     disabledAlpha = 0.6,
@@ -79,33 +86,44 @@ export function BaseButton({
             : (textFill ?? theme.UI.PANEL_LABEL)
 
     const accentHex = accent instanceof Color ? accent.toHex() : accent != null ? new Color(accent).toHex() : ''
+    const accentToHex =
+        accentTo instanceof Color ? accentTo.toHex() : accentTo != null ? new Color(accentTo).toHex() : ''
     const accentColor = useMemo(
         () => (accent != null ? new Color(accent) : null),
         [accentHex],
     )
+    const accentToColor = useMemo(
+        () => (accentTo != null ? new Color(accentTo) : null),
+        [accentToHex],
+    )
 
     const graphicWidth = resolveGraphicSize(appearance.width)
     const graphicHeight = resolveGraphicSize(appearance.height)
-    const borderRadius = resolveGraphicSize(appearance.borderRadius)
+    const borderRadius = appearance.borderRadius ? resolveGraphicSize(appearance.borderRadius) : 6
+    const borderWidth = appearance.borderWidth != null ? resolveGraphicSize(appearance.borderWidth) : 0
+    const borderColor =
+        appearance.borderColor != null ? new Color(appearance.borderColor as ColorInput).toNumber() : 0
 
     const gradient = useMemo(() => {
         if (!accentColor) {
             return null
         }
 
-        const { from, to } = getAccentGradientColors(accentColor)
+        const vertical = accentToColor != null
+        const from = vertical ? accentColor : getAccentGradientColors(accentColor).from
+        const to = vertical ? accentToColor : getAccentGradientColors(accentColor).to
 
         return new FillGradient({
             type: 'linear',
             start: { x: 0, y: 0 },
-            end: { x: 1, y: 1 },
+            end: vertical ? { x: 0, y: 1 } : { x: 1, y: 1 },
             colorStops: [
                 { offset: 0, color: from.rgb() },
                 { offset: 1, color: to.rgb() },
             ],
             textureSpace: 'local',
         })
-    }, [accentColor?.toHex()])
+    }, [accentColor?.toHex(), accentToColor?.toHex()])
 
     useEffect(() => () => gradient?.destroy(), [gradient])
 
@@ -135,15 +153,42 @@ export function BaseButton({
 
             graphics.clear()
             graphics.roundPixels = true
-            graphics.roundRect(0, 0, graphicWidth, graphicHeight, borderRadius).fill(gradient)
 
-            if (hovered && !disabled) {
+            if (borderWidth > 0) {
+                graphics.roundRect(0, 0, graphicWidth, graphicHeight, borderRadius).fill(borderColor)
+                const innerRadius = Math.max(0, borderRadius - borderWidth)
                 graphics
-                    .roundRect(0, 0, graphicWidth, graphicHeight, borderRadius)
-                    .fill({ color: 0xffffff, alpha: 0.08 })
+                    .roundRect(
+                        borderWidth,
+                        borderWidth,
+                        graphicWidth - borderWidth * 2,
+                        graphicHeight - borderWidth * 2,
+                        innerRadius,
+                    )
+                    .fill(gradient)
+
+                if (hovered && !disabled) {
+                    graphics
+                        .roundRect(
+                            borderWidth,
+                            borderWidth,
+                            graphicWidth - borderWidth * 2,
+                            graphicHeight - borderWidth * 2,
+                            innerRadius,
+                        )
+                        .fill({ color: 0xffffff, alpha: 0.08 })
+                }
+            } else {
+                graphics.roundRect(0, 0, graphicWidth, graphicHeight, borderRadius).fill(gradient)
+
+                if (hovered && !disabled) {
+                    graphics
+                        .roundRect(0, 0, graphicWidth, graphicHeight, borderRadius)
+                        .fill({ color: 0xffffff, alpha: 0.08 })
+                }
             }
         },
-        [borderRadius, disabled, gradient, graphicHeight, graphicWidth, hovered],
+        [borderColor, borderRadius, borderWidth, disabled, gradient, graphicHeight, graphicWidth, hovered],
     )
 
     const contentNode = (
@@ -200,7 +245,7 @@ export function BaseButton({
                 overflow: useGradient ? 'hidden' : undefined,
                 ...appearance,
                 ...(useGradient
-                    ? {}
+                    ? { borderWidth: 0, borderColor: undefined }
                     : { backgroundColor: hovered && !disabled ? fillHover : fill }),
                 ...layout,
             }}

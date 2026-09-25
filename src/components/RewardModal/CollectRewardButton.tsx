@@ -21,8 +21,13 @@ export function CollectRewardButton({ collected, onPress }: TProps) {
         round: false,
     })
 
-    const accent = Color.lerp(theme.MENU.GOLD, palette.green_500, progress)
-    const textFill = collected ? palette.white : palette.navy_990
+    const accent = Color.lerp(theme.MENU.PRIMARY, palette.green_500, progress)
+    const accentTo = Color.lerp(
+        theme.MENU.PRIMARY_TO,
+        new Color(palette.green_500).darken(0.55),
+        progress,
+    )
+    const textFill = collected ? palette.white : theme.MENU.PRIMARY_TEXT
 
     return (
         <BaseButton
@@ -31,6 +36,7 @@ export function CollectRewardButton({ collected, onPress }: TProps) {
             disabled={collected}
             disabledAlpha={1}
             accent={accent}
+            accentTo={accentTo}
             textFill={textFill}
             textFillHover={textFill}
             iconLeft={progress > 0.01 ? 'thumbUp' : undefined}

@@ -1,11 +1,25 @@
 import { Modal } from '@components/ui/Modal'
-import { FlatButton } from '@components/ui/FlatButton'
+import { BaseButton } from '@components/ui/BaseButton'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useTogglePause, useTetrisGameState } from '@src/tetris/TetrisGameContext'
 import { useTheme } from '@src/ui/ThemeContext'
+import { palette } from '@src/ui/palette'
 
 type TProps = {
     onOpenSettings: () => void
+}
+
+const BUTTON_WIDTH = 300
+const BUTTON_HEIGHT = 52
+const BUTTON_RADIUS = 12
+const BUTTON_FONT_SIZE = 18
+
+const buttonAppearance = {
+    width: BUTTON_WIDTH,
+    height: BUTTON_HEIGHT,
+    borderRadius: BUTTON_RADIUS,
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
 }
 
 export function PauseModal({ onOpenSettings }: TProps) {
@@ -34,14 +48,37 @@ export function PauseModal({ onOpenSettings }: TProps) {
                 roundPixels={true}
             />
 
-            <FlatButton label="Продолжить" variant="primary" onPress={togglePause} />
+            <BaseButton
+                label="Продолжить"
+                onPress={togglePause}
+                accent={theme.MENU.PRIMARY}
+                accentTo={theme.MENU.PRIMARY_TO}
+                textFill={theme.MENU.PRIMARY_TEXT}
+                textFillHover={theme.MENU.PRIMARY_TEXT}
+                fontSize={BUTTON_FONT_SIZE}
+                appearance={buttonAppearance}
+            />
 
-            <FlatButton label="Настройки" variant="secondary" onPress={onOpenSettings} />
+            <BaseButton
+                label="Настройки"
+                onPress={onOpenSettings}
+                accent={theme.MENU.SECONDARY}
+                accentTo={theme.MENU.SECONDARY_TO}
+                textFill={palette.white}
+                textFillHover={palette.white}
+                fontSize={BUTTON_FONT_SIZE}
+                appearance={buttonAppearance}
+            />
 
-            <FlatButton
+            <BaseButton
                 label="Завершить"
-                variant="danger"
                 onPress={() => setScene(SceneId.MainMenu)}
+                accent={theme.MENU.DANGER}
+                accentTo={theme.MENU.DANGER_TO}
+                textFill={theme.MENU.DANGER_TEXT}
+                textFillHover={theme.MENU.DANGER_TEXT}
+                fontSize={BUTTON_FONT_SIZE}
+                appearance={buttonAppearance}
                 layout={{
                     marginTop: 8,
                 }}

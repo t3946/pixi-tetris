@@ -34,11 +34,21 @@ export const palette = {
     cyan_500: '#00f0f0',
     cyan_700: '#007ea3',
     yellow_500: '#f0f000',
+    /** Primary button top (buttons-design: Продолжить / Забрать) */
+    gold_300: '#ffe234',
     gold_400: '#ffd600',
+    /** Primary button bottom (buttons-design: Продолжить / Забрать) */
+    gold_600: '#f5a800',
     ruby_400: '#e0115f',
     purple_500: '#a000f0',
     green_500: '#00f000',
     red_500: '#f00000',
+    /** Danger button text */
+    pink_200: '#ffb3c6',
+    /** Danger button top */
+    wine_600: '#6b2040',
+    /** Danger button bottom */
+    wine_800: '#4a1030',
     orange_500: '#f0a000',
 
     navy_800: '#12103a',
@@ -46,10 +56,16 @@ export const palette = {
     navy_950: '#100823',
     navy_980: '#0a0a1a',
     navy_990: '#05081c',
+    /** Primary button text (buttons-design: Продолжить / Забрать) */
+    brown_990: '#1a0e00',
 
     violet_300: '#a78bfa',
+    /** Secondary button top (buttons-design: Настройки) */
+    violet_400: '#6a4fc8',
     violet_500: '#7c3aed',
     violet_600: '#9d3ae8',
+    /** Secondary button bottom (buttons-design: Настройки) */
+    violet_750: '#4a35a0',
 
     purple_100: '#e3dcfd',
     purple_300: '#83c8e3',

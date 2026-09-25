@@ -58,6 +58,17 @@ export const theme = {
         PLAY: palette.violet_500,
         PLAY_HOVER: palette.violet_600,
         ACCENT: palette.violet_300,
+        /** Secondary CTA: Настройки / Реклама (notes/buttons-design-main) */
+        SECONDARY: palette.violet_400,
+        SECONDARY_TO: palette.violet_750,
+        /** Danger CTA: Завершить */
+        DANGER: palette.wine_600,
+        DANGER_TO: palette.wine_800,
+        DANGER_TEXT: palette.pink_200,
+        /** Primary CTA: Продолжить / Забрать (notes/buttons-design-main) */
+        PRIMARY: palette.gold_300,
+        PRIMARY_TO: palette.gold_600,
+        PRIMARY_TEXT: palette.brown_990,
         GOLD: palette.gold_400,
         RUBY: palette.ruby_400,
         FONT_DISPLAY,
