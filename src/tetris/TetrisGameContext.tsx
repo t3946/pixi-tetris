@@ -13,6 +13,7 @@ type TetrisGameContextValue = {
     togglePause: () => void
     endGame: () => void
     restart: () => void
+    continueAfterAd: () => void
     timeScaleRef: RefObject<number>
     hardDropAnimationRef: RefObject<HardDropAnimation | null>
 }
@@ -20,10 +21,8 @@ type TetrisGameContextValue = {
 const TetrisGameContext = createContext<TetrisGameContextValue | null>(null)
 
 export function TetrisGameProvider({ children }: { children: ReactNode }) {
-    const { state, togglePause, endGame, restart, hardDropAnimationRef } = useTetrisGame(
-        BOARD_ROWS,
-        BOARD_COLS,
-    )
+    const { state, togglePause, endGame, restart, continueAfterAd, hardDropAnimationRef } =
+        useTetrisGame(BOARD_ROWS, BOARD_COLS)
     const timeScaleRef = useRef(1)
     const pausedRef = useRef(state.paused)
     const gameOverRef = useRef(state.gameOver)
@@ -49,8 +48,16 @@ export function TetrisGameProvider({ children }: { children: ReactNode }) {
     useTick(onTimeScaleTick)
 
     const value = useMemo(
-        () => ({ state, togglePause, endGame, restart, timeScaleRef, hardDropAnimationRef }),
-        [state, togglePause, endGame, restart, hardDropAnimationRef],
+        () => ({
+            state,
+            togglePause,
+            endGame,
+            restart,
+            continueAfterAd,
+            timeScaleRef,
+            hardDropAnimationRef,
+        }),
+        [state, togglePause, endGame, restart, continueAfterAd, hardDropAnimationRef],
     )
 
     return (
@@ -88,6 +95,10 @@ export function useEndGame(): () => void {
 
 export function useRestartGame(): () => void {
     return useTetrisGameContext().restart
+}
+
+export function useContinueAfterAd(): () => void {
+    return useTetrisGameContext().continueAfterAd
 }
 
 /** Множитель игрового времени [0, 1]. Вне провайдера всегда 1. */

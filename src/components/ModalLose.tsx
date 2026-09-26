@@ -2,7 +2,7 @@ import { Modal } from '@components/ui/Modal'
 import { BaseButton } from '@components/ui/BaseButton'
 import { MODAL_CONTENT_WIDTH } from '@components/ui/modalLayout'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
-import { useRestartGame } from '@src/tetris/TetrisGameContext'
+import { useContinueAfterAd, useRestartGame } from '@src/tetris/TetrisGameContext'
 import { useTheme } from '@src/ui/ThemeContext'
 import { palette } from '@src/ui/palette'
 import { useUser } from '@src/user/UserContext'
@@ -14,6 +14,7 @@ type TProps = {
 const BUTTON_HEIGHT = 52
 const BUTTON_RADIUS = 12
 const BUTTON_FONT_SIZE = 18
+const AD_ICON_SIZE = 18
 
 /** Бровь: #821010 → rgb(218, 26, 52) → #821010 */
 const BROW_GRADIENT = [
@@ -33,6 +34,7 @@ const buttonAppearance = {
 export function ModalLose({ open }: TProps) {
     const theme = useTheme()
     const restartGame = useRestartGame()
+    const continueAfterAd = useContinueAfterAd()
     const { setScene } = useScene()
     const { startActiveMission } = useUser()
 
@@ -62,12 +64,28 @@ export function ModalLose({ open }: TProps) {
             />
 
             <BaseButton
-                label="Заново"
-                onPress={handleRestart}
+                label="Продолжить"
+                onPress={continueAfterAd}
                 accent={theme.MENU.PRIMARY}
                 accentTo={theme.MENU.PRIMARY_TO}
                 textFill={theme.MENU.PRIMARY_TEXT}
                 textFillHover={theme.MENU.PRIMARY_TEXT}
+                iconLeft="clapperboardPlay"
+                iconSize={AD_ICON_SIZE}
+                fontSize={BUTTON_FONT_SIZE}
+                appearance={buttonAppearance}
+                layout={{
+                    marginBottom: 16,
+                }}
+            />
+
+            <BaseButton
+                label="Заново"
+                onPress={handleRestart}
+                accent={theme.MENU.SECONDARY}
+                accentTo={theme.MENU.SECONDARY_TO}
+                textFill={palette.white}
+                textFillHover={palette.white}
                 fontSize={BUTTON_FONT_SIZE}
                 appearance={buttonAppearance}
                 layout={{
@@ -78,10 +96,10 @@ export function ModalLose({ open }: TProps) {
             <BaseButton
                 label="Завершить"
                 onPress={() => setScene(SceneId.MainMenu)}
-                accent={theme.MENU.SECONDARY}
-                accentTo={theme.MENU.SECONDARY_TO}
-                textFill={palette.white}
-                textFillHover={palette.white}
+                accent={theme.MENU.DANGER}
+                accentTo={theme.MENU.DANGER_TO}
+                textFill={theme.MENU.DANGER_TEXT}
+                textFillHover={theme.MENU.DANGER_TEXT}
                 fontSize={BUTTON_FONT_SIZE}
                 appearance={buttonAppearance}
             />

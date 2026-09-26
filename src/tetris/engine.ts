@@ -242,13 +242,18 @@ function settlePiece(state: GameState, cols: number): GameState {
 }
 
 /** Гравитация, очки и спавн следующей фигуры после визуальной очистки. */
-export function completeLineClear(state: GameState, cols: number): GameState {
+export function completeLineClear(
+    state: GameState,
+    cols: number,
+    options?: { awardScore?: boolean },
+): GameState {
     const lines = state.pendingClearLines
 
     if (lines.length === 0) {
         return state
     }
 
+    const awardScore = options?.awardScore !== false
     const board = removeLines(state.board, lines)
     const { piece, nextType, nextCellColors } = spawnFromQueue(
         board,
@@ -265,8 +270,36 @@ export function completeLineClear(state: GameState, cols: number): GameState {
         nextCellColors,
         gameOver: piece === null,
         pendingClearLines: [],
-        linesCleared: state.linesCleared + lines.length,
-        score: state.score + scoreForClearedLines(lines.length),
+        linesCleared: awardScore ? state.linesCleared + lines.length : state.linesCleared,
+        score: awardScore ? state.score + scoreForClearedLines(lines.length) : state.score,
+    }
+}
+
+/** Число нижних рядов, уничтожаемых при продолжении после game over (реклама). */
+export const CONTINUE_CLEAR_ROWS = 5
+
+/**
+ * Продолжение после «Игра окончена»: снимает game over и ставит в очередь
+ * очистку нижних рядов (эффект + гравитация — через обычный clear-пайплайн).
+ */
+export function continueAfterAd(state: GameState): GameState {
+    if (!state.gameOver) {
+        return state
+    }
+
+    const rows = state.board.length
+    const clearCount = Math.min(CONTINUE_CLEAR_ROWS, rows)
+    const pendingClearLines = Array.from(
+        { length: clearCount },
+        (_, index) => rows - clearCount + index,
+    )
+
+    return {
+        ...state,
+        gameOver: false,
+        paused: false,
+        piece: null,
+        pendingClearLines,
     }
 }
 

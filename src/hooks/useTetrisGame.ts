@@ -14,6 +14,7 @@ import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { useTick } from '@pixi/react'
 import {
     completeLineClear,
+    continueAfterAd,
     createInitialState,
     createSandboxState,
     getGhostPiece,
@@ -79,6 +80,7 @@ export function hardDropOffsetY(anim: HardDropAnimation, pieceY: number, cellSiz
  * - SetBoard — прямая подмена поля (клетки во время эффекта очистки)
  * - CompleteClear — гравитация, очки и спавн после визуальной очистки
  * - EndGame — принудительное завершение партии
+ * - ContinueAfterAd — снятие game over + очистка нижних рядов (реклама)
  */
 enum EAction {
     Tick = 'TICK',
@@ -91,6 +93,7 @@ enum EAction {
     SetBoard = 'SET_BOARD',
     CompleteClear = 'COMPLETE_CLEAR',
     EndGame = 'END_GAME',
+    ContinueAfterAd = 'CONTINUE_AFTER_AD',
 }
 
 /**
@@ -111,8 +114,9 @@ type Action =
     | { type: EAction.Pause }
     | { type: EAction.Restart; rows: number; cols: number }
     | { type: EAction.SetBoard; board: Board }
-    | { type: EAction.CompleteClear }
+    | { type: EAction.CompleteClear; awardScore?: boolean }
     | { type: EAction.EndGame }
+    | { type: EAction.ContinueAfterAd }
 
 /**
  * Reducer — чистая функция (state + action) → newState.
@@ -145,9 +149,11 @@ function gameReducer(state: GameState, action: Action, cols: number): GameState 
         case EAction.SetBoard:
             return { ...state, board: action.board }
         case EAction.CompleteClear:
-            return completeLineClear(state, cols)
+            return completeLineClear(state, cols, { awardScore: action.awardScore })
         case EAction.EndGame:
             return endGame(state)
+        case EAction.ContinueAfterAd:
+            return continueAfterAd(state)
         default:
             return state
     }
@@ -216,6 +222,8 @@ export function useTetrisGame(
     stateRef.current = state
     /** Идёт визуальная очистка — тик и ввод заблокированы, без оверлея паузы. */
     const clearingRef = useRef(false)
+    /** Continue после рекламы: очистка без очков/линий миссии. */
+    const skipNextClearScoreRef = useRef(false)
 
     /**
      * Проигрывает эффект очистки на указанных рядах параллельно.
@@ -313,7 +321,9 @@ export function useTetrisGame(
         void (async () => {
             try {
                 await clearLines(linesToClear)
-                dispatch({ type: EAction.CompleteClear })
+                const awardScore = !skipNextClearScoreRef.current
+                skipNextClearScoreRef.current = false
+                dispatch({ type: EAction.CompleteClear, awardScore })
             } finally {
                 clearingRef.current = false
                 dropAccumulatorRef.current = 0
@@ -513,6 +523,7 @@ export function useTetrisGame(
         dropAccumulatorRef.current = 0
         softDropRef.current = false
         hardDropAnimationRef.current = null
+        skipNextClearScoreRef.current = false
         dispatch({ type: EAction.EndGame })
     }, [dispatch])
 
@@ -521,14 +532,28 @@ export function useTetrisGame(
         dropAccumulatorRef.current = 0
         softDropRef.current = false
         hardDropAnimationRef.current = null
+        skipNextClearScoreRef.current = false
         dispatch({ type: EAction.Restart, rows, cols })
     }, [cols, dispatch, rows])
+
+    const continueAfterAdGame = useCallback(() => {
+        if (!stateRef.current.gameOver || clearingRef.current) {
+            return
+        }
+
+        dropAccumulatorRef.current = 0
+        softDropRef.current = false
+        hardDropAnimationRef.current = null
+        skipNextClearScoreRef.current = true
+        dispatch({ type: EAction.ContinueAfterAd })
+    }, [dispatch])
 
     return {
         state,
         togglePause: togglePauseGame,
         endGame: endGameSession,
         restart: restartGame,
+        continueAfterAd: continueAfterAdGame,
         clearLine,
         clearLines,
         setBoard,
