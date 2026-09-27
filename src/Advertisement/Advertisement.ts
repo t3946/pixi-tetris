@@ -1,10 +1,10 @@
 import { EPlatform } from '@ts/EPlatform'
+import { advertisementConfig } from './config'
 import { EBetweenSessionsAdResult } from './ts/EBetweenSessionsAdResult.ts'
 import { ERewardedAdResult } from './ts/ERewardedAdResult.ts'
 import { Platform } from './Platform'
 import { MockPlatform } from './platforms/MockPlatform'
 import { YandexGamesPlatform } from './platforms/YandexGamesPlatform'
-import { advertisementConfig } from './config'
 
 /** Resolves ad backend from `PLATFORM` in `.env` / build env. */
 function createDefaultPlatform(): Platform {
@@ -19,6 +19,11 @@ function createDefaultPlatform(): Platform {
             )
             return new MockPlatform()
     }
+}
+
+export type ShowBetweenSessionsOptions = {
+    /** Duration of the match that just ended, in milliseconds. */
+    sessionMs: number
 }
 
 /**
@@ -38,9 +43,12 @@ function createDefaultPlatform(): Platform {
 export class Advertisement {
     /** Active store/platform backend that performs the actual SDK calls. */
     platform: Platform = createDefaultPlatform()
-    sessionAdvertisementCooldownTimer: ReturnType<typeof setTimeout> | null = null
-    isSessionAdvertisementCooldownTimerFinished: boolean = false
 
+    /** Play time accumulated since the last between-sessions ad (or app start). */
+    private accumulatedSessionMs = 0
+
+    /** Finished matches since the last between-sessions ad (or app start). */
+    private sessionsSinceAd = 0
 
     /**
      * Shows a rewarded video the player chose to watch.
@@ -52,37 +60,39 @@ export class Advertisement {
     }
 
     /**
-     * Shows a non-rewarded ad between game sessions (for example after a match).
-     * Resolves when the ad is closed or fails; no gameplay reward is expected.
+     * Records a finished match and maybe shows a between-sessions ad.
+     * Shows when accumulated play time or session count hits the config thresholds;
+     * otherwise returns {@link EBetweenSessionsAdResult.Skipped} and keeps counters.
      */
-    showBetweenSessions(): Promise<EBetweenSessionsAdResult> {
-        // skip ad in the beginning of the game session
-        if (this.sessionAdvertisementCooldownTimer === null) {
-            //launch new timer
-            this.isSessionAdvertisementCooldownTimerFinished = false
-            this.sessionAdvertisementCooldownTimer = setTimeout(() => {
-                this.isSessionAdvertisementCooldownTimerFinished = true
-            }, advertisementConfig.sessionAdvertisement.cooldownMS)
+    async showBetweenSessions(
+        options: ShowBetweenSessionsOptions,
+    ): Promise<EBetweenSessionsAdResult> {
+        const sessionMs = Math.max(0, options.sessionMs)
+        this.accumulatedSessionMs += sessionMs
+        this.sessionsSinceAd += 1
+        console.log([this.accumulatedSessionMs, this.sessionsSinceAd])
 
-            return new Promise<EBetweenSessionsAdResult>((resolve) => {
-                resolve(EBetweenSessionsAdResult.Skipped)
-            })
+        const { thresholdMs, maxSessionsWithoutAd } = advertisementConfig.sessionAdvertisement
+        const shouldShow =
+            this.accumulatedSessionMs >= thresholdMs ||
+            this.sessionsSinceAd >= maxSessionsWithoutAd
+
+        if (!shouldShow) {
+            return EBetweenSessionsAdResult.Skipped
         }
 
-        // skip ad because it was already shown
-        if (!this.isSessionAdvertisementCooldownTimerFinished) {
-            return new Promise<EBetweenSessionsAdResult>((resolve) => {
-                resolve(EBetweenSessionsAdResult.Skipped)
-            })
+        const result = await this.platform.showBetweenSessions()
+
+        // Keep counters on Error so the next leave can retry the same quota.
+        if (
+            result === EBetweenSessionsAdResult.Shown ||
+            result === EBetweenSessionsAdResult.Dismissed
+        ) {
+            this.accumulatedSessionMs = 0
+            this.sessionsSinceAd = 0
         }
 
-        // start new timer, show advertisement
-        this.sessionAdvertisementCooldownTimer = setTimeout(() => {
-            this.isSessionAdvertisementCooldownTimerFinished = true
-        }, advertisementConfig.sessionAdvertisement.cooldownMS)
-
-        this.isSessionAdvertisementCooldownTimerFinished = false
-        return this.platform.showBetweenSessions()
+        return result
     }
 }
 

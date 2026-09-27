@@ -1,7 +1,7 @@
 import { Modal } from '@components/ui/Modal'
 import { BaseButton } from '@components/ui/BaseButton'
 import { MODAL_CONTENT_WIDTH } from '@components/ui/modalLayout'
-import { SceneId, useScene } from '@src/scenes/SceneContext'
+import { useLeaveGameToMenu } from '@src/hooks/useLeaveGameToMenu'
 import { useTogglePause, useTetrisGameState } from '@src/tetris/TetrisGameContext'
 import { useTheme } from '@src/ui/ThemeContext'
 import { palette } from '@src/ui/palette'
@@ -33,7 +33,7 @@ export function PauseModal({ onOpenSettings }: TProps) {
     const theme = useTheme()
     const { paused } = useTetrisGameState()
     const togglePause = useTogglePause()
-    const { setScene } = useScene()
+    const leaveGameToMenu = useLeaveGameToMenu()
 
     return (
         <Modal open={paused} browGradient={BROW_GRADIENT}>
@@ -85,7 +85,7 @@ export function PauseModal({ onOpenSettings }: TProps) {
 
             <BaseButton
                 label="Завершить"
-                onPress={() => setScene(SceneId.MainMenu)}
+                onPress={leaveGameToMenu}
                 accent={theme.MENU.DANGER}
                 accentTo={theme.MENU.DANGER_TO}
                 textFill={theme.MENU.DANGER_TEXT}

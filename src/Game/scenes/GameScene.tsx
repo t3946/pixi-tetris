@@ -11,6 +11,7 @@ import {
     useTetrisGameState,
 } from '@src/tetris/TetrisGameContext'
 import { Background } from '@components/Stack/Background.tsx'
+import { startMatchSessionClock } from '@src/hooks/matchSessionClock'
 import { useAppLayout } from '@src/scenes/useAppLayout'
 import { SceneFrame } from '@src/scenes/SceneFrame'
 import { useTheme } from '@src/ui/ThemeContext'
@@ -85,6 +86,10 @@ function GameSceneContent() {
     const { gameOver } = useTetrisGameState()
     const [settingsOpen, setSettingsOpen] = useState(false)
     const missionWon = useBlitzMissionSession()
+
+    useEffect(() => {
+        startMatchSessionClock()
+    }, [])
 
     return (
         <>

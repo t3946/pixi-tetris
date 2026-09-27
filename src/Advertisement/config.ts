@@ -1,6 +1,8 @@
-export const advertisementConfig ={
+export const advertisementConfig = {
     sessionAdvertisement: {
-        // cooldownMS: 1000 * 60 * 2.5,
-        cooldownMS: 1000 * 3
-    }
+        /** Accumulated match time before a between-sessions ad may show. */
+        thresholdMs: 1000 * 60 * 2.5,
+        /** Show after this many matches even if time threshold is not reached. */
+        maxSessionsWithoutAd: 3,
+    },
 }

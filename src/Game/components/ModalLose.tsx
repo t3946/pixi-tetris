@@ -1,7 +1,9 @@
 import { Modal } from '@components/ui/Modal'
 import { BaseButton } from '@components/ui/BaseButton'
 import { MODAL_CONTENT_WIDTH } from '@components/ui/modalLayout'
-import { SceneId, useScene } from '@src/scenes/SceneContext'
+import { advertisement } from '@advertisement/Advertisement'
+import { startMatchSessionClock, takeMatchSessionMs } from '@src/hooks/matchSessionClock'
+import { useLeaveGameToMenu } from '@src/hooks/useLeaveGameToMenu'
 import { useContinueAfterAd, useRestartGame } from '@src/tetris/TetrisGameContext'
 import { useTheme } from '@src/ui/ThemeContext'
 import { palette } from '@src/ui/palette'
@@ -35,12 +37,14 @@ export function ModalLose({ open }: TProps) {
     const theme = useTheme()
     const restartGame = useRestartGame()
     const continueAfterAd = useContinueAfterAd()
-    const { setScene } = useScene()
+    const leaveGameToMenu = useLeaveGameToMenu()
     const { startActiveMission } = useUser()
 
-    const handleRestart = () => {
+    const handleRestart = async () => {
+        await advertisement.showBetweenSessions({ sessionMs: takeMatchSessionMs() })
         restartGame()
         startActiveMission()
+        startMatchSessionClock()
     }
 
     return (
@@ -95,7 +99,7 @@ export function ModalLose({ open }: TProps) {
 
             <BaseButton
                 label="Завершить"
-                onPress={() => setScene(SceneId.MainMenu)}
+                onPress={leaveGameToMenu}
                 accent={theme.MENU.DANGER}
                 accentTo={theme.MENU.DANGER_TO}
                 textFill={theme.MENU.DANGER_TEXT}

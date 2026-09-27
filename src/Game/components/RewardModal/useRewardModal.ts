@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { advertisement } from '@advertisement/Advertisement'
 import { ERewardedAdResult } from '@advertisement/ts/ERewardedAdResult.ts'
+import { takeMatchSessionMs } from '@src/hooks/matchSessionClock'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useUser } from '@src/user/UserContext'
 import { getMissionAdBonus, getMissionReward } from '@src/user/missions'
@@ -113,10 +114,12 @@ export function useRewardModal({ open, preview }: TOptions) {
         }
 
         claimActiveMissionReward(adBonus)
-        collectTimerRef.current = setTimeout(
-            () => setScene(SceneId.MainMenu),
-            COLLECT_FEEDBACK_MS,
-        )
+        collectTimerRef.current = setTimeout(() => {
+            void (async () => {
+                await advertisement.showBetweenSessions({ sessionMs: takeMatchSessionMs() })
+                setScene(SceneId.MainMenu)
+            })()
+        }, COLLECT_FEEDBACK_MS)
     }
 
     return {
