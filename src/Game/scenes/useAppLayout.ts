@@ -35,10 +35,13 @@ export function useAppLayout() {
         }
 
         adoptMainContainerSize()
-        app.renderer.on('resize', adoptMainContainerSize)
 
-        return () => {
-            app.renderer.off('resize', adoptMainContainerSize)
+        if (app.renderer) {
+            app.renderer.on('resize', adoptMainContainerSize)
+
+            return () => {
+                app.renderer.off('resize', adoptMainContainerSize)
+            }
         }
     }, [app, isInitialised])
 
