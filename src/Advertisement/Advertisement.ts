@@ -1,12 +1,23 @@
+import { EPlatform } from '@ts/EPlatform'
 import { EBetweenSessionsAdResult } from './ts/EBetweenSessionsAdResult.ts'
 import { ERewardedAdResult } from './ts/ERewardedAdResult.ts'
 import { Platform } from './Platform'
 import { MockPlatform } from './platforms/MockPlatform'
 import { YandexGamesPlatform } from './platforms/YandexGamesPlatform'
 
-/** Picks MockPlatform in DEV, YandexGamesPlatform otherwise. */
+/** Resolves ad backend from `PLATFORM` in `.env` / build env. */
 function createDefaultPlatform(): Platform {
-    return import.meta.env.DEV ? new MockPlatform() : new YandexGamesPlatform()
+    switch (import.meta.env.PLATFORM) {
+        case EPlatform.YandexGames:
+            return new YandexGamesPlatform()
+        case EPlatform.Local:
+            return new MockPlatform()
+        default:
+            console.warn(
+                `[Advertisement] Unknown PLATFORM "${import.meta.env.PLATFORM}", falling back to ${EPlatform.Local}`,
+            )
+            return new MockPlatform()
+    }
 }
 
 /**
@@ -14,8 +25,8 @@ function createDefaultPlatform(): Platform {
  *
  * Call sites should use this class only — never talk to a store SDK directly.
  * All show requests are forwarded to the active {@link Platform} implementation
- * ({@link YandexGamesPlatform} in production; {@link MockPlatform} for local
- * development without an SDK).
+ * chosen by `PLATFORM` env ({@link EPlatform.Local} → {@link MockPlatform},
+ * {@link EPlatform.YandexGames} → {@link YandexGamesPlatform}).
  *
  * Two ad formats are supported:
  * - {@link showRewardedAd} — player-opted video; grant a reward only on

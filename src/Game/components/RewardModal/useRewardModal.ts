@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { advertisement } from '@src/Advertisement/Advertisement'
-import { ERewardedAdResult } from '@src/Advertisement/ts/ERewardedAdResult.ts'
+import { advertisement } from '@advertisement/Advertisement'
+import { ERewardedAdResult } from '@advertisement/ts/ERewardedAdResult.ts'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useUser } from '@src/user/UserContext'
 import { getMissionAdBonus, getMissionReward } from '@src/user/missions'

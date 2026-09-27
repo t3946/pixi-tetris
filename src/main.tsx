@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client'
-import { App } from './App'
+import { App } from './Game/App'
 import { loadFonts } from '@src/assets/fonts'
 
 async function start() {

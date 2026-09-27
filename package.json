@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:local": "tsc && vite build",
+    "build:yandex": "tsc && vite build --mode yandex",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },

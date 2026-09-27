@@ -23,9 +23,11 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
     "paths": {
-      "@shaders/*": ["./src/shaders/*"],
-      "@components/*": ["./src/components/*"],
-      "@src/*": ["./src/*"]
+      "@shaders/*": ["./src/Game/shaders/*"],
+      "@components/*": ["./src/Game/components/*"],
+      "@src/*": ["./src/Game/*"],
+      "@advertisement/*": ["./src/Advertisement/*"],
+      "@ts/*": ["./src/ts/*"]
     }
   },
   "include": ["src"]
