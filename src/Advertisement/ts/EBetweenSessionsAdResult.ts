@@ -9,6 +9,8 @@ export enum EBetweenSessionsAdResult {
     Shown = 'shown',
     /** Ad was closed immediately / without a meaningful impression, if the SDK reports that. */
     Dismissed = 'dismissed',
+    /** Skipped because the between-sessions cooldown is still active. */
+    Skipped = 'skipped',
     /** SDK missing, load/show failure, or unexpected exception. */
     Error = 'error',
 }

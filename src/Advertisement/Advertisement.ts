@@ -4,6 +4,7 @@ import { ERewardedAdResult } from './ts/ERewardedAdResult.ts'
 import { Platform } from './Platform'
 import { MockPlatform } from './platforms/MockPlatform'
 import { YandexGamesPlatform } from './platforms/YandexGamesPlatform'
+import { advertisementConfig } from './config'
 
 /** Resolves ad backend from `PLATFORM` in `.env` / build env. */
 function createDefaultPlatform(): Platform {
@@ -37,6 +38,9 @@ function createDefaultPlatform(): Platform {
 export class Advertisement {
     /** Active store/platform backend that performs the actual SDK calls. */
     platform: Platform = createDefaultPlatform()
+    sessionAdvertisementCooldownTimer: ReturnType<typeof setTimeout> | null = null
+    isSessionAdvertisementCooldownTimerFinished: boolean = false
+
 
     /**
      * Shows a rewarded video the player chose to watch.
@@ -52,6 +56,32 @@ export class Advertisement {
      * Resolves when the ad is closed or fails; no gameplay reward is expected.
      */
     showBetweenSessions(): Promise<EBetweenSessionsAdResult> {
+        // skip ad in the beginning of the game session
+        if (this.sessionAdvertisementCooldownTimer === null) {
+            //launch new timer
+            this.isSessionAdvertisementCooldownTimerFinished = false
+            this.sessionAdvertisementCooldownTimer = setTimeout(() => {
+                this.isSessionAdvertisementCooldownTimerFinished = true
+            }, advertisementConfig.sessionAdvertisement.cooldownMS)
+
+            return new Promise<EBetweenSessionsAdResult>((resolve) => {
+                resolve(EBetweenSessionsAdResult.Skipped)
+            })
+        }
+
+        // skip ad because it was already shown
+        if (!this.isSessionAdvertisementCooldownTimerFinished) {
+            return new Promise<EBetweenSessionsAdResult>((resolve) => {
+                resolve(EBetweenSessionsAdResult.Skipped)
+            })
+        }
+
+        // start new timer, show advertisement
+        this.sessionAdvertisementCooldownTimer = setTimeout(() => {
+            this.isSessionAdvertisementCooldownTimerFinished = true
+        }, advertisementConfig.sessionAdvertisement.cooldownMS)
+
+        this.isSessionAdvertisementCooldownTimerFinished = false
         return this.platform.showBetweenSessions()
     }
 }
