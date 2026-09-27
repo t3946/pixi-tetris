@@ -1,5 +1,5 @@
-import type { EBetweenSessionsAdResult } from './EBetweenSessionsAdResult'
-import type { ERewardedAdResult } from './ERewardedAdResult'
+import type { EBetweenSessionsAdResult } from './ts/EBetweenSessionsAdResult.ts'
+import type { ERewardedAdResult } from './ts/ERewardedAdResult.ts'
 
 /**
  * Abstract store/platform backend for advertisements.

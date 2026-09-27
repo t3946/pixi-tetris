@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mock Ad</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #0f1115;
+            --panel: #1a1f2b;
+            --accent: #5b8cff;
+            --muted: #9aa3b5;
+            --danger: #ff6b6b;
+            --ok: #3dd68c;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            height: 100%;
+            font-family: "Segoe UI", system-ui, sans-serif;
+            background: var(--bg);
+            color: #f3f5f9;
+        }
+
+        body {
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        .card {
+            width: min(420px, 100%);
+            background: var(--panel);
+            border: 1px solid #2a3344;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+        }
+
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 12px 14px;
+            background: #121722;
+            border-bottom: 1px solid #2a3344;
+        }
+
+        .badge {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #d7e2ff;
+            background: #2a3b66;
+            border-radius: 999px;
+            padding: 4px 10px;
+        }
+
+        .kind {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .art {
+            height: 180px;
+            display: grid;
+            place-items: center;
+            background:
+                linear-gradient(135deg, rgba(91, 140, 255, 0.35), transparent 55%),
+                linear-gradient(225deg, rgba(61, 214, 140, 0.2), transparent 50%),
+                #0d121c;
+            border-bottom: 1px solid #2a3344;
+            font-size: 64px;
+            user-select: none;
+        }
+
+        .body {
+            padding: 18px 16px 16px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 20px;
+        }
+
+        p {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.45;
+            font-size: 14px;
+        }
+
+        .status {
+            margin-top: 14px;
+            min-height: 1.4em;
+            font-size: 13px;
+            color: #c9d4ea;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        button {
+            appearance: none;
+            border: 0;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font: inherit;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .primary {
+            background: var(--accent);
+            color: #fff;
+            flex: 1;
+        }
+
+        .ghost {
+            background: #2a3140;
+            color: #e8edf7;
+        }
+
+        .danger {
+            background: var(--danger);
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="top">
+            <span class="badge">Mock Ad</span>
+            <span class="kind" id="kindLabel">rewarded</span>
+        </div>
+        <div class="art" aria-hidden="true">▶</div>
+        <div class="body">
+            <h1 id="title">Rewarded video</h1>
+            <p id="description">Watch until the timer ends to earn the reward. Closing early dismisses the ad.</p>
+            <div class="status" id="status">Starting…</div>
+            <div class="actions">
+                <button type="button" class="ghost" id="dismissBtn">Close early</button>
+                <button type="button" class="primary" id="completeBtn" disabled>Claim / Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /** Must match MockPlatform.MESSAGE_SOURCE and TS enums. */
+        const MESSAGE_SOURCE = 'tetris-mock-ad'
+        const REWARDED_SECONDS = 5
+
+        /** Mirrors `EMockAdKind` */
+        const EMockAdKind = {
+            Rewarded: 'rewarded',
+            Between: 'between',
+        }
+
+        /** Mirrors `ERewardedAdResult` */
+        const ERewardedAdResult = {
+            Rewarded: 'rewarded',
+            Dismissed: 'dismissed',
+            Error: 'error',
+        }
+
+        /** Mirrors `EBetweenSessionsAdResult` */
+        const EBetweenSessionsAdResult = {
+            Shown: 'shown',
+            Dismissed: 'dismissed',
+            Error: 'error',
+        }
+
+        const params = new URLSearchParams(window.location.search)
+        const kind =
+            params.get('type') === EMockAdKind.Between
+                ? EMockAdKind.Between
+                : EMockAdKind.Rewarded
+
+        const kindLabel = document.getElementById('kindLabel')
+        const title = document.getElementById('title')
+        const description = document.getElementById('description')
+        const status = document.getElementById('status')
+        const dismissBtn = document.getElementById('dismissBtn')
+        const completeBtn = document.getElementById('completeBtn')
+
+        let finished = false
+
+        function send(result) {
+            if (finished) {
+                return
+            }
+            finished = true
+            parent.postMessage({ source: MESSAGE_SOURCE, kind, result }, '*')
+        }
+
+        if (kind === EMockAdKind.Between) {
+            kindLabel.textContent = 'between sessions'
+            title.textContent = 'Break ad'
+            description.textContent = 'Non-rewarded interstitial stub. You can close it immediately.'
+            status.textContent = 'Ready to close'
+            dismissBtn.hidden = true
+            completeBtn.disabled = false
+            completeBtn.textContent = 'Close'
+            completeBtn.classList.remove('primary')
+            completeBtn.classList.add('danger')
+            completeBtn.addEventListener('click', () => send(EBetweenSessionsAdResult.Shown))
+        } else {
+            kindLabel.textContent = 'rewarded'
+            let left = REWARDED_SECONDS
+            status.textContent = 'Watch for ' + left + 's…'
+            completeBtn.textContent = 'Close (' + left + 's)'
+
+            const timer = window.setInterval(() => {
+                left -= 1
+                if (left > 0) {
+                    status.textContent = 'Watch for ' + left + 's…'
+                    completeBtn.textContent = 'Close (' + left + 's)'
+                    return
+                }
+
+                window.clearInterval(timer)
+                status.textContent = 'Reward unlocked — close to continue'
+                status.style.color = 'var(--ok)'
+                completeBtn.disabled = false
+                completeBtn.textContent = 'Close & claim'
+                dismissBtn.disabled = true
+            }, 1000)
+
+            dismissBtn.addEventListener('click', () => {
+                window.clearInterval(timer)
+                send(ERewardedAdResult.Dismissed)
+            })
+            completeBtn.addEventListener('click', () => {
+                window.clearInterval(timer)
+                send(ERewardedAdResult.Rewarded)
+            })
+        }
+    </script>
+</body>
+</html>

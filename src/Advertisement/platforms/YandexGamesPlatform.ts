@@ -1,5 +1,5 @@
-import { EBetweenSessionsAdResult } from '../EBetweenSessionsAdResult'
-import { ERewardedAdResult } from '../ERewardedAdResult'
+import { EBetweenSessionsAdResult } from '../ts/EBetweenSessionsAdResult.ts'
+import { ERewardedAdResult } from '../ts/ERewardedAdResult.ts'
 import { Platform } from '../Platform'
 
 /**

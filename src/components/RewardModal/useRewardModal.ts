@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
+import { advertisement } from '@src/Advertisement/Advertisement'
+import { ERewardedAdResult } from '@src/Advertisement/ts/ERewardedAdResult.ts'
 import { SceneId, useScene } from '@src/scenes/SceneContext'
 import { useUser } from '@src/user/UserContext'
 import { getMissionAdBonus, getMissionReward } from '@src/user/missions'
-import { showRewardedAd } from '@src/platform/yandexAds'
 import { AD_TRANSFER_MS, COLLECT_FEEDBACK_MS } from './constants'
 import type { AdState } from './types'
 
@@ -71,12 +72,14 @@ export function useRewardModal({ open, preview }: TOptions) {
         setAdState('watching')
 
         // В превью на главном экране не ждём рекламу — сразу drain
-        const result = preview ? 'rewarded' : await showRewardedAd()
+        const result = preview
+            ? ERewardedAdResult.Rewarded
+            : await advertisement.showRewardedAd()
         if (requestId !== adRequestIdRef.current) {
             return
         }
 
-        if (result !== 'rewarded') {
+        if (result !== ERewardedAdResult.Rewarded) {
             setAdState('idle')
             return
         }
