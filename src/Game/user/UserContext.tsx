@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useMemo, useReducer, useState, type ReactNode } from 'react'
 import { DEFAULT_BLOCK_THEME, EBlockTheme, setActiveBlockTheme } from '@src/tetris/blocks/themes'
 import { EGameTheme } from '@components/GameThemes/EGameTheme.ts'
+import { setActiveGameTheme } from '@components/GameThemes/GameTheme.ts'
 import { DEFAULT_SETTINGS, type Settings } from '@src/user/settings'
 import type { GameModeId } from '@components/MainMenu/gameModes'
 import {
@@ -133,6 +134,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     }, [])
 
     const setGameTheme = useCallback((theme: EGameTheme) => {
+        setActiveGameTheme(theme)
         setGameThemeState(theme)
     }, [])
 

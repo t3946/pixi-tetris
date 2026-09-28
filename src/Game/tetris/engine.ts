@@ -8,6 +8,7 @@ import {
     type PieceType,
 } from './tetrominoes'
 import { getActiveBlockTheme } from './blocks/themes'
+import { getGameThemeTetrominoColor } from '@components/GameThemes/GameTheme.ts'
 import { getLevelConfig, MIN_LEVEL } from './constants'
 
 export type Board = number[][]
@@ -154,8 +155,14 @@ export function setLevel(state: GameState, level: number): GameState {
 }
 
 function rollThemeColors(type: PieceType): number[] {
-    const theme = getActiveBlockTheme()
     const count = countShapeCells(type)
+    const gameThemeColor = getGameThemeTetrominoColor(type)
+
+    if (gameThemeColor !== null) {
+        return Array.from({ length: count }, () => gameThemeColor)
+    }
+
+    const theme = getActiveBlockTheme()
 
     return Array.from({ length: count }, () => theme.getMaterial(type).color)
 }

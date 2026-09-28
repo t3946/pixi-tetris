@@ -55,7 +55,7 @@ export function getMissionReward(withAdBonus = false): MissionReward {
 
 /** Фиксированная последовательность миссий Блица (сложность 1 → 2 → 3). */
 export const BLITZ_MISSIONS: readonly Mission[] = [
-    { lines: 5, level: 8 },
+    { lines: 5, level: 1 },
     { score: 1000, level: 2 },
     { lines: 20, score: 3000, level: 3 },
 ] as const

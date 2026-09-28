@@ -2,6 +2,10 @@ import { EGameTheme } from '@components/GameThemes/EGameTheme.ts'
 import { Color } from '@src/utils/color.ts'
 import { EBackgroundShaderId } from '@shaders/game-backgrounds/EBackgroundShaderId.ts'
 import { wadingWaterCausticPresets } from '@shaders/game-backgrounds/wading-water-caustic/wading-water-caustic.filter'
+import { EPieceType } from '@src/tetris/blocks/themes'
+
+/** Если задан — обязан содержать цвет для каждого тетромино; иначе используются цвета Block Theme. */
+export type TTetrominoesColors = Record<EPieceType, Color>
 
 export type TThemeConfig = {
     id: EGameTheme
@@ -9,6 +13,7 @@ export type TThemeConfig = {
     title: string
     shader: EBackgroundShaderId
     shadingOptions?: Record<string, unknown>
+    tetrominoesColors?: TTetrominoesColors
 }
 
 export const GameThemes: Record<EGameTheme, TThemeConfig> = {
@@ -17,6 +22,15 @@ export const GameThemes: Record<EGameTheme, TThemeConfig> = {
         accent: new Color('#4fb1ff'),
         title: 'Кристальные плитки',
         shader: EBackgroundShaderId.CrystalSquares,
+        tetrominoesColors: {
+            [EPieceType.I]: new Color('#8be9fd'),
+            [EPieceType.O]: new Color('#f8fafc'),
+            [EPieceType.T]: new Color('#10b981'),
+            [EPieceType.S]: new Color('#c4b5fd'),
+            [EPieceType.Z]: new Color('#00b3ff'),
+            [EPieceType.J]: new Color('#3d64ff'),
+            [EPieceType.L]: new Color('#ab52ff'),
+        },
     },
     [EGameTheme.WadingCausticBlue]: {
         id: EGameTheme.WadingCausticBlue,
@@ -63,6 +77,32 @@ export const GameThemesList: TThemeConfig[] = [
     GameThemes[EGameTheme.OceanUnder],
     GameThemes[EGameTheme.Shine],
 ]
+
+const DEFAULT_GAME_THEME = EGameTheme.CrystalSquares
+
+let activeGameThemeId: EGameTheme = DEFAULT_GAME_THEME
+
+export function getActiveGameTheme(): TThemeConfig {
+    return GameThemes[activeGameThemeId]
+}
+
+export function getActiveGameThemeId(): EGameTheme {
+    return activeGameThemeId
+}
+
+export function setActiveGameTheme(id: EGameTheme) {
+    activeGameThemeId = id
+}
+
+/** Цвет тетромино из игровой темы, если `tetrominoesColors` задан. */
+export function getGameThemeTetrominoColor(type: EPieceType): number | null {
+    const colors = getActiveGameTheme().tetrominoesColors
+    if (!colors) {
+        return null
+    }
+
+    return colors[type].toNumber()
+}
 
 /** Цвета UI-хрома (рамка стакана, панели дашборда) из accent темы. */
 export function getAccentUiChrome(accent: Color) {
