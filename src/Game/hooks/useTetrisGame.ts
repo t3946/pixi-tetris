@@ -114,7 +114,7 @@ type Action =
     | { type: EAction.HardDrop }
     | { type: EAction.Rotate }
     | { type: EAction.Pause }
-    | { type: EAction.Restart; rows: number; cols: number; level: number; pieceBag?: readonly PieceType[] }
+    | { type: EAction.Restart; rows: number; cols: number; level: number; pieceBag?: readonly PieceType[]; garbageRows?: number }
     | { type: EAction.SetBoard; board: Board }
     | { type: EAction.CompleteClear; awardScore?: boolean }
     | { type: EAction.EndGame }
@@ -152,6 +152,7 @@ function gameReducer(state: GameState, action: Action, cols: number): GameState 
             return restart(action.rows, action.cols, {
                 level: action.level,
                 pieceBag: action.pieceBag,
+                garbageRows: action.garbageRows,
             })
         case EAction.SetBoard:
             return { ...state, board: action.board }
@@ -183,6 +184,7 @@ export function useTetrisGame(
         sandbox?: boolean
         level?: number
         pieceBag?: readonly PieceType[]
+        garbageRows?: number
     },
 ) {
     /**
@@ -205,6 +207,8 @@ export function useTetrisGame(
     levelRef.current = options?.level ?? levelRef.current
     const pieceBagRef = useRef(options?.pieceBag)
     pieceBagRef.current = options?.pieceBag ?? pieceBagRef.current
+    const garbageRowsRef = useRef(options?.garbageRows ?? 0)
+    garbageRowsRef.current = options?.garbageRows ?? garbageRowsRef.current
 
     const [state, dispatchBase] = useReducer(
         (currentState: GameState, action: Action) => gameReducer(currentState, action, cols),
@@ -215,6 +219,7 @@ export function useTetrisGame(
                 : createInitialState(rows, cols, {
                       level: levelRef.current,
                       pieceBag: pieceBagRef.current,
+                      garbageRows: garbageRowsRef.current,
                   }),
     )
 
@@ -514,6 +519,7 @@ export function useTetrisGame(
                         cols,
                         level: levelRef.current,
                         pieceBag: pieceBagRef.current,
+                        garbageRows: garbageRowsRef.current,
                     })
                     dropAccumulatorRef.current = 0
                     hardDropAnimationRef.current = null
@@ -572,6 +578,7 @@ export function useTetrisGame(
             cols,
             level: levelRef.current,
             pieceBag: pieceBagRef.current,
+            garbageRows: garbageRowsRef.current,
         })
     }, [cols, dispatch, rows])
 

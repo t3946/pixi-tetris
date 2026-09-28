@@ -157,6 +157,7 @@ function resolveSessionGameOptions(user: UserState) {
         return {
             level: mission?.level ?? 1,
             pieceBag: getMissionPieceBag(mission),
+            garbageRows: mission?.garbageRows ?? 0,
         }
     }
 
@@ -166,26 +167,28 @@ function resolveSessionGameOptions(user: UserState) {
         return {
             level: mission?.level ?? 4,
             pieceBag: getMissionPieceBag(mission),
+            garbageRows: mission?.garbageRows ?? 0,
         }
     }
 
     return {
         level: 1,
         pieceBag: CLASSIC_PIECE_TYPES,
+        garbageRows: 0,
     }
 }
 
 export function GameScene() {
     const { mainSize, ready } = useAppLayout()
     const { user } = useUser()
-    const { level, pieceBag } = resolveSessionGameOptions(user)
+    const { level, pieceBag, garbageRows } = resolveSessionGameOptions(user)
 
     if (!ready) {
         return null
     }
 
     return (
-        <TetrisGameProvider level={level} pieceBag={pieceBag}>
+        <TetrisGameProvider level={level} pieceBag={pieceBag} garbageRows={garbageRows}>
             <SceneFrame
                 backgroundColor="black"
                 backdrop={<Background width={mainSize.width} height={mainSize.height} />}

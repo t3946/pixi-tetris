@@ -25,15 +25,18 @@ export function TetrisGameProvider({
     children,
     level = 1,
     pieceBag,
+    garbageRows,
 }: {
     children: ReactNode
     /** Сложность тетриса (LEVEL_CONFIGS), по умолчанию 1. */
     level?: number
     /** Пул фигур для спавна; по умолчанию только классика. */
     pieceBag?: readonly PieceType[]
+    /** Нижние ряды со стартовым хламом. */
+    garbageRows?: number
 }) {
     const { state, togglePause, endGame, restart, continueAfterAd, hardDropAnimationRef } =
-        useTetrisGame(BOARD_ROWS, BOARD_COLS, { level, pieceBag })
+        useTetrisGame(BOARD_ROWS, BOARD_COLS, { level, pieceBag, garbageRows })
     const timeScaleRef = useRef(1)
     const pausedRef = useRef(state.paused)
     const gameOverRef = useRef(state.gameOver)

@@ -46,6 +46,8 @@ export type CreateGameOptions = {
     level?: number
     /** Пул фигур; по умолчанию только классические тетромино. */
     pieceBag?: readonly PieceType[]
+    /** Заполнить нижние N рядов случайным хламом (без полных линий). */
+    garbageRows?: number
 }
 
 /** Очки за очистку: Single / Double / Triple / Tetris */
@@ -91,12 +93,70 @@ export function createEmptyBoard(rows: number, cols: number): Board {
     return Array.from({ length: rows }, () => Array(cols).fill(0))
 }
 
+function randomGarbageColor(): number {
+    const type = CLASSIC_PIECE_TYPES[Math.floor(Math.random() * CLASSIC_PIECE_TYPES.length)]
+
+    return rollThemeColors(type)[0] ?? TETROMINOES[type].color
+}
+
+/**
+ * Засыпает нижние `garbageRows` рядов случайными клетками.
+ * В каждом ряде остаётся минимум одна дырка — полных линий нет.
+ */
+export function fillBottomGarbage(board: Board, garbageRows: number): Board {
+    if (garbageRows <= 0) {
+        return board
+    }
+
+    const rows = board.length
+    const cols = board[0]?.length ?? 0
+    if (rows === 0 || cols === 0) {
+        return board
+    }
+
+    const next = board.map((row) => [...row])
+    const startY = Math.max(0, rows - garbageRows)
+
+    for (let y = startY; y < rows; y++) {
+        const depth = y - startY
+        const span = Math.max(1, garbageRows - 1)
+        // Ниже — плотнее (~0.5…0.75)
+        const fillChance = 0.5 + (depth / span) * 0.25
+        const occupied: boolean[] = Array.from({ length: cols }, () => Math.random() < fillChance)
+        let filled = occupied.filter(Boolean).length
+
+        if (filled === cols) {
+            occupied[Math.floor(Math.random() * cols)] = false
+            filled -= 1
+        }
+
+        // Верхние ряды хлама могут быть почти пустыми — на дне хоть немного клеток
+        if (filled === 0 && depth >= Math.floor(garbageRows / 2)) {
+            const holes = 1 + Math.floor(Math.random() * 2)
+            const emptySlots = Array.from({ length: cols }, (_, x) => x)
+            for (let i = emptySlots.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1))
+                ;[emptySlots[i], emptySlots[j]] = [emptySlots[j], emptySlots[i]]
+            }
+            for (let i = 0; i < cols - holes; i++) {
+                occupied[emptySlots[i]] = true
+            }
+        }
+
+        for (let x = 0; x < cols; x++) {
+            next[y][x] = occupied[x] ? randomGarbageColor() : 0
+        }
+    }
+
+    return next
+}
+
 export function createInitialState(
     rows: number,
     cols: number,
     options?: CreateGameOptions,
 ): GameState {
-    const board = createEmptyBoard(rows, cols)
+    const board = fillBottomGarbage(createEmptyBoard(rows, cols), options?.garbageRows ?? 0)
     const level = resolveLevel(options?.level)
     const pieceBag = options?.pieceBag ?? CLASSIC_PIECE_TYPES
     const firstType = randomPieceType(pieceBag)

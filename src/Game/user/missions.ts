@@ -9,6 +9,8 @@ export type Mission = {
     level?: number
     /** Пентамино (и др.), добавляемые к классическому пулу. */
     extraPieces?: readonly PieceType[]
+    /** Сколько нижних рядов заранее засыпать случайным «хламом». */
+    garbageRows?: number
 }
 
 export type MissionMetric = 'lines' | 'score'
@@ -66,7 +68,7 @@ export function getMissionReward(withAdBonus = false): MissionReward {
 export const BLITZ_MISSIONS: readonly Mission[] = [
     { lines: 5, level: 1 },
     { score: 1000, level: 2 },
-    { lines: 20, score: 3000, level: 3 },
+    { lines: 20, score: 3000, level: 3, garbageRows: 4 },
 ] as const
 
 /**
