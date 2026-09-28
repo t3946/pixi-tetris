@@ -20,6 +20,8 @@ export type GameState = {
     nextType: PieceType
     /** Цвета клеток следующей фигуры, выбранные темой при постановке в очередь */
     nextCellColors: number[]
+    /** Скрыть превью «Далее» (иконка «?» вместо фигуры). */
+    nextPreviewHidden: boolean
     gameOver: boolean
     paused: boolean
     linesCleared: number
@@ -43,6 +45,13 @@ export type CreateGameOptions = {
 
 /** Очки за очистку: Single / Double / Triple / Tetris */
 const LINE_CLEAR_SCORES = [0, 100, 300, 500, 1200] as const
+
+/** Вероятность скрыть превью следующей фигуры. */
+const NEXT_PREVIEW_HIDDEN_CHANCE = 0.3
+
+function rollNextPreviewHidden(): boolean {
+    return Math.random() < NEXT_PREVIEW_HIDDEN_CHANCE
+}
 
 export function scoreForClearedLines(cleared: number): number {
     if (cleared <= 0) {
@@ -85,7 +94,7 @@ export function createInitialState(
     const board = createEmptyBoard(rows, cols)
     const level = resolveLevel(options?.level)
     const firstType = randomPieceType()
-    const { piece, nextType, nextCellColors } = spawnFromQueue(
+    const { piece, nextType, nextCellColors, nextPreviewHidden } = spawnFromQueue(
         board,
         cols,
         firstType,
@@ -97,6 +106,7 @@ export function createInitialState(
         piece,
         nextType,
         nextCellColors,
+        nextPreviewHidden,
         gameOver: piece === null,
         paused: false,
         linesCleared: 0,
@@ -120,6 +130,7 @@ export function createSandboxState(rows: number, cols: number): GameState {
         piece: null,
         nextType: randomPieceType(),
         nextCellColors: [],
+        nextPreviewHidden: false,
         gameOver: false,
         paused: true,
         linesCleared: 0,
@@ -176,16 +187,22 @@ function spawnFromQueue(
     cols: number,
     type: PieceType,
     cellColors: number[],
-): { piece: ActivePiece | null; nextType: PieceType; nextCellColors: number[] } {
+): {
+    piece: ActivePiece | null
+    nextType: PieceType
+    nextCellColors: number[]
+    nextPreviewHidden: boolean
+} {
     const piece = createPiece(type, cols, cellColors)
     const nextType = randomPieceType()
     const nextCellColors = rollThemeColors(nextType)
+    const nextPreviewHidden = rollNextPreviewHidden()
 
     if (!isValidPosition(piece, board)) {
-        return { piece: null, nextType, nextCellColors }
+        return { piece: null, nextType, nextCellColors, nextPreviewHidden }
     }
 
-    return { piece, nextType, nextCellColors }
+    return { piece, nextType, nextCellColors, nextPreviewHidden }
 }
 
 export function isValidPosition(piece: ActivePiece, board: Board): boolean {
@@ -353,7 +370,7 @@ function settlePiece(state: GameState, cols: number): GameState {
     const pendingClearLines = findFullLines(lockedBoard)
 
     if (pendingClearLines.length === 0) {
-        const { piece, nextType, nextCellColors } = spawnFromQueue(
+        const { piece, nextType, nextCellColors, nextPreviewHidden } = spawnFromQueue(
             lockedBoard,
             cols,
             state.nextType,
@@ -366,6 +383,7 @@ function settlePiece(state: GameState, cols: number): GameState {
             piece,
             nextType,
             nextCellColors,
+            nextPreviewHidden,
             gameOver: piece === null,
             pendingClearLines: [],
             ...idleLockFields(),
@@ -401,7 +419,7 @@ export function completeLineClear(
 
     const awardScore = options?.awardScore !== false
     const board = removeLines(state.board, lines)
-    const { piece, nextType, nextCellColors } = spawnFromQueue(
+    const { piece, nextType, nextCellColors, nextPreviewHidden } = spawnFromQueue(
         board,
         cols,
         state.nextType,
@@ -414,6 +432,7 @@ export function completeLineClear(
         piece,
         nextType,
         nextCellColors,
+        nextPreviewHidden,
         gameOver: piece === null,
         pendingClearLines: [],
         linesCleared: awardScore ? state.linesCleared + lines.length : state.linesCleared,

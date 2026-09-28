@@ -14,6 +14,7 @@ import coins from './coins.svg'
 import gem from './gem.svg'
 import clapperboardPlay from './clapperboard-play.svg'
 import thumbUp from './thumb-up.svg'
+import circleQuestion from './circle-question.svg'
 
 export const icons = {
     pause,
@@ -32,6 +33,7 @@ export const icons = {
     gem,
     clapperboardPlay,
     thumbUp,
+    circleQuestion,
 } as const
 
 export type IconName = keyof typeof icons

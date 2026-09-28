@@ -1,15 +1,39 @@
+import { UiIcon } from '@components/ui/UiIcon'
 import { useTetrisGameState } from '@src/tetris/TetrisGameContext'
 import { getShapeLocalCells } from '@src/tetris/tetrominoes'
 import { useBlockTheme } from '@src/hooks/useBlockTheme'
+import { useGameTheme } from '@src/hooks/useGameTheme'
 
 const CELL_PADDING = 1
 /** Область контента панели (высота дашборда минус полоска заголовка) */
 const PREVIEW_BOX = 56
+const HIDDEN_ICON_SIZE = Math.round(PREVIEW_BOX * 0.55 * 1.2)
 
 export const NextTetrominoes = () => {
-    const { nextType, nextCellColors } = useTetrisGameState()
-    const theme = useBlockTheme()
-    const material = theme.getMaterial(nextType)
+    const { nextType, nextCellColors, nextPreviewHidden } = useTetrisGameState()
+    const { accent } = useGameTheme()
+    const blockTheme = useBlockTheme()
+
+    if (nextPreviewHidden) {
+        return (
+            <layoutContainer
+                layout={{
+                    width: PREVIEW_BOX,
+                    height: PREVIEW_BOX,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}
+            >
+                <UiIcon
+                    name="circleQuestion"
+                    size={HIDDEN_ICON_SIZE}
+                    tint={accent.lighten(0.45).toHex()}
+                />
+            </layoutContainer>
+        )
+    }
+
+    const material = blockTheme.getMaterial(nextType)
     const cells = getShapeLocalCells(nextType, 0, nextCellColors)
 
     if (cells.length === 0) {
