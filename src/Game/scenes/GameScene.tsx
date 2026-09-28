@@ -15,10 +15,16 @@ import { startMatchSessionClock } from '@src/hooks/matchSessionClock'
 import { useAppLayout } from '@src/scenes/useAppLayout'
 import { SceneFrame } from '@src/scenes/SceneFrame'
 import { useTheme } from '@src/ui/ThemeContext'
-import { useUser } from '@src/user/UserContext'
-import { getBlitzTetrisLevel, isMissionComplete } from '@src/user/missions'
+import { useUser, type UserState } from '@src/user/UserContext'
+import {
+    createBlitzMission,
+    createChallengeMission,
+    getMissionPieceBag,
+    isMissionComplete,
+} from '@src/user/missions'
+import { CLASSIC_PIECE_TYPES } from '@src/tetris/tetrominoes'
 
-function useBlitzMissionSession() {
+function useMissionSession() {
     const { score, linesCleared, gameOver } = useTetrisGameState()
     const endGame = useEndGame()
     const { user, startActiveMission, completeActiveMission } = useUser()
@@ -85,7 +91,7 @@ function GameSceneContent() {
     const theme = useTheme()
     const { gameOver } = useTetrisGameState()
     const [settingsOpen, setSettingsOpen] = useState(false)
-    const missionWon = useBlitzMissionSession()
+    const missionWon = useMissionSession()
 
     useEffect(() => {
         startMatchSessionClock()
@@ -144,20 +150,42 @@ function GameSceneContent() {
     )
 }
 
+function resolveSessionGameOptions(user: UserState) {
+    if (user.selectedMode === 'blitz') {
+        const mission = createBlitzMission(user.progress.blitzMissionsCompleted)
+
+        return {
+            level: mission?.level ?? 1,
+            pieceBag: getMissionPieceBag(mission),
+        }
+    }
+
+    if (user.selectedMode === 'challenge') {
+        const mission = createChallengeMission(user.progress.challengeMissionsCompleted)
+
+        return {
+            level: mission?.level ?? 4,
+            pieceBag: getMissionPieceBag(mission),
+        }
+    }
+
+    return {
+        level: 1,
+        pieceBag: CLASSIC_PIECE_TYPES,
+    }
+}
+
 export function GameScene() {
     const { mainSize, ready } = useAppLayout()
     const { user } = useUser()
-    const tetrisLevel =
-        user.selectedMode === 'blitz'
-            ? getBlitzTetrisLevel(user.progress.blitzMissionsCompleted)
-            : 1
+    const { level, pieceBag } = resolveSessionGameOptions(user)
 
     if (!ready) {
         return null
     }
 
     return (
-        <TetrisGameProvider level={tetrisLevel}>
+        <TetrisGameProvider level={level} pieceBag={pieceBag}>
             <SceneFrame
                 backgroundColor="black"
                 backdrop={<Background width={mainSize.width} height={mainSize.height} />}

@@ -4,6 +4,7 @@ import type { Ticker } from 'pixi.js'
 import { useTetrisGame, type HardDropAnimation } from '../hooks/useTetrisGame'
 import type { GameState } from '@src/tetris/engine'
 import { BOARD_COLS, BOARD_ROWS } from '@src/tetris/constants'
+import type { PieceType } from '@src/tetris/tetrominoes'
 
 const PAUSE_TIME_FADE_MS = 1250
 const PLAYING_TIME_SCALE: RefObject<number> = { current: 1 }
@@ -23,13 +24,16 @@ const TetrisGameContext = createContext<TetrisGameContextValue | null>(null)
 export function TetrisGameProvider({
     children,
     level = 1,
+    pieceBag,
 }: {
     children: ReactNode
     /** Сложность тетриса (LEVEL_CONFIGS), по умолчанию 1. */
     level?: number
+    /** Пул фигур для спавна; по умолчанию только классика. */
+    pieceBag?: readonly PieceType[]
 }) {
     const { state, togglePause, endGame, restart, continueAfterAd, hardDropAnimationRef } =
-        useTetrisGame(BOARD_ROWS, BOARD_COLS, { level })
+        useTetrisGame(BOARD_ROWS, BOARD_COLS, { level, pieceBag })
     const timeScaleRef = useRef(1)
     const pausedRef = useRef(state.paused)
     const gameOverRef = useRef(state.gameOver)

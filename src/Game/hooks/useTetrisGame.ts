@@ -31,7 +31,7 @@ import {
     type GameState,
 } from '@src/tetris/engine'
 import { fallIntervalMsForLevel } from '@src/tetris/constants'
-import type { ActivePiece } from '@src/tetris/tetrominoes'
+import type { ActivePiece, PieceType } from '@src/tetris/tetrominoes'
 import {
     SparkleClearIterator,
     ClearIterator,
@@ -114,7 +114,7 @@ type Action =
     | { type: EAction.HardDrop }
     | { type: EAction.Rotate }
     | { type: EAction.Pause }
-    | { type: EAction.Restart; rows: number; cols: number; level: number }
+    | { type: EAction.Restart; rows: number; cols: number; level: number; pieceBag?: readonly PieceType[] }
     | { type: EAction.SetBoard; board: Board }
     | { type: EAction.CompleteClear; awardScore?: boolean }
     | { type: EAction.EndGame }
@@ -149,7 +149,10 @@ function gameReducer(state: GameState, action: Action, cols: number): GameState 
         case EAction.Pause:
             return togglePause(state)
         case EAction.Restart:
-            return restart(action.rows, action.cols, { level: action.level })
+            return restart(action.rows, action.cols, {
+                level: action.level,
+                pieceBag: action.pieceBag,
+            })
         case EAction.SetBoard:
             return { ...state, board: action.board }
         case EAction.CompleteClear:
@@ -176,7 +179,11 @@ function gameReducer(state: GameState, action: Action, cols: number): GameState 
 export function useTetrisGame(
     rows: number,
     cols: number,
-    options?: { sandbox?: boolean; level?: number },
+    options?: {
+        sandbox?: boolean
+        level?: number
+        pieceBag?: readonly PieceType[]
+    },
 ) {
     /**
      * useReducer — альтернатива useState для сложного состояния.
@@ -196,6 +203,8 @@ export function useTetrisGame(
     const sandbox = options?.sandbox === true
     const levelRef = useRef(options?.level ?? 1)
     levelRef.current = options?.level ?? levelRef.current
+    const pieceBagRef = useRef(options?.pieceBag)
+    pieceBagRef.current = options?.pieceBag ?? pieceBagRef.current
 
     const [state, dispatchBase] = useReducer(
         (currentState: GameState, action: Action) => gameReducer(currentState, action, cols),
@@ -203,7 +212,10 @@ export function useTetrisGame(
         () =>
             sandbox
                 ? createSandboxState(rows, cols)
-                : createInitialState(rows, cols, { level: levelRef.current }),
+                : createInitialState(rows, cols, {
+                      level: levelRef.current,
+                      pieceBag: pieceBagRef.current,
+                  }),
     )
 
     /**
@@ -496,7 +508,13 @@ export function useTetrisGame(
                     softDropRef.current = false
                     break
                 case 'KeyR':
-                    dispatch({ type: EAction.Restart, rows, cols, level: levelRef.current })
+                    dispatch({
+                        type: EAction.Restart,
+                        rows,
+                        cols,
+                        level: levelRef.current,
+                        pieceBag: pieceBagRef.current,
+                    })
                     dropAccumulatorRef.current = 0
                     hardDropAnimationRef.current = null
                     break
@@ -548,7 +566,13 @@ export function useTetrisGame(
         softDropRef.current = false
         hardDropAnimationRef.current = null
         skipNextClearScoreRef.current = false
-        dispatch({ type: EAction.Restart, rows, cols, level: levelRef.current })
+        dispatch({
+            type: EAction.Restart,
+            rows,
+            cols,
+            level: levelRef.current,
+            pieceBag: pieceBagRef.current,
+        })
     }, [cols, dispatch, rows])
 
     const continueAfterAdGame = useCallback(() => {

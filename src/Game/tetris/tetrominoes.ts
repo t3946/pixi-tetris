@@ -18,7 +18,8 @@ type TetrominoDefinition = {
     shapes: number[][][]
 }
 
-export const PIECE_TYPES: PieceType[] = [
+/** Классические тетромино (режим «Легко» и база для остальных). */
+export const CLASSIC_PIECE_TYPES: PieceType[] = [
     EPieceType.I,
     EPieceType.O,
     EPieceType.T,
@@ -27,6 +28,23 @@ export const PIECE_TYPES: PieceType[] = [
     EPieceType.J,
     EPieceType.L,
 ]
+
+/** Все фигуры, включая пентамино. */
+export const PIECE_TYPES: PieceType[] = [
+    ...CLASSIC_PIECE_TYPES,
+    EPieceType.X,
+    EPieceType.V,
+    EPieceType.W,
+]
+
+/** Пул = классика + дополнительные фигуры (пентамино в «Средне»). */
+export function pieceBagWithExtras(extras: readonly PieceType[] = []): PieceType[] {
+    if (extras.length === 0) {
+        return [...CLASSIC_PIECE_TYPES]
+    }
+
+    return [...CLASSIC_PIECE_TYPES, ...extras]
+}
 
 export const TETROMINOES: Record<PieceType, TetrominoDefinition> = {
     I: {
@@ -214,10 +232,72 @@ export const TETROMINOES: Record<PieceType, TetrominoDefinition> = {
             ],
         ],
     },
+    X: {
+        color: 0xf050c8,
+        shapes: [
+            [
+                [0, 1, 0],
+                [1, 1, 1],
+                [0, 1, 0],
+            ],
+        ],
+    },
+    V: {
+        color: 0x80d0ff,
+        shapes: [
+            [
+                [1, 0, 0],
+                [1, 0, 0],
+                [1, 1, 1],
+            ],
+            [
+                [1, 1, 1],
+                [1, 0, 0],
+                [1, 0, 0],
+            ],
+            [
+                [1, 1, 1],
+                [0, 0, 1],
+                [0, 0, 1],
+            ],
+            [
+                [0, 0, 1],
+                [0, 0, 1],
+                [1, 1, 1],
+            ],
+        ],
+    },
+    W: {
+        color: 0xd07040,
+        shapes: [
+            [
+                [1, 0, 0],
+                [1, 1, 0],
+                [0, 1, 1],
+            ],
+            [
+                [0, 1, 1],
+                [1, 1, 0],
+                [1, 0, 0],
+            ],
+            [
+                [1, 1, 0],
+                [0, 1, 1],
+                [0, 0, 1],
+            ],
+            [
+                [0, 0, 1],
+                [0, 1, 1],
+                [1, 1, 0],
+            ],
+        ],
+    },
 }
 
-export function randomPieceType(): PieceType {
-    return PIECE_TYPES[Math.floor(Math.random() * PIECE_TYPES.length)]
+export function randomPieceType(bag: readonly PieceType[] = CLASSIC_PIECE_TYPES): PieceType {
+    const pool = bag.length > 0 ? bag : CLASSIC_PIECE_TYPES
+
+    return pool[Math.floor(Math.random() * pool.length)]
 }
 
 export function countShapeCells(type: PieceType, rotation = 0): number {
@@ -237,10 +317,12 @@ export function countShapeCells(type: PieceType, rotation = 0): number {
 }
 
 export function createPiece(type: PieceType, cols: number, cellColors: number[]): ActivePiece {
+    const shapeWidth = TETROMINOES[type].shapes[0][0]?.length ?? 4
+
     return {
         type,
         rotation: 0,
-        x: Math.floor((cols - 4) / 2),
+        x: Math.floor((cols - shapeWidth) / 2),
         y: 0,
         color: cellColors[0] ?? 0,
         cellColors,

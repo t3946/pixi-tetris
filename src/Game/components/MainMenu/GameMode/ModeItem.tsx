@@ -18,13 +18,15 @@ export function ModeItem({ modeId, accent, sliding, scale }: TProps) {
     const { user } = useUser()
     const mode = GAME_MODES.find((item) => item.id === modeId)!
     const missions = mode.missions
-    /** Для Блица — число пройденных миссий из сессии (старт: 0) */
+    /** Для Легко/Средне — число пройденных миссий из сессии (старт: 0) */
     const completedCount =
         modeId === 'blitz'
             ? user.progress.blitzMissionsCompleted
-            : missions != null
-              ? missions.total - missions.available
-              : 0
+            : modeId === 'challenge'
+              ? user.progress.challengeMissionsCompleted
+              : missions != null
+                ? missions.total - missions.available
+                : 0
     const radius = Math.round(18 * scale)
     const titleContainerHeight = Math.round(26 * scale)
     const sideContainerSize = Math.round(26 * scale)

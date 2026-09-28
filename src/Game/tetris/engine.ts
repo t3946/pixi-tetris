@@ -1,5 +1,6 @@
 import {
     ActivePiece,
+    CLASSIC_PIECE_TYPES,
     countShapeCells,
     createPiece,
     getPieceCells,
@@ -28,6 +29,8 @@ export type GameState = {
     score: number
     /** Текущий уровень (1…10); fallStep / lockDelay / maxResets — из LEVEL_CONFIGS. */
     level: number
+    /** Пул фигур для случайного спавна (классика ± пентамино). */
+    pieceBag: readonly PieceType[]
     /** Индексы полных рядов, ждущих визуальной очистки. Пока не пусто — фигура не спавнится. */
     pendingClearLines: number[]
     /** Оставшееся время до фиксации (мс); null — фигура в воздухе. */
@@ -41,6 +44,8 @@ export type GameState = {
 export type CreateGameOptions = {
     /** Стартовый уровень (1…10). */
     level?: number
+    /** Пул фигур; по умолчанию только классические тетромино. */
+    pieceBag?: readonly PieceType[]
 }
 
 /** Очки за очистку: Single / Double / Triple / Tetris */
@@ -93,12 +98,14 @@ export function createInitialState(
 ): GameState {
     const board = createEmptyBoard(rows, cols)
     const level = resolveLevel(options?.level)
-    const firstType = randomPieceType()
+    const pieceBag = options?.pieceBag ?? CLASSIC_PIECE_TYPES
+    const firstType = randomPieceType(pieceBag)
     const { piece, nextType, nextCellColors, nextPreviewHidden } = spawnFromQueue(
         board,
         cols,
         firstType,
         rollThemeColors(firstType),
+        pieceBag,
     )
 
     const base: GameState = {
@@ -112,6 +119,7 @@ export function createInitialState(
         linesCleared: 0,
         score: 0,
         level,
+        pieceBag,
         pendingClearLines: [],
         ...idleLockFields(),
     }
@@ -128,7 +136,7 @@ export function createSandboxState(rows: number, cols: number): GameState {
     return {
         board: createEmptyBoard(rows, cols),
         piece: null,
-        nextType: randomPieceType(),
+        nextType: randomPieceType(CLASSIC_PIECE_TYPES),
         nextCellColors: [],
         nextPreviewHidden: false,
         gameOver: false,
@@ -136,6 +144,7 @@ export function createSandboxState(rows: number, cols: number): GameState {
         linesCleared: 0,
         score: 0,
         level: MIN_LEVEL,
+        pieceBag: CLASSIC_PIECE_TYPES,
         pendingClearLines: [],
         ...idleLockFields(),
     }
@@ -187,6 +196,7 @@ function spawnFromQueue(
     cols: number,
     type: PieceType,
     cellColors: number[],
+    pieceBag: readonly PieceType[] = CLASSIC_PIECE_TYPES,
 ): {
     piece: ActivePiece | null
     nextType: PieceType
@@ -194,7 +204,7 @@ function spawnFromQueue(
     nextPreviewHidden: boolean
 } {
     const piece = createPiece(type, cols, cellColors)
-    const nextType = randomPieceType()
+    const nextType = randomPieceType(pieceBag)
     const nextCellColors = rollThemeColors(nextType)
     const nextPreviewHidden = rollNextPreviewHidden()
 
@@ -375,6 +385,7 @@ function settlePiece(state: GameState, cols: number): GameState {
             cols,
             state.nextType,
             state.nextCellColors,
+            state.pieceBag,
         )
 
         const spawned: GameState = {
@@ -424,6 +435,7 @@ export function completeLineClear(
         cols,
         state.nextType,
         state.nextCellColors,
+        state.pieceBag,
     )
 
     const next: GameState = {

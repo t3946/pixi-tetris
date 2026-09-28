@@ -1,10 +1,10 @@
-import { BLITZ_MISSIONS_TOTAL } from '@src/user/missions'
+import { BLITZ_MISSIONS_TOTAL, CHALLENGE_MISSIONS_TOTAL } from '@src/user/missions'
 
 export type GameModeId = 'blitz' | 'challenge' | 'hardcore' | 'free'
 
 export type ModeMissions = {
     total: number
-    /** Статическое число доступных миссий; для Блица переопределяется из сессии */
+    /** Статическое число доступных миссий; для Легко/Средне переопределяется из сессии */
     available: number
     resetHours: number
 }
@@ -28,15 +28,15 @@ export const MENU_DESIGN_WIDTH = 390
 export const GAME_MODES: GameMode[] = [
     {
         id: 'blitz',
-        name: 'Блиц',
+        name: 'Легко',
         accentColor: '#4ade80',
         missions: { total: BLITZ_MISSIONS_TOTAL, available: BLITZ_MISSIONS_TOTAL, resetHours: 1 },
     },
     {
         id: 'challenge',
-        name: 'Испытания',
+        name: 'Средне',
         accentColor: '#fbbf24',
-        missions: { total: 4, available: 1, resetHours: 41 },
+        missions: { total: CHALLENGE_MISSIONS_TOTAL, available: CHALLENGE_MISSIONS_TOTAL, resetHours: 41 },
     },
     {
         id: 'hardcore',

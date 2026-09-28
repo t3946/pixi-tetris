@@ -10,4 +10,7 @@ export const CLASSIC_THEME_COLORS: ThemeColors = {
     [EPieceType.Z]: { '#f00000': 1 },
     [EPieceType.J]: { '#0000f0': 1 },
     [EPieceType.L]: { '#f0a000': 1 },
+    [EPieceType.X]: { '#f050c8': 1 },
+    [EPieceType.V]: { '#80d0ff': 1 },
+    [EPieceType.W]: { '#d07040': 1 },
 }

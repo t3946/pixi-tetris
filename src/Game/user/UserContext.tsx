@@ -6,8 +6,11 @@ import { DEFAULT_SETTINGS, type Settings } from '@src/user/settings'
 import type { GameModeId } from '@components/MainMenu/gameModes'
 import {
     BLITZ_MISSIONS_TOTAL,
+    CHALLENGE_MISSIONS_TOTAL,
     INITIAL_BLITZ_MISSIONS_COMPLETED,
+    INITIAL_CHALLENGE_MISSIONS_COMPLETED,
     createBlitzMission,
+    createChallengeMission,
     getMissionReward,
     type Mission,
 } from '@src/user/missions'
@@ -28,8 +31,10 @@ export type UserState = {
     wallet: UserWallet
     progress: {
         gameTheme: Record<EGameTheme, number>
-        /** Сколько миссий Блица уже пройдено в этой сессии */
+        /** Сколько миссий «Легко» уже пройдено в этой сессии */
         blitzMissionsCompleted: number
+        /** Сколько миссий «Средне» уже пройдено в этой сессии */
+        challengeMissionsCompleted: number
     }
 }
 
@@ -50,6 +55,7 @@ type UserContextValue = {
 type MissionSession = {
     activeMission: Mission | null
     blitzMissionsCompleted: number
+    challengeMissionsCompleted: number
     /** Текущая миссия уже засчитана (бар оставляем заполненным) */
     activeMissionResolved: boolean
     /** Награда уже зачислена в кошелёк */
@@ -73,6 +79,14 @@ function missionSessionReducer(state: MissionSession, action: MissionAction): Mi
                     activeMissionRewardClaimed: false,
                 }
             }
+            if (action.mode === 'challenge') {
+                return {
+                    ...state,
+                    activeMission: createChallengeMission(state.challengeMissionsCompleted),
+                    activeMissionResolved: false,
+                    activeMissionRewardClaimed: false,
+                }
+            }
             return {
                 ...state,
                 activeMission: null,
@@ -90,6 +104,16 @@ function missionSessionReducer(state: MissionSession, action: MissionAction): Mi
                     blitzMissionsCompleted: Math.min(
                         BLITZ_MISSIONS_TOTAL,
                         state.blitzMissionsCompleted + 1,
+                    ),
+                }
+            }
+            if (action.mode === 'challenge') {
+                return {
+                    ...state,
+                    activeMissionResolved: true,
+                    challengeMissionsCompleted: Math.min(
+                        CHALLENGE_MISSIONS_TOTAL,
+                        state.challengeMissionsCompleted + 1,
                     ),
                 }
             }
@@ -123,6 +147,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const [missionSession, dispatchMission] = useReducer(missionSessionReducer, {
         activeMission: null,
         blitzMissionsCompleted: INITIAL_BLITZ_MISSIONS_COMPLETED,
+        challengeMissionsCompleted: INITIAL_CHALLENGE_MISSIONS_COMPLETED,
         activeMissionResolved: false,
         activeMissionRewardClaimed: false,
         wallet: { coin: 0, jem: 0 },
@@ -177,6 +202,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
                         [EGameTheme.Shine]: 10,
                     },
                     blitzMissionsCompleted: missionSession.blitzMissionsCompleted,
+                    challengeMissionsCompleted: missionSession.challengeMissionsCompleted,
                 },
             },
             setBlockTheme,
