@@ -52,12 +52,30 @@ export const GameThemes: Record<EGameTheme, TThemeConfig> = {
         title: 'Неоновый Горизонт',
         shader: EBackgroundShaderId.NeonwaveSunrise,
         shadingOptions: { lineClearPulseMs: 2500, lineClearPulseEasing: 'easeInOut' },
+        tetrominoesColors: {
+            [EPieceType.I]: new Color('#fde047'),
+            [EPieceType.O]: new Color('#fff7ed'),
+            [EPieceType.T]: new Color('#4ade80'),
+            [EPieceType.S]: new Color('#f0abfc'),
+            [EPieceType.Z]: new Color('#d946ef'),
+            [EPieceType.J]: new Color('#fb7185'),
+            [EPieceType.L]: new Color('#f97316'),
+        },
     },
     [EGameTheme.OceanUnder]: {
         id: EGameTheme.OceanUnder,
         accent: new Color('#1a8fbf'),
         title: 'Океанская бездна',
         shader: EBackgroundShaderId.OceanUnder,
+        tetrominoesColors: {
+            [EPieceType.I]: new Color('#fde047'),
+            [EPieceType.O]: new Color('#a78bfa'),
+            [EPieceType.T]: new Color('#a3e635'),
+            [EPieceType.S]: new Color('#f9a8d4'),
+            [EPieceType.Z]: new Color('#d946ef'),
+            [EPieceType.J]: new Color('#fb923c'),
+            [EPieceType.L]: new Color('#ef4444'),
+        },
     },
     [EGameTheme.Shine]: {
         id: EGameTheme.Shine,
@@ -65,6 +83,15 @@ export const GameThemes: Record<EGameTheme, TThemeConfig> = {
         title: 'Сияние',
         shader: EBackgroundShaderId.Shine,
         shadingOptions: { introFadeDuration: 1, mosaicFillAlign: 'center' },
+        tetrominoesColors: {
+            [EPieceType.I]: new Color('#00f000'),
+            [EPieceType.O]: new Color('#f00000'),
+            [EPieceType.T]: new Color('#a000f0'),
+            [EPieceType.S]: new Color('#f0f000'),
+            [EPieceType.Z]: new Color('#00f0f0'),
+            [EPieceType.J]: new Color('#2828ff'),
+            [EPieceType.L]: new Color('#ffaa00'),
+        }
     },
 }
 
