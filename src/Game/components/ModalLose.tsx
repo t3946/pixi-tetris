@@ -1,7 +1,9 @@
+import { useEffect, useRef, useState } from 'react'
 import { Modal } from '@components/ui/Modal'
 import { BaseButton } from '@components/ui/BaseButton'
 import { MODAL_CONTENT_WIDTH } from '@components/ui/modalLayout'
 import { advertisement } from '@advertisement/Advertisement'
+import { ERewardedAdResult } from '@advertisement/ts/ERewardedAdResult.ts'
 import { startMatchSessionClock, takeMatchSessionMs } from '@src/hooks/matchSessionClock'
 import { useLeaveGameToMenu } from '@src/hooks/useLeaveGameToMenu'
 import { useContinueAfterAd, useRestartGame } from '@src/tetris/TetrisGameContext'
@@ -39,6 +41,37 @@ export function ModalLose({ open }: TProps) {
     const continueAfterAd = useContinueAfterAd()
     const leaveGameToMenu = useLeaveGameToMenu()
     const { startActiveMission } = useUser()
+    const [watchingAd, setWatchingAd] = useState(false)
+    const adRequestIdRef = useRef(0)
+
+    useEffect(() => {
+        if (!open) {
+            adRequestIdRef.current += 1
+            setWatchingAd(false)
+        }
+    }, [open])
+
+    const handleContinue = async () => {
+        if (watchingAd) {
+            return
+        }
+
+        const requestId = ++adRequestIdRef.current
+        setWatchingAd(true)
+
+        const result = await advertisement.showRewardedAd()
+        if (requestId !== adRequestIdRef.current) {
+            return
+        }
+
+        setWatchingAd(false)
+
+        if (result !== ERewardedAdResult.Rewarded) {
+            return
+        }
+
+        continueAfterAd()
+    }
 
     const handleRestart = async () => {
         await advertisement.showBetweenSessions({ sessionMs: takeMatchSessionMs() })
@@ -69,7 +102,8 @@ export function ModalLose({ open }: TProps) {
 
             <BaseButton
                 label="Продолжить"
-                onPress={continueAfterAd}
+                onPress={handleContinue}
+                disabled={watchingAd}
                 accent={theme.MENU.PRIMARY}
                 accentTo={theme.MENU.PRIMARY_TO}
                 textFill={theme.MENU.PRIMARY_TEXT}
