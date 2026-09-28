@@ -1,21 +1,15 @@
 import { EPieceType } from '@src/tetris/blocks/themes'
 import { ActiveFigure } from './ActiveFigure'
+import { BUILDER_LIKE_SHAPE } from './BuilderFigure'
 import {
     ACTIVE_SHOT_COOLDOWN_MS,
-    BUILDER_SHELL_COLOR,
+    DESTROYER_SHELL_COLOR,
     trySpawnShell,
     type FallingProjectile,
 } from '../projectiles'
 
-/** Ярко-зелёный «Строитель». */
-export const BUILDER_COLOR = 0x39ff14
-
-/** Общая форма Строителя / Разрушителя. */
-export const BUILDER_LIKE_SHAPE = [
-    [1, 0, 1],
-    [1, 1, 1],
-    [0, 1, 0],
-]
+/** Ярко-красный «Разрушитель». */
+export const DESTROYER_COLOR = 0xff1439
 
 type ActiveShooterHostState = {
     piece: { type: EPieceType; x: number; y: number; rotation: number } | null
@@ -25,14 +19,15 @@ type ActiveShooterHostState = {
 }
 
 /**
+ * Тот же силуэт, что у Строителя, но снаряды сносят блок 1×1.
  * Форма:
  * 101
  * 111
  * 010
  */
-export class BuilderFigure extends ActiveFigure {
-    readonly type = EPieceType.Builder
-    readonly color = BUILDER_COLOR
+export class DestroyerFigure extends ActiveFigure {
+    readonly type = EPieceType.Destroyer
+    readonly color = DESTROYER_COLOR
     readonly shape = BUILDER_LIKE_SHAPE
     readonly spawnChance = 0.03
 
@@ -40,7 +35,7 @@ export class BuilderFigure extends ActiveFigure {
         return 0.675 + 0.325 * Math.sin(elapsedMs * 0.008)
     }
 
-    /** Выстрел снарядом 1×1: ставит пастельный блок (не чаще 1/500 ms). */
+    /** Выстрел снарядом 1×1: удаляет клетку при попадании (не чаще 1/500 ms). */
     activate<TState>(state: TState, _cols: number): TState {
         const host = state as TState & ActiveShooterHostState
         if (!host.piece || !host.projectiles || !host.board) {
@@ -59,8 +54,8 @@ export class BuilderFigure extends ActiveFigure {
             piece: host.piece,
             board: host.board,
             projectiles: host.projectiles,
-            color: BUILDER_SHELL_COLOR,
-            mode: 'build',
+            color: DESTROYER_SHELL_COLOR,
+            mode: 'destroy',
         })
         if (!nextProjectiles) {
             return state
@@ -74,4 +69,4 @@ export class BuilderFigure extends ActiveFigure {
     }
 }
 
-export const builderFigure = new BuilderFigure()
+export const destroyerFigure = new DestroyerFigure()

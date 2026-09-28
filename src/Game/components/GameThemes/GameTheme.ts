@@ -34,6 +34,7 @@ export const GameThemes: Record<EGameTheme, TThemeConfig> = {
             [EPieceType.V]: new Color('#67e8f9'),
             [EPieceType.W]: new Color('#fb923c'),
             [EPieceType.Builder]: new Color('#39ff14'),
+            [EPieceType.Destroyer]: new Color('#ff1439'),
         },
     },
     [EGameTheme.WadingCausticBlue]: {
@@ -68,6 +69,7 @@ export const GameThemes: Record<EGameTheme, TThemeConfig> = {
             [EPieceType.V]: new Color('#22d3ee'),
             [EPieceType.W]: new Color('#c084fc'),
             [EPieceType.Builder]: new Color('#39ff14'),
+            [EPieceType.Destroyer]: new Color('#ff1439'),
         },
     },
     [EGameTheme.OceanUnder]: {
@@ -87,6 +89,7 @@ export const GameThemes: Record<EGameTheme, TThemeConfig> = {
             [EPieceType.V]: new Color('#67e8f9'),
             [EPieceType.W]: new Color('#fdba74'),
             [EPieceType.Builder]: new Color('#39ff14'),
+            [EPieceType.Destroyer]: new Color('#ff1439'),
         },
     },
     [EGameTheme.Shine]: {
@@ -107,7 +110,8 @@ export const GameThemes: Record<EGameTheme, TThemeConfig> = {
             [EPieceType.V]: new Color('#55ccff'),
             [EPieceType.W]: new Color('#cc7744'),
             [EPieceType.Builder]: new Color('#39ff14'),
-        }
+            [EPieceType.Destroyer]: new Color('#ff1439'),
+        },
     },
 }
 

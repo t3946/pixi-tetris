@@ -1,8 +1,7 @@
 import { EPieceType } from '@src/tetris/blocks/themes'
 import {
-    ACTIVE_FIGURE_SPAWN_CHANCE,
     getActiveFigure,
-    pickRandomActiveFigureType,
+    rollActiveFigureType,
 } from '@src/tetris/activeFigures'
 
 export type PieceType = EPieceType
@@ -304,11 +303,19 @@ export const TETROMINOES: Record<PieceType, TetrominoDefinition> = {
         }
         return figure.toTetrominoDefinition()
     })(),
+    Destroyer: (() => {
+        const figure = getActiveFigure(EPieceType.Destroyer)
+        if (!figure) {
+            throw new Error('Destroyer active figure is not registered')
+        }
+        return figure.toTetrominoDefinition()
+    })(),
 }
 
 export function randomPieceType(bag: readonly PieceType[] = CLASSIC_PIECE_TYPES): PieceType {
-    if (Math.random() < ACTIVE_FIGURE_SPAWN_CHANCE) {
-        return pickRandomActiveFigureType()
+    const activeType = rollActiveFigureType()
+    if (activeType) {
+        return activeType
     }
 
     const pool = bag.length > 0 ? bag : CLASSIC_PIECE_TYPES

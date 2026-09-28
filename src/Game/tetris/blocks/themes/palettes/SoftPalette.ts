@@ -11,6 +11,7 @@ const magenta: string = '#ff6ec7'
 const sky: string = '#7ec8ff'
 const copper: string = '#e08955'
 const neonGreen: string = '#39ff14'
+const neonRed: string = '#ff1439'
 
 export const softThemeColors: ThemeColors = {
     [EPieceType.I]: { [lightBlue1]: 1 },
@@ -24,4 +25,5 @@ export const softThemeColors: ThemeColors = {
     [EPieceType.V]: { [sky]: 1 },
     [EPieceType.W]: { [copper]: 1 },
     [EPieceType.Builder]: { [neonGreen]: 1 },
+    [EPieceType.Destroyer]: { [neonRed]: 1 },
 }

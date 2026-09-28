@@ -14,4 +14,5 @@ export const CLASSIC_THEME_COLORS: ThemeColors = {
     [EPieceType.V]: { '#80d0ff': 1 },
     [EPieceType.W]: { '#d07040': 1 },
     [EPieceType.Builder]: { '#39ff14': 1 },
+    [EPieceType.Destroyer]: { '#ff1439': 1 },
 }

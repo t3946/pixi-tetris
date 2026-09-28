@@ -12,6 +12,8 @@ export abstract class ActiveFigure {
     abstract readonly color: number
     /** Единственная ориентация матрицы 0/1. */
     abstract readonly shape: number[][]
+    /** Шанс появления вместо обычной фигуры (0…1), независимый вес в общем ролле. */
+    abstract readonly spawnChance: number
 
     readonly leavesMonominoes = false
 
