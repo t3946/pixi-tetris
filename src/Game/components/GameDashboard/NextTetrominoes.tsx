@@ -1,8 +1,12 @@
 import { UiIcon } from '@components/ui/UiIcon'
 import { useTetrisGameState } from '@src/tetris/TetrisGameContext'
+import { getActiveFigure } from '@src/tetris/activeFigures'
 import { getShapeLocalCells } from '@src/tetris/tetrominoes'
 import { useBlockTheme } from '@src/hooks/useBlockTheme'
 import { useGameTheme } from '@src/hooks/useGameTheme'
+import { useTick } from '@pixi/react'
+import { useRef } from 'react'
+import { Container } from 'pixi.js'
 
 const CELL_PADDING = 1
 /** Область контента панели (высота дашборда минус полоска заголовка) */
@@ -13,6 +17,25 @@ export const NextTetrominoes = () => {
     const { nextType, nextCellColors, nextPreviewHidden } = useTetrisGameState()
     const { accent } = useGameTheme()
     const blockTheme = useBlockTheme()
+    const previewRef = useRef<Container>(null)
+    const flickerElapsedRef = useRef(0)
+    const activeFigure = getActiveFigure(nextType)
+
+    useTick((ticker) => {
+        const node = previewRef.current
+        if (!node) {
+            return
+        }
+
+        if (!activeFigure) {
+            flickerElapsedRef.current = 0
+            node.alpha = 1
+            return
+        }
+
+        flickerElapsedRef.current += ticker.deltaMS
+        node.alpha = activeFigure.getAlpha(flickerElapsedRef.current)
+    })
 
     if (nextPreviewHidden) {
         return (
@@ -67,7 +90,7 @@ export const NextTetrominoes = () => {
                 height: PREVIEW_BOX,
             }}
         >
-            <pixiContainer>
+            <pixiContainer ref={previewRef}>
                 {cells.map((cell, index) => {
                     const col = cell.x - minX
                     const row = cell.y - minY

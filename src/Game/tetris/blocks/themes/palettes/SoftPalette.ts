@@ -10,6 +10,7 @@ const orange: string = '#ffb938'
 const magenta: string = '#ff6ec7'
 const sky: string = '#7ec8ff'
 const copper: string = '#e08955'
+const neonGreen: string = '#39ff14'
 
 export const softThemeColors: ThemeColors = {
     [EPieceType.I]: { [lightBlue1]: 1 },
@@ -22,4 +23,5 @@ export const softThemeColors: ThemeColors = {
     [EPieceType.X]: { [magenta]: 1 },
     [EPieceType.V]: { [sky]: 1 },
     [EPieceType.W]: { [copper]: 1 },
+    [EPieceType.Builder]: { [neonGreen]: 1 },
 }

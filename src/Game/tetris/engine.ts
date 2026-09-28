@@ -9,10 +9,17 @@ import {
     type PieceType,
 } from './tetrominoes'
 import { getActiveBlockTheme } from './blocks/themes'
+import { getActiveFigure, isActiveFigureType } from './activeFigures'
+import {
+    advanceProjectiles,
+    createEmptyProjectiles,
+    type FallingProjectile,
+} from './projectiles'
 import { getGameThemeTetrominoColor } from '@components/GameThemes/GameTheme.ts'
 import { getLevelConfig, MIN_LEVEL } from './constants'
 
 export type Board = number[][]
+export type { FallingProjectile }
 
 export type GameState = {
     board: Board
@@ -39,6 +46,15 @@ export type GameState = {
     lockResets: number
     /** Максимальный Y фигуры с момента спавна (Step Reset при новом полу). */
     lockFloorY: number | null
+    /** Снаряды активных фигур (Строитель и т.п.). */
+    projectiles: FallingProjectile[]
+    /** performance.now() последнего выстрела активной фигуры; null — ещё не стреляли. */
+    activeShotAtMs: number | null
+    /**
+     * Маркер очистки от снаряда: после completeLineClear вернуть/сдвинуть эту фигуру,
+     * не беря следующую из очереди. Во время анимации `piece` остаётся на поле.
+     */
+    stashedPiece: ActivePiece | null
 }
 
 export type CreateGameOptions = {
@@ -181,6 +197,9 @@ export function createInitialState(
         level,
         pieceBag,
         pendingClearLines: [],
+        projectiles: createEmptyProjectiles(),
+        activeShotAtMs: null,
+        stashedPiece: null,
         ...idleLockFields(),
     }
 
@@ -206,6 +225,9 @@ export function createSandboxState(rows: number, cols: number): GameState {
         level: MIN_LEVEL,
         pieceBag: CLASSIC_PIECE_TYPES,
         pendingClearLines: [],
+        projectiles: createEmptyProjectiles(),
+        activeShotAtMs: null,
+        stashedPiece: null,
         ...idleLockFields(),
     }
 }
@@ -236,6 +258,12 @@ export function setLevel(state: GameState, level: number): GameState {
 
 function rollThemeColors(type: PieceType): number[] {
     const count = countShapeCells(type)
+    const activeFigure = getActiveFigure(type)
+
+    if (activeFigure) {
+        return Array.from({ length: count }, () => activeFigure.color)
+    }
+
     const gameThemeColor = getGameThemeTetrominoColor(type)
 
     if (gameThemeColor !== null) {
@@ -249,7 +277,9 @@ function rollThemeColors(type: PieceType): number[] {
 
 /**
  * Берёт фигуру типа `type` как текущую и сразу готовит случайную следующую.
- * Если текущая не влезает на поле — piece = null (game over).
+ * Если обычная фигура не влезает — piece = null (game over).
+ * Активные фигуры (Строитель и т.п.) блоков не оставляют: при нехватке места
+ * пропускаются, берётся следующая из очереди.
  */
 function spawnFromQueue(
     board: Board,
@@ -257,22 +287,33 @@ function spawnFromQueue(
     type: PieceType,
     cellColors: number[],
     pieceBag: readonly PieceType[] = CLASSIC_PIECE_TYPES,
+    depth = 0,
 ): {
     piece: ActivePiece | null
     nextType: PieceType
     nextCellColors: number[]
     nextPreviewHidden: boolean
 } {
-    const piece = createPiece(type, cols, cellColors)
     const nextType = randomPieceType(pieceBag)
     const nextCellColors = rollThemeColors(nextType)
     const nextPreviewHidden = rollNextPreviewHidden()
 
-    if (!isValidPosition(piece, board)) {
+    // Защита от бесконечного пропуска активных фигур
+    if (depth > 24) {
         return { piece: null, nextType, nextCellColors, nextPreviewHidden }
     }
 
-    return { piece, nextType, nextCellColors, nextPreviewHidden }
+    const piece = createPiece(type, cols, cellColors)
+
+    if (isValidPosition(piece, board)) {
+        return { piece, nextType, nextCellColors, nextPreviewHidden }
+    }
+
+    if (isActiveFigureType(type)) {
+        return spawnFromQueue(board, cols, nextType, nextCellColors, pieceBag, depth + 1)
+    }
+
+    return { piece: null, nextType, nextCellColors, nextPreviewHidden }
 }
 
 export function isValidPosition(piece: ActivePiece, board: Board): boolean {
@@ -293,6 +334,11 @@ export function isValidPosition(piece: ActivePiece, board: Board): boolean {
 }
 
 function lockPiece(piece: ActivePiece, board: Board): Board {
+    const activeFigure = getActiveFigure(piece.type)
+    if (activeFigure && !activeFigure.leavesMonominoes) {
+        return board.map((row) => [...row])
+    }
+
     const nextBoard = board.map((row) => [...row])
 
     for (const cell of getPieceCells(piece)) {
@@ -457,6 +503,7 @@ function settlePiece(state: GameState, cols: number): GameState {
             nextPreviewHidden,
             gameOver: piece === null,
             pendingClearLines: [],
+            stashedPiece: null,
             ...idleLockFields(),
         }
 
@@ -471,6 +518,7 @@ function settlePiece(state: GameState, cols: number): GameState {
         ...state,
         board: lockedBoard,
         piece: null,
+        stashedPiece: null,
         pendingClearLines,
         ...idleLockFields(),
     }
@@ -490,6 +538,29 @@ export function completeLineClear(
 
     const awardScore = options?.awardScore !== false
     const board = removeLines(state.board, lines)
+    const linesCleared = awardScore ? state.linesCleared + lines.length : state.linesCleared
+    const score = awardScore ? state.score + scoreForClearedLines(lines.length) : state.score
+
+    // Очистка от снаряда: вернуть текущую фигуру, очередь next не трогать
+    if (state.stashedPiece) {
+        const restored = adjustPieceAfterLineClear(state.stashedPiece, lines)
+
+        if (isValidPosition(restored, board)) {
+            const restoredState: GameState = {
+                ...state,
+                board,
+                piece: restored,
+                stashedPiece: null,
+                pendingClearLines: [],
+                linesCleared,
+                score,
+                ...idleLockFields(),
+            }
+
+            return syncLockState(restoredState, restored, { didMoveOrRotate: false }, cols)
+        }
+    }
+
     const { piece, nextType, nextCellColors, nextPreviewHidden } = spawnFromQueue(
         board,
         cols,
@@ -507,8 +578,9 @@ export function completeLineClear(
         nextPreviewHidden,
         gameOver: piece === null,
         pendingClearLines: [],
-        linesCleared: awardScore ? state.linesCleared + lines.length : state.linesCleared,
-        score: awardScore ? state.score + scoreForClearedLines(lines.length) : state.score,
+        stashedPiece: null,
+        linesCleared,
+        score,
         ...idleLockFields(),
     }
 
@@ -517,6 +589,21 @@ export function completeLineClear(
     }
 
     return syncLockState(next, piece, { didMoveOrRotate: false }, cols)
+}
+
+/**
+ * Сдвиг активной фигуры после removeLines:
+ * newY = y - (очищено строго выше) + (всего очищено).
+ */
+function adjustPieceAfterLineClear(piece: ActivePiece, clearedLines: readonly number[]): ActivePiece {
+    const clearedAbove = clearedLines.filter((line) => line < piece.y).length
+    const newY = piece.y - clearedAbove + clearedLines.length
+
+    if (newY === piece.y) {
+        return piece
+    }
+
+    return { ...piece, y: newY }
 }
 
 /** Число нижних рядов, уничтожаемых при продолжении после game over (реклама). */
@@ -543,6 +630,7 @@ export function continueAfterAd(state: GameState): GameState {
         gameOver: false,
         paused: false,
         piece: null,
+        stashedPiece: null,
         pendingClearLines,
         ...idleLockFields(),
     }
@@ -625,6 +713,11 @@ export function rotate(state: GameState, cols: number): GameState {
         return state
     }
 
+    const activeFigure = getActiveFigure(state.piece.type)
+    if (activeFigure) {
+        return activeFigure.activate(state, cols)
+    }
+
     const rotated = rotatePiece(state.piece, state.board)
 
     if (pieceEquals(rotated, state.piece)) {
@@ -632,6 +725,49 @@ export function rotate(state: GameState, cols: number): GameState {
     }
 
     return syncLockState(state, rotated, { didMoveOrRotate: true }, cols)
+}
+
+/** Продвижение снарядов активных фигур (каждый кадр). */
+export function tickProjectiles(state: GameState, deltaMs: number): GameState {
+    if (
+        state.gameOver ||
+        state.paused ||
+        isSettling(state) ||
+        state.projectiles.length === 0 ||
+        deltaMs <= 0
+    ) {
+        return state
+    }
+
+    const { board, projectiles } = advanceProjectiles(state.board, state.projectiles, deltaMs)
+
+    if (board === state.board && projectiles === state.projectiles) {
+        return state
+    }
+
+    if (board === state.board) {
+        return { ...state, projectiles }
+    }
+
+    const pendingClearLines = findFullLines(board)
+
+    if (pendingClearLines.length === 0) {
+        return {
+            ...state,
+            board,
+            projectiles,
+        }
+    }
+
+    // Снаряд собрал ряд(ы) — clear-пайплайн; текущую фигуру оставляем видимой
+    return {
+        ...state,
+        board,
+        projectiles: createEmptyProjectiles(),
+        stashedPiece: state.piece,
+        pendingClearLines,
+        ...idleLockFields(),
+    }
 }
 
 /** Фигура в клетке, куда она упадёт (shadow / ghost). Поворот и форма те же. */
@@ -674,6 +810,9 @@ export function endGame(state: GameState): GameState {
         gameOver: true,
         paused: false,
         pendingClearLines: [],
+        projectiles: createEmptyProjectiles(),
+        activeShotAtMs: null,
+        stashedPiece: null,
         ...idleLockFields(),
     }
 }

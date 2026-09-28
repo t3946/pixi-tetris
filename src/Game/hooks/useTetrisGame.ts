@@ -25,6 +25,7 @@ import {
     restart,
     rotate,
     tick,
+    tickProjectiles,
     togglePause,
     endGame,
     type Board,
@@ -75,6 +76,7 @@ export function hardDropOffsetY(anim: HardDropAnimation, pieceY: number, cellSiz
  * - SoftDrop — ускоренное падение на одну клетку (зажата ↓)
  * - HardDrop — опускание до упора и фиксация (Пробел), после анимации 200 мс
  * - Rotate — поворот фигуры (↑)
+ * - Projectiles — движение снарядов активных фигур
  * - Pause — пауза / снятие паузы (P)
  * - Restart — перезапуск игры (R)
  * - SetBoard — прямая подмена поля (клетки во время эффекта очистки)
@@ -89,6 +91,7 @@ enum EAction {
     SoftDrop = 'SOFT_DROP',
     HardDrop = 'HARD_DROP',
     Rotate = 'ROTATE',
+    Projectiles = 'PROJECTILES',
     Pause = 'PAUSE',
     Restart = 'RESTART',
     SetBoard = 'SET_BOARD',
@@ -113,6 +116,7 @@ type Action =
     | { type: EAction.SoftDrop }
     | { type: EAction.HardDrop }
     | { type: EAction.Rotate }
+    | { type: EAction.Projectiles; deltaMs: number }
     | { type: EAction.Pause }
     | { type: EAction.Restart; rows: number; cols: number; level: number; pieceBag?: readonly PieceType[]; garbageRows?: number }
     | { type: EAction.SetBoard; board: Board }
@@ -146,6 +150,8 @@ function gameReducer(state: GameState, action: Action, cols: number): GameState 
             return hardDrop(state, cols)
         case EAction.Rotate:
             return rotate(state, cols)
+        case EAction.Projectiles:
+            return tickProjectiles(state, action.deltaMs)
         case EAction.Pause:
             return togglePause(state)
         case EAction.Restart:
@@ -380,6 +386,10 @@ export function useTetrisGame(
 
         if (state.paused) {
             return
+        }
+
+        if (state.projectiles.length > 0) {
+            dispatch({ type: EAction.Projectiles, deltaMs: ticker.deltaMS })
         }
 
         const anim = hardDropAnimationRef.current
