@@ -2,6 +2,8 @@
 export type Mission = {
     lines?: number
     score?: number
+    /** Сложность тетриса (индекс LEVEL_CONFIGS, 1…10). */
+    level?: number
 }
 
 export type MissionMetric = 'lines' | 'score'
@@ -51,11 +53,11 @@ export function getMissionReward(withAdBonus = false): MissionReward {
     }
 }
 
-/** Фиксированная последовательность миссий Блица. */
+/** Фиксированная последовательность миссий Блица (сложность 1 → 2 → 3). */
 export const BLITZ_MISSIONS: readonly Mission[] = [
-    { lines: 5 },
-    { score: 1000 },
-    { lines: 20, score: 3000 },
+    { lines: 5, level: 8 },
+    { score: 1000, level: 2 },
+    { lines: 20, score: 3000, level: 3 },
 ] as const
 
 /** Следующая миссия Блица по числу уже пройденных. */
@@ -65,6 +67,11 @@ export function createBlitzMission(completedCount: number): Mission | null {
     }
 
     return BLITZ_MISSIONS[completedCount]
+}
+
+/** Сложность тетриса для следующей миссии Блица (по умолчанию 1). */
+export function getBlitzTetrisLevel(completedCount: number): number {
+    return createBlitzMission(completedCount)?.level ?? 1
 }
 
 export function isMissionComplete(

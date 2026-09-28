@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react'
 import { useTick } from '@pixi/react'
 import {
+    advanceLockDelay,
     completeLineClear,
     continueAfterAd,
     createInitialState,
@@ -29,6 +30,7 @@ import {
     type Board,
     type GameState,
 } from '@src/tetris/engine'
+import { fallIntervalMsForLevel } from '@src/tetris/constants'
 import type { ActivePiece } from '@src/tetris/tetrominoes'
 import {
     SparkleClearIterator,
@@ -39,9 +41,6 @@ import {
     type ClearApi,
 } from '@src/tetris/clear'
 import { triggerBackgroundLineClearPulse } from '@shaders/game-backgrounds/backgroundInteraction'
-
-/** Обычная скорость падения: фигура смещается вниз раз в 600 мс */
-const DROP_INTERVAL_MS = 600
 
 /** Ускоренное падение при зажатой стрелке ↓: раз в 50 мс */
 const SOFT_DROP_INTERVAL_MS = 50
@@ -71,6 +70,7 @@ export function hardDropOffsetY(anim: HardDropAnimation, pieceY: number, cellSiz
  * EAction — типы игровых событий.
  *
  * - Tick — автоматический шаг падения по таймеру
+ * - LockDelay — истечение Lock Delay за кадр (deltaMS)
  * - Move — сдвиг фигуры влево (−1) или вправо (+1)
  * - SoftDrop — ускоренное падение на одну клетку (зажата ↓)
  * - HardDrop — опускание до упора и фиксация (Пробел), после анимации 200 мс
@@ -84,6 +84,7 @@ export function hardDropOffsetY(anim: HardDropAnimation, pieceY: number, cellSiz
  */
 enum EAction {
     Tick = 'TICK',
+    LockDelay = 'LOCK_DELAY',
     Move = 'MOVE',
     SoftDrop = 'SOFT_DROP',
     HardDrop = 'HARD_DROP',
@@ -107,12 +108,13 @@ enum EAction {
  */
 type Action =
     | { type: EAction.Tick }
+    | { type: EAction.LockDelay; deltaMs: number }
     | { type: EAction.Move; direction: -1 | 1 }
     | { type: EAction.SoftDrop }
     | { type: EAction.HardDrop }
     | { type: EAction.Rotate }
     | { type: EAction.Pause }
-    | { type: EAction.Restart; rows: number; cols: number }
+    | { type: EAction.Restart; rows: number; cols: number; level: number }
     | { type: EAction.SetBoard; board: Board }
     | { type: EAction.CompleteClear; awardScore?: boolean }
     | { type: EAction.EndGame }
@@ -130,22 +132,24 @@ type Action =
 function gameReducer(state: GameState, action: Action, cols: number): GameState {
     switch (action.type) {
         case EAction.Tick:
-            // Автоматический шаг вниз (вызывается таймером каждые DROP_INTERVAL_MS)
+            // Автоматический шаг вниз (интервал — fallStep текущего уровня)
             return tick(state, cols)
+        case EAction.LockDelay:
+            return advanceLockDelay(state, action.deltaMs, cols)
         case EAction.Move:
-            return moveHorizontal(state, action.direction)
+            return moveHorizontal(state, action.direction, cols)
         case EAction.SoftDrop:
-            // Ускоренное падение: тот же шаг вниз, но чаще
+            // Ускоренное падение: тот же шаг вниз, но чаще (на опоре — только Lock Delay)
             return moveDown(state, cols)
         case EAction.HardDrop:
             // Опускание до упора и фиксация — после анимации в useTick
             return hardDrop(state, cols)
         case EAction.Rotate:
-            return rotate(state)
+            return rotate(state, cols)
         case EAction.Pause:
             return togglePause(state)
         case EAction.Restart:
-            return restart(action.rows, action.cols)
+            return restart(action.rows, action.cols, { level: action.level })
         case EAction.SetBoard:
             return { ...state, board: action.board }
         case EAction.CompleteClear:
@@ -166,12 +170,13 @@ function gameReducer(state: GameState, action: Action, cols: number): GameState 
  * @param rows — число строк поля (vertica из GameField)
  * @param cols — число столбцов (horizontal из GameField)
  * @param options.sandbox — песочница: пустое поле, без фигуры, на паузе
+ * @param options.level — стартовая сложность (LEVEL_CONFIGS)
  * @returns текущее состояние игры; GameField читает его для отрисовки
  */
 export function useTetrisGame(
     rows: number,
     cols: number,
-    options?: { sandbox?: boolean },
+    options?: { sandbox?: boolean; level?: number },
 ) {
     /**
      * useReducer — альтернатива useState для сложного состояния.
@@ -189,11 +194,16 @@ export function useTetrisGame(
      * без лишней логики в теле компонента.
      */
     const sandbox = options?.sandbox === true
+    const levelRef = useRef(options?.level ?? 1)
+    levelRef.current = options?.level ?? levelRef.current
 
     const [state, dispatchBase] = useReducer(
         (currentState: GameState, action: Action) => gameReducer(currentState, action, cols),
         null,
-        () => (sandbox ? createSandboxState(rows, cols) : createInitialState(rows, cols)),
+        () =>
+            sandbox
+                ? createSandboxState(rows, cols)
+                : createInitialState(rows, cols, { level: levelRef.current }),
     )
 
     /**
@@ -368,8 +378,13 @@ export function useTetrisGame(
             return
         }
 
+        // Lock Delay тикает каждый кадр; engine сам no-op если фигура в воздухе
+        dispatch({ type: EAction.LockDelay, deltaMs: ticker.deltaMS })
+
         dropAccumulatorRef.current += ticker.deltaMS
-        const interval = softDropRef.current ? SOFT_DROP_INTERVAL_MS : DROP_INTERVAL_MS
+        const interval = softDropRef.current
+            ? SOFT_DROP_INTERVAL_MS
+            : fallIntervalMsForLevel(state.level)
 
         // while, а не if: если вкладка «лагала», за один кадр может накопиться
         // несколько интервалов — обработаем все, чтобы фигура не «зависала»
@@ -481,7 +496,7 @@ export function useTetrisGame(
                     softDropRef.current = false
                     break
                 case 'KeyR':
-                    dispatch({ type: EAction.Restart, rows, cols })
+                    dispatch({ type: EAction.Restart, rows, cols, level: levelRef.current })
                     dropAccumulatorRef.current = 0
                     hardDropAnimationRef.current = null
                     break
@@ -533,7 +548,7 @@ export function useTetrisGame(
         softDropRef.current = false
         hardDropAnimationRef.current = null
         skipNextClearScoreRef.current = false
-        dispatch({ type: EAction.Restart, rows, cols })
+        dispatch({ type: EAction.Restart, rows, cols, level: levelRef.current })
     }, [cols, dispatch, rows])
 
     const continueAfterAdGame = useCallback(() => {

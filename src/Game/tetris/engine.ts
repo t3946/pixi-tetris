@@ -8,6 +8,7 @@ import {
     type PieceType,
 } from './tetrominoes'
 import { getActiveBlockTheme } from './blocks/themes'
+import { getLevelConfig, MIN_LEVEL } from './constants'
 
 export type Board = number[][]
 
@@ -22,8 +23,21 @@ export type GameState = {
     paused: boolean
     linesCleared: number
     score: number
+    /** Текущий уровень (1…10); fallStep / lockDelay / maxResets — из LEVEL_CONFIGS. */
+    level: number
     /** Индексы полных рядов, ждущих визуальной очистки. Пока не пусто — фигура не спавнится. */
     pendingClearLines: number[]
+    /** Оставшееся время до фиксации (мс); null — фигура в воздухе. */
+    lockRemainingMs: number | null
+    /** Сколько раз уже сбрасывали таймер move/rotate на текущем «потолке» опоры. */
+    lockResets: number
+    /** Максимальный Y фигуры с момента спавна (Step Reset при новом полу). */
+    lockFloorY: number | null
+}
+
+export type CreateGameOptions = {
+    /** Стартовый уровень (1…10). */
+    level?: number
 }
 
 /** Очки за очистку: Single / Double / Triple / Tetris */
@@ -46,12 +60,29 @@ const WALL_KICK_OFFSETS = [
     { x: 0, y: -1 },
 ]
 
+function resolveLevel(level?: number): number {
+    return getLevelConfig(level ?? MIN_LEVEL).level
+}
+
+function idleLockFields(): Pick<GameState, 'lockRemainingMs' | 'lockResets' | 'lockFloorY'> {
+    return {
+        lockRemainingMs: null,
+        lockResets: 0,
+        lockFloorY: null,
+    }
+}
+
 export function createEmptyBoard(rows: number, cols: number): Board {
     return Array.from({ length: rows }, () => Array(cols).fill(0))
 }
 
-export function createInitialState(rows: number, cols: number): GameState {
+export function createInitialState(
+    rows: number,
+    cols: number,
+    options?: CreateGameOptions,
+): GameState {
     const board = createEmptyBoard(rows, cols)
+    const level = resolveLevel(options?.level)
     const firstType = randomPieceType()
     const { piece, nextType, nextCellColors } = spawnFromQueue(
         board,
@@ -60,7 +91,7 @@ export function createInitialState(rows: number, cols: number): GameState {
         rollThemeColors(firstType),
     )
 
-    return {
+    const base: GameState = {
         board,
         piece,
         nextType,
@@ -69,8 +100,16 @@ export function createInitialState(rows: number, cols: number): GameState {
         paused: false,
         linesCleared: 0,
         score: 0,
+        level,
         pendingClearLines: [],
+        ...idleLockFields(),
     }
+
+    if (!piece) {
+        return base
+    }
+
+    return syncLockState(base, piece, { didMoveOrRotate: false }, cols)
 }
 
 /** Статичное поле без активной фигуры (песочница эффектов). */
@@ -84,7 +123,33 @@ export function createSandboxState(rows: number, cols: number): GameState {
         paused: true,
         linesCleared: 0,
         score: 0,
+        level: MIN_LEVEL,
         pendingClearLines: [],
+        ...idleLockFields(),
+    }
+}
+
+/**
+ * Меняет уровень (параметры из LEVEL_CONFIGS).
+ * Текущий таймер на опоре поджимается под новый lockDelay.
+ */
+export function setLevel(state: GameState, level: number): GameState {
+    const nextLevel = resolveLevel(level)
+
+    if (nextLevel === state.level) {
+        return state
+    }
+
+    const { lockDelay } = getLevelConfig(nextLevel)
+    let lockRemainingMs = state.lockRemainingMs
+    if (lockRemainingMs !== null) {
+        lockRemainingMs = Math.min(lockRemainingMs, lockDelay)
+    }
+
+    return {
+        ...state,
+        level: nextLevel,
+        lockRemainingMs,
     }
 }
 
@@ -186,6 +251,72 @@ function movePiece(piece: ActivePiece, board: Board, dx: number, dy: number): Ac
     return isValidPosition(movedPiece, board) ? movedPiece : null
 }
 
+/** Фигура не может сдвинуться вниз — стоит на опоре. */
+export function isGrounded(piece: ActivePiece, board: Board): boolean {
+    return movePiece(piece, board, 0, 1) === null
+}
+
+function pieceEquals(a: ActivePiece, b: ActivePiece): boolean {
+    return a.x === b.x && a.y === b.y && a.rotation === b.rotation && a.type === b.type
+}
+
+/**
+ * Синхронизирует Lock Delay после изменения позиции фигуры.
+ * — В воздухе: таймер сброшен (null), floorY/resets сохраняются до Step Reset.
+ * — На опоре: старт/перезапуск таймера; Move Reset при сдвиге/повороте; Step Reset при новом Y.
+ * — lockDelay === 0: мгновенная фиксация на опоре.
+ */
+function syncLockState(
+    state: GameState,
+    piece: ActivePiece,
+    meta: { didMoveOrRotate: boolean },
+    cols: number,
+): GameState {
+    const grounded = isGrounded(piece, state.board)
+    const prevFloorY = state.lockFloorY
+    const floorY = prevFloorY === null ? piece.y : Math.max(prevFloorY, piece.y)
+    const steppedToNewFloor = prevFloorY !== null && piece.y > prevFloorY
+
+    if (!grounded) {
+        return {
+            ...state,
+            piece,
+            lockRemainingMs: null,
+            lockFloorY: floorY,
+        }
+    }
+
+    const { lockDelay, maxResets } = getLevelConfig(state.level)
+
+    if (lockDelay <= 0) {
+        return settlePiece({ ...state, piece, ...idleLockFields() }, cols)
+    }
+
+    let lockResets = state.lockResets
+    let lockRemainingMs = state.lockRemainingMs
+
+    if (steppedToNewFloor) {
+        // Step Reset — новый «пол», счётчик сбросов обнуляется
+        lockResets = 0
+        lockRemainingMs = lockDelay
+    } else if (lockRemainingMs === null) {
+        // Только что коснулись опоры
+        lockRemainingMs = lockDelay
+    } else if (meta.didMoveOrRotate && lockResets < maxResets) {
+        // Move Reset — успешный сдвиг/поворот продлевает окно
+        lockResets += 1
+        lockRemainingMs = lockDelay
+    }
+
+    return {
+        ...state,
+        piece,
+        lockRemainingMs,
+        lockResets,
+        lockFloorY: floorY,
+    }
+}
+
 function rotatePiece(piece: ActivePiece, board: Board): ActivePiece {
     const shapes = TETROMINOES[piece.type].shapes
     const nextRotation = (piece.rotation + 1) % shapes.length
@@ -222,7 +353,7 @@ function settlePiece(state: GameState, cols: number): GameState {
             state.nextCellColors,
         )
 
-        return {
+        const spawned: GameState = {
             ...state,
             board: lockedBoard,
             piece,
@@ -230,7 +361,14 @@ function settlePiece(state: GameState, cols: number): GameState {
             nextCellColors,
             gameOver: piece === null,
             pendingClearLines: [],
+            ...idleLockFields(),
         }
+
+        if (!piece) {
+            return spawned
+        }
+
+        return syncLockState(spawned, piece, { didMoveOrRotate: false }, cols)
     }
 
     return {
@@ -238,6 +376,7 @@ function settlePiece(state: GameState, cols: number): GameState {
         board: lockedBoard,
         piece: null,
         pendingClearLines,
+        ...idleLockFields(),
     }
 }
 
@@ -262,7 +401,7 @@ export function completeLineClear(
         state.nextCellColors,
     )
 
-    return {
+    const next: GameState = {
         ...state,
         board,
         piece,
@@ -272,7 +411,14 @@ export function completeLineClear(
         pendingClearLines: [],
         linesCleared: awardScore ? state.linesCleared + lines.length : state.linesCleared,
         score: awardScore ? state.score + scoreForClearedLines(lines.length) : state.score,
+        ...idleLockFields(),
     }
+
+    if (!piece) {
+        return next
+    }
+
+    return syncLockState(next, piece, { didMoveOrRotate: false }, cols)
 }
 
 /** Число нижних рядов, уничтожаемых при продолжении после game over (реклама). */
@@ -300,9 +446,14 @@ export function continueAfterAd(state: GameState): GameState {
         paused: false,
         piece: null,
         pendingClearLines,
+        ...idleLockFields(),
     }
 }
 
+/**
+ * Тик гравитации: шаг вниз, либо (если уже на опоре) только синхронизация lock.
+ * Фиксация по истечении таймера — через advanceLockDelay.
+ */
 export function tick(state: GameState, cols: number): GameState {
     if (state.gameOver || state.paused || isSettling(state) || !state.piece) {
         return state
@@ -311,20 +462,49 @@ export function tick(state: GameState, cols: number): GameState {
     const movedPiece = movePiece(state.piece, state.board, 0, 1)
 
     if (movedPiece) {
-        return { ...state, piece: movedPiece }
+        return syncLockState(state, movedPiece, { didMoveOrRotate: false }, cols)
     }
 
-    return settlePiece(state, cols)
+    return syncLockState(state, state.piece, { didMoveOrRotate: false }, cols)
 }
 
-export function moveHorizontal(state: GameState, direction: -1 | 1): GameState {
+/**
+ * Непрерывное истечение Lock Delay (вызывать каждый кадр с deltaMS).
+ * Когда таймер доходит до 0 — фигура фиксируется.
+ */
+export function advanceLockDelay(state: GameState, deltaMs: number, cols: number): GameState {
+    if (
+        state.gameOver ||
+        state.paused ||
+        isSettling(state) ||
+        !state.piece ||
+        state.lockRemainingMs === null ||
+        deltaMs <= 0
+    ) {
+        return state
+    }
+
+    const remaining = state.lockRemainingMs - deltaMs
+
+    if (remaining > 0) {
+        return { ...state, lockRemainingMs: remaining }
+    }
+
+    return settlePiece({ ...state, lockRemainingMs: 0 }, cols)
+}
+
+export function moveHorizontal(state: GameState, direction: -1 | 1, cols: number): GameState {
     if (state.gameOver || state.paused || isSettling(state) || !state.piece) {
         return state
     }
 
     const movedPiece = movePiece(state.piece, state.board, direction, 0)
 
-    return movedPiece ? { ...state, piece: movedPiece } : state
+    if (!movedPiece) {
+        return state
+    }
+
+    return syncLockState(state, movedPiece, { didMoveOrRotate: true }, cols)
 }
 
 export function moveDown(state: GameState, cols: number): GameState {
@@ -335,21 +515,25 @@ export function moveDown(state: GameState, cols: number): GameState {
     const movedPiece = movePiece(state.piece, state.board, 0, 1)
 
     if (movedPiece) {
-        return { ...state, piece: movedPiece }
+        return syncLockState(state, movedPiece, { didMoveOrRotate: false }, cols)
     }
 
-    return settlePiece(state, cols)
+    // Soft drop на опоре не форсит lock — ждём Lock Delay
+    return syncLockState(state, state.piece, { didMoveOrRotate: false }, cols)
 }
 
-export function rotate(state: GameState): GameState {
+export function rotate(state: GameState, cols: number): GameState {
     if (state.gameOver || state.paused || isSettling(state) || !state.piece) {
         return state
     }
 
-    return {
-        ...state,
-        piece: rotatePiece(state.piece, state.board),
+    const rotated = rotatePiece(state.piece, state.board)
+
+    if (pieceEquals(rotated, state.piece)) {
+        return state
     }
+
+    return syncLockState(state, rotated, { didMoveOrRotate: true }, cols)
 }
 
 /** Фигура в клетке, куда она упадёт (shadow / ghost). Поворот и форма те же. */
@@ -371,7 +555,14 @@ export function hardDrop(state: GameState, cols: number): GameState {
         return state
     }
 
-    return settlePiece({ ...state, piece: getGhostPiece(state.piece, state.board) }, cols)
+    return settlePiece(
+        {
+            ...state,
+            piece: getGhostPiece(state.piece, state.board),
+            ...idleLockFields(),
+        },
+        cols,
+    )
 }
 
 /** Принудительно завершает партию (цель миссии и т.п.). */
@@ -385,6 +576,7 @@ export function endGame(state: GameState): GameState {
         gameOver: true,
         paused: false,
         pendingClearLines: [],
+        ...idleLockFields(),
     }
 }
 
@@ -397,6 +589,10 @@ export function togglePause(state: GameState): GameState {
     return { ...state, paused: !state.paused }
 }
 
-export function restart(rows: number, cols: number): GameState {
-    return createInitialState(rows, cols)
+export function restart(
+    rows: number,
+    cols: number,
+    options?: CreateGameOptions,
+): GameState {
+    return createInitialState(rows, cols, options)
 }

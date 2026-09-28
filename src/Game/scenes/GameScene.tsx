@@ -16,7 +16,7 @@ import { useAppLayout } from '@src/scenes/useAppLayout'
 import { SceneFrame } from '@src/scenes/SceneFrame'
 import { useTheme } from '@src/ui/ThemeContext'
 import { useUser } from '@src/user/UserContext'
-import { isMissionComplete } from '@src/user/missions'
+import { getBlitzTetrisLevel, isMissionComplete } from '@src/user/missions'
 
 function useBlitzMissionSession() {
     const { score, linesCleared, gameOver } = useTetrisGameState()
@@ -146,13 +146,18 @@ function GameSceneContent() {
 
 export function GameScene() {
     const { mainSize, ready } = useAppLayout()
+    const { user } = useUser()
+    const tetrisLevel =
+        user.selectedMode === 'blitz'
+            ? getBlitzTetrisLevel(user.progress.blitzMissionsCompleted)
+            : 1
 
     if (!ready) {
         return null
     }
 
     return (
-        <TetrisGameProvider>
+        <TetrisGameProvider level={tetrisLevel}>
             <SceneFrame
                 backgroundColor="black"
                 backdrop={<Background width={mainSize.width} height={mainSize.height} />}

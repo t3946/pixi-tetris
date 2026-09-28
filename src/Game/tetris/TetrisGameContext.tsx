@@ -20,9 +20,16 @@ type TetrisGameContextValue = {
 
 const TetrisGameContext = createContext<TetrisGameContextValue | null>(null)
 
-export function TetrisGameProvider({ children }: { children: ReactNode }) {
+export function TetrisGameProvider({
+    children,
+    level = 1,
+}: {
+    children: ReactNode
+    /** Сложность тетриса (LEVEL_CONFIGS), по умолчанию 1. */
+    level?: number
+}) {
     const { state, togglePause, endGame, restart, continueAfterAd, hardDropAnimationRef } =
-        useTetrisGame(BOARD_ROWS, BOARD_COLS)
+        useTetrisGame(BOARD_ROWS, BOARD_COLS, { level })
     const timeScaleRef = useRef(1)
     const pausedRef = useRef(state.paused)
     const gameOverRef = useRef(state.gameOver)
